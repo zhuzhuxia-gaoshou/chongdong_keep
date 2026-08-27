@@ -76,10 +76,12 @@ class ApiClient {
   }) async {
     for (var attempt = 0;; attempt++) {
       Map<String, String>? headers;
+      var carriedToken = false;
       if (auth) {
         final session = await _session;
         if (session != null) {
           headers = {'Authorization': 'Bearer ${session.accessToken}'};
+          carriedToken = true;
         }
       }
 
@@ -101,7 +103,9 @@ class ApiClient {
           rawCode is int ? rawCode : int.tryParse('${rawCode ?? ''}');
       final expired = code == kCodeAccessExpired;
 
-      if (expired && auth && attempt == 0) {
+      // 仅"本就携带凭据的请求"才进入刷新链路；匿名请求的 40101
+      // （如未登录调受保护接口）原样上抛，由上层按业务错误处理。
+      if (expired && carriedToken && attempt == 0) {
         final ok = await _refreshOnce();
         if (ok) continue; // 用新 token 重放恰好一次
         if (_lastRefreshHardInvalid) {
