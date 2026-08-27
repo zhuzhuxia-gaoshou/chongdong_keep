@@ -47,3 +47,9 @@ app.*.map.json
 # 机器相关的本机路径，不要提交
 /android/local.properties
 /local.properties
+
+# 密钥与本地环境文件，绝不入库（协作规范 §7）
+.env
+*.keystore
+*.jks
+key.properties
