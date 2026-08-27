@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'app_colors.dart';
+import 'app_dimens.dart';
 
 /// 宠动Keep 主题配置
 class AppTheme {
@@ -85,12 +87,57 @@ class AppTheme {
           color: AppColors.textMute,
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
-        selectedItemColor: AppColors.mint,
-        unselectedItemColor: AppColors.textMute,
-        type: BottomNavigationBarType.fixed,
+      // 底部导航为 main_page 自定义实现，不走 BottomNavigationBar，故无对应主题位
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.text,
+        contentTextStyle: const TextStyle(
+            fontSize: AppDimens.fsBody, color: AppColors.card),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.rMd),
+        ),
         elevation: 0,
+        insetPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.rLg),
+        ),
+        titleTextStyle: const TextStyle(
+          fontSize: AppDimens.fsTitle,
+          fontWeight: FontWeight.w700,
+          color: AppColors.text,
+        ),
+        contentTextStyle: const TextStyle(
+          fontSize: AppDimens.fsBodyMid,
+          color: AppColors.text,
+        ),
+      ),
+      tabBarTheme: const TabBarThemeData(
+        labelColor: AppColors.mint,
+        unselectedLabelColor: AppColors.textMute,
+        indicatorColor: AppColors.mint,
+        dividerColor: AppColors.line,
+        labelStyle:
+            TextStyle(fontSize: AppDimens.fsBodyMid, fontWeight: FontWeight.w700),
+        unselectedLabelStyle:
+            TextStyle(fontSize: AppDimens.fsBodyMid, fontWeight: FontWeight.w500),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) => states
+                .contains(WidgetState.selected)
+            ? AppColors.mint
+            : const Color(0xFFE0E0E0)),
+        trackColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected)
+                ? AppColors.mintLight
+                : AppColors.sand),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.mint,
+        linearTrackColor: AppColors.sand,
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.text),
@@ -105,9 +152,4 @@ class AppTheme {
       ),
     );
   }
-
-  // 圆角常量
-  static const double rCard = 16;
-  static const double rBtn = 12;
-  static const double rFull = 999;
 }
