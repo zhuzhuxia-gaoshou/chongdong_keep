@@ -50,7 +50,7 @@ class AppBottomSheet {
                   ),
                   if (title != null) ...[
                     const SizedBox(height: AppDimens.sp16),
-                    Text(title!, textAlign: TextAlign.center,
+                    Text(title, textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: AppDimens.fsSub,
                             fontWeight: FontWeight.w800)),
