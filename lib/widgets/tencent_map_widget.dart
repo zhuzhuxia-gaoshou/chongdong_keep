@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../services/api_config.dart';
 import '../models/exercise_record.dart';
+import '../theme/app_colors.dart';
 
 /// 遛狗地图组件
 ///
@@ -53,7 +54,7 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
   void _initWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFFE8F5EF))
+      ..setBackgroundColor(AppColors.mintLight)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (_) {
@@ -89,8 +90,9 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
         _controller != null &&
         widget.route.length > _lastPushedSize) {
       _lastPushedSize = widget.route.length;
-      final points =
-          widget.route.map((p) => '{"lat":${p.latitude},"lng":${p.longitude}}').join(',');
+      final points = widget.route
+          .map((p) => '{"lat":${p.latitude},"lng":${p.longitude}}')
+          .join(',');
       _controller!
           .runJavaScript('window.updateRoute && window.updateRoute([$points]);')
           .catchError((_) {});
@@ -224,7 +226,7 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
         WebViewWidget(controller: _controller!),
         if (_isLoading)
           Container(
-            color: const Color(0xFFE8F5EF),
+            color: AppColors.mintLight,
             child: const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -232,10 +234,13 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
                   SizedBox(
                     width: 30,
                     height: 30,
-                    child: CircularProgressIndicator(color: Color(0xFF4CAF82), strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                        color: AppColors.mint, strokeWidth: 2),
                   ),
                   SizedBox(height: 8),
-                  Text('地图加载中...', style: TextStyle(fontSize: 12, color: Color(0xFF7A8688))),
+                  Text('地图加载中...',
+                      style:
+                          TextStyle(fontSize: 12, color: AppColors.textSoft)),
                 ],
               ),
             ),
@@ -248,14 +253,18 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFECEAE5)),
+              border: Border.all(color: AppColors.line),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.location_on, size: 16, color: Color(0xFF4CAF82)),
+                Icon(Icons.location_on, size: 16, color: AppColors.mint),
                 SizedBox(width: 4),
-                Text('腾讯地图', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF7A8688))),
+                Text('腾讯地图',
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSoft)),
               ],
             ),
           ),
@@ -275,7 +284,7 @@ class _TrackView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFE8F5EF),
+      color: AppColors.mintLight,
       child: Stack(
         children: [
           CustomPaint(
@@ -287,11 +296,20 @@ class _TrackView extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.satellite_alt_outlined, size: 40, color: Colors.white.withValues(alpha: 0.9)),
+                  Icon(Icons.satellite_alt_outlined,
+                      size: 40, color: Colors.white.withValues(alpha: 0.9)),
                   const SizedBox(height: 8),
-                  Text('等待GPS信号…', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.green.shade700.withValues(alpha: 0.7))),
+                  Text('等待GPS信号…',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green.shade700.withValues(alpha: 0.7))),
                   const SizedBox(height: 4),
-                  Text('已开始记录，信号稳定后显示轨迹', style: TextStyle(fontSize: 11, color: Colors.green.shade700.withValues(alpha: 0.55))),
+                  Text('已开始记录，信号稳定后显示轨迹',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color:
+                              Colors.green.shade700.withValues(alpha: 0.55))),
                 ],
               ),
             ),
@@ -303,14 +321,18 @@ class _TrackView extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFECEAE5)),
+                border: Border.all(color: AppColors.line),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.route, size: 14, color: Color(0xFF4CAF82)),
+                  const Icon(Icons.route, size: 14, color: AppColors.mint),
                   const SizedBox(width: 4),
-                  Text(badgeText, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF7A8688))),
+                  Text(badgeText,
+                      style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSoft)),
                 ],
               ),
             ),
@@ -329,7 +351,7 @@ class _TrackPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // 背景 + 淡网格，模拟地图底图质感
-    final bgPaint = Paint()..color = const Color(0xFFE8F5EF);
+    final bgPaint = Paint()..color = AppColors.mintLight;
     canvas.drawRect(Offset.zero & size, bgPaint);
 
     final gridPaint = Paint()
@@ -366,19 +388,20 @@ class _TrackPainter extends CustomPainter {
     final offY = pad + (availH - spanLat * scale) / 2;
 
     Offset toCanvas(GeoPoint p) => Offset(
-      offX + (p.longitude - minLng) * scale,
-      offY + (maxLat - p.latitude) * scale, // 纬度向上为北，画布y向下
-    );
+          offX + (p.longitude - minLng) * scale,
+          offY + (maxLat - p.latitude) * scale, // 纬度向上为北，画布y向下
+        );
 
     // 轨迹线
     if (route.length >= 2) {
       final linePaint = Paint()
-        ..color = const Color(0xFF4CAF82)
+        ..color = AppColors.mint
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4.5
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round;
-      final path = Path()..moveTo(toCanvas(route.first).dx, toCanvas(route.first).dy);
+      final path = Path()
+        ..moveTo(toCanvas(route.first).dx, toCanvas(route.first).dy);
       for (int i = 1; i < route.length; i++) {
         final o = toCanvas(route[i]);
         path.lineTo(o.dx, o.dy);
@@ -388,13 +411,19 @@ class _TrackPainter extends CustomPainter {
 
     // 起点标记（绿色实心圆）
     final start = toCanvas(route.first);
-    canvas.drawCircle(start, 7, Paint()..color = const Color(0xFF4CAF82));
-    canvas.drawCircle(start, 7, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 2.5);
+    canvas.drawCircle(start, 7, Paint()..color = AppColors.mint);
+    canvas.drawCircle(
+        start,
+        7,
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5);
 
     // 当前位置（蓝色圆点+白圈）
     final cur = toCanvas(route.last);
     canvas.drawCircle(cur, 9, Paint()..color = Colors.white);
-    canvas.drawCircle(cur, 6.5, Paint()..color = const Color(0xFF4A9FD9));
+    canvas.drawCircle(cur, 6.5, Paint()..color = AppColors.skyDeep);
   }
 
   @override

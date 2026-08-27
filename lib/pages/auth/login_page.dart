@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../theme/app_colors.dart';
+import '../../network/api_exception.dart';
+import '../../services/app_services.dart';
 import '../../services/app_state.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimens.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,6 +17,8 @@ class _LoginPageState extends State<LoginPage> {
   final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
   bool _agreed = false;
+  bool _sendingCode = false;
+  bool _busy = false;
   int _countdown = 0;
 
   @override
@@ -23,15 +28,26 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _sendCode() {
+  Future<void> _sendCode() async {
+    final messenger = ScaffoldMessenger.of(context);
     if (_phoneController.text.length != 11) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('请输入11位手机号')),
       );
       return;
     }
-    setState(() => _countdown = 60);
-    _tick();
+    if (_sendingCode || _countdown > 0) return;
+    setState(() => _sendingCode = true);
+    try {
+      await AppServices.instance.auth.sendSmsCode(_phoneController.text);
+      if (!mounted) return;
+      setState(() => _countdown = 60); // 成功后才启动倒计时
+      _tick();
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
+    } finally {
+      if (mounted) setState(() => _sendingCode = false);
+    }
   }
 
   void _tick() {
@@ -43,20 +59,36 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void _login() {
+  Future<void> _login() async {
+    final messenger = ScaffoldMessenger.of(context);
     if (!_agreed) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('请先同意用户协议和隐私政策')),
       );
       return;
     }
     if (_phoneController.text.length != 11 || _codeController.text.length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('请输入正确的手机号和验证码')),
       );
       return;
     }
-    context.read<AppState>().login(_phoneController.text);
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final result = await AppServices.instance.auth
+          .login(_phoneController.text, _codeController.text);
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(
+        content: Text(result.isNewUser ? '欢迎加入宠动Keep！' : '欢迎回来'),
+      ));
+      // ignore: use_build_context_synchronously
+      context.read<AppState>().applyLogin(result.user);
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
@@ -64,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppDimens.sp16),
           child: Column(
             children: [
               const SizedBox(height: 60),
@@ -74,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                 height: 80,
                 decoration: BoxDecoration(
                   color: AppColors.mintLight,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(AppDimens.rXl),
                 ),
                 child: const Center(
                   child: Text('🐾', style: TextStyle(fontSize: 40)),
@@ -99,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('手机号', style: TextStyle(fontSize: 12, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
+                  Text('手机号', style: TextStyle(fontSize: AppDimens.fsFoot, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _phoneController,
@@ -112,12 +144,12 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: AppDimens.sp16),
               // 验证码
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('验证码', style: TextStyle(fontSize: 12, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
+                  Text('验证码', style: TextStyle(fontSize: AppDimens.fsFoot, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
                   Row(
                     children: [
@@ -134,19 +166,28 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(width: 8),
                       GestureDetector(
-                        onTap: _countdown == 0 ? _sendCode : null,
+                        onTap:
+                            (_countdown == 0 && !_sendingCode) ? _sendCode : null,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                          height: 48, // 与主题输入框精确等高
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: AppDimens.sp12),
                           decoration: BoxDecoration(
-                            color: _countdown == 0 ? AppColors.mintLight : AppColors.sand,
-                            borderRadius: BorderRadius.circular(12),
+                            color: (_countdown == 0 && !_sendingCode)
+                                ? AppColors.mintLight
+                                : AppColors.sand,
+                            borderRadius: BorderRadius.circular(AppDimens.rMd),
                           ),
                           child: Text(
-                            _countdown == 0 ? '获取验证码' : '${_countdown}s',
+                            _sendingCode
+                                ? '发送中…'
+                                : (_countdown == 0 ? '获取验证码' : '${_countdown}s'),
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: _countdown == 0 ? AppColors.mint : AppColors.textMute,
+                              color: (_countdown == 0 && !_sendingCode)
+                                  ? AppColors.mint
+                                  : AppColors.textMute,
                             ),
                           ),
                         ),
@@ -159,41 +200,56 @@ class _LoginPageState extends State<LoginPage> {
               // 登录按钮
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _login,
-                  child: const Text('登录 / 注册'),
+                child: ElevatedButton.icon(
+                  onPressed: _busy ? null : _login,
+                  icon: _busy
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.pets, size: 16),
+                  label: Text(_busy ? '登录中…' : '登录 / 注册'),
                 ),
               ),
               const SizedBox(height: 16),
               // 协议
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // 4px 透明热区，实际点击面积 ≥26px
                   GestureDetector(
                     onTap: () => setState(() => _agreed = !_agreed),
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: _agreed ? AppColors.mint : AppColors.textMute, width: 1.5),
-                        color: _agreed ? AppColors.mint : Colors.transparent,
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimens.sp4),
+                      child: Container(
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: _agreed ? AppColors.mint : AppColors.textMute, width: 1.5),
+                          color: _agreed ? AppColors.mint : Colors.transparent,
+                        ),
+                        child: _agreed
+                          ? const Icon(Icons.check, size: 13, color: Colors.white)
+                          : null,
                       ),
-                      child: _agreed
-                        ? const Icon(Icons.check, size: 12, color: Colors.white)
-                        : null,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Text.rich(
-                    TextSpan(
-                      text: '登录即同意',
-                      style: TextStyle(fontSize: 11, color: AppColors.textSoft),
-                      children: [
-                        TextSpan(text: '《用户协议》', style: TextStyle(color: AppColors.mint)),
-                        TextSpan(text: '和', style: TextStyle(color: AppColors.textSoft)),
-                        TextSpan(text: '《隐私政策》', style: TextStyle(color: AppColors.mint)),
-                      ],
+                  const SizedBox(width: AppDimens.sp4),
+                  Flexible(
+                    child: Text.rich(
+                      softWrap: true,
+                      TextSpan(
+                        text: '登录即同意',
+                        style: TextStyle(fontSize: 11, color: AppColors.textSoft),
+                        children: [
+                          TextSpan(text: '《用户协议》', style: TextStyle(color: AppColors.mint)),
+                          TextSpan(text: '和', style: TextStyle(color: AppColors.textSoft)),
+                          TextSpan(text: '《隐私政策》', style: TextStyle(color: AppColors.mint)),
+                        ],
+                      ),
                     ),
                   ),
                 ],

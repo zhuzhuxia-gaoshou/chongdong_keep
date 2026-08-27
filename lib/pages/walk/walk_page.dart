@@ -88,7 +88,8 @@ class _WalkPageState extends State<WalkPage> {
       builder: (ctx) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         ),
         child: SafeArea(
           child: Padding(
@@ -97,11 +98,16 @@ class _WalkPageState extends State<WalkPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 40, height: 4,
-                  decoration: BoxDecoration(color: AppColors.line, borderRadius: BorderRadius.circular(2)),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: AppColors.line,
+                      borderRadius: BorderRadius.circular(2)),
                 ),
                 const SizedBox(height: 18),
-                const Text('📸 记录出发时刻？', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                const Text('📸 记录出发时刻？',
+                    style:
+                        TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 8),
                 Text('给这次运动拍一张出发照片吧～ 不想拍也可以直接开始',
                     style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
@@ -239,7 +245,8 @@ class _WalkPageState extends State<WalkPage> {
       builder: (ctx) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         ),
         padding: const EdgeInsets.all(20),
         child: SafeArea(
@@ -247,14 +254,22 @@ class _WalkPageState extends State<WalkPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(color: AppColors.line, borderRadius: BorderRadius.circular(2)),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: AppColors.line,
+                    borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(height: 20),
-              const Text('🐾 遛狗完成！', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.mint)),
+              const Text('🐾 遛狗完成！',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.mint)),
               if (_locationName.isNotEmpty) ...[
                 const SizedBox(height: 6),
-                Text('📍 $_locationName', style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+                Text('📍 $_locationName',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
               ],
               // 出发照片回顾
               if (_startPhotoPath != null) ...[
@@ -287,7 +302,12 @@ class _WalkPageState extends State<WalkPage> {
                     color: AppColors.mintLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text('✅ 今日打卡成功！', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.mint)),
+                  child: const Text('✅ 今日打卡成功！',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.mint)),
                 )
               else
                 Container(
@@ -297,7 +317,12 @@ class _WalkPageState extends State<WalkPage> {
                     color: AppColors.coralLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text('还需${5 - _elapsed.inMinutes}分钟才能打卡', textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.coral)),
+                  child: Text('还需${5 - _elapsed.inMinutes}分钟才能打卡',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.coral)),
                 ),
               const SizedBox(height: 16),
               Row(
@@ -331,7 +356,11 @@ class _WalkPageState extends State<WalkPage> {
       children: [
         Text(emoji, style: const TextStyle(fontSize: 24)),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.mint)),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppColors.mint)),
         Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
       ],
     );
@@ -352,10 +381,10 @@ class _WalkPageState extends State<WalkPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('运动')),
       body: pets.isEmpty
-        ? _buildNoPet()
-        : _isWalking
-          ? _buildWalkingView(state)
-          : _buildReadyView(pets, state),
+          ? _buildNoPet()
+          : _isWalking
+              ? _buildWalkingView(state)
+              : _buildReadyView(pets, state),
     );
   }
 
@@ -368,9 +397,11 @@ class _WalkPageState extends State<WalkPage> {
           children: [
             const Text('🗺️', style: TextStyle(fontSize: 64)),
             const SizedBox(height: 16),
-            Text('准备好遛狗了吗？', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text('准备好遛狗了吗？',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),
-            Text('选择要一起运动的宠物，点击开始', style: TextStyle(fontSize: 13, color: AppColors.textSoft)),
+            Text('选择要一起运动的宠物，点击开始',
+                style: TextStyle(fontSize: 13, color: AppColors.textSoft)),
             const SizedBox(height: 24),
             Wrap(
               spacing: 8,
@@ -387,18 +418,28 @@ class _WalkPageState extends State<WalkPage> {
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.mintLight : AppColors.card,
-                      border: Border.all(color: isSelected ? AppColors.mint : AppColors.line, width: isSelected ? 2 : 1),
+                      border: Border.all(
+                          color: isSelected ? AppColors.mint : AppColors.line,
+                          width: isSelected ? 2 : 1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(pet.speciesEmoji, style: const TextStyle(fontSize: 16)),
+                        Text(pet.speciesEmoji,
+                            style: const TextStyle(fontSize: 16)),
                         const SizedBox(width: 6),
-                        Text(pet.name, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isSelected ? AppColors.mint : AppColors.text)),
+                        Text(pet.name,
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: isSelected
+                                    ? AppColors.mint
+                                    : AppColors.text)),
                       ],
                     ),
                   ),
@@ -414,7 +455,8 @@ class _WalkPageState extends State<WalkPage> {
               ),
             ),
             const SizedBox(height: 12),
-            Text('GPS将自动记录路线、距离和步数', style: TextStyle(fontSize: 11, color: AppColors.textMute)),
+            Text('GPS将自动记录路线、距离和步数',
+                style: TextStyle(fontSize: 11, color: AppColors.textMute)),
           ],
         ),
       ),
@@ -443,8 +485,14 @@ class _WalkPageState extends State<WalkPage> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          _selectedPets.map((id) => state.pets.firstWhere((p) => p.id == id).name).join(' + '),
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                          _selectedPets
+                              .map((id) =>
+                                  state.pets.firstWhere((p) => p.id == id).name)
+                              .join(' + '),
+                          style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -454,7 +502,10 @@ class _WalkPageState extends State<WalkPage> {
                 const SizedBox(width: 8),
                 Text(
                   MapService.formatDuration(_elapsed),
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white),
+                  style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white),
                 ),
               ],
             ),
@@ -465,10 +516,14 @@ class _WalkPageState extends State<WalkPage> {
               padding: const EdgeInsets.only(top: 6),
               child: Row(
                 children: [
-                  const Icon(Icons.location_on, size: 14, color: AppColors.textSoft),
+                  const Icon(Icons.location_on,
+                      size: 14, color: AppColors.textSoft),
                   const SizedBox(width: 4),
                   Expanded(
-                    child: Text(_locationName, style: TextStyle(fontSize: 11, color: AppColors.textSoft), overflow: TextOverflow.ellipsis),
+                    child: Text(_locationName,
+                        style:
+                            TextStyle(fontSize: 11, color: AppColors.textSoft),
+                        overflow: TextOverflow.ellipsis),
                   ),
                 ],
               ),
@@ -493,7 +548,9 @@ class _WalkPageState extends State<WalkPage> {
           // 数据卡片
           Row(
             children: [
-              Expanded(child: _buildDataCard('📏 距离', MapService.formatDistance(_distance), '')),
+              Expanded(
+                  child: _buildDataCard(
+                      '📏 距离', MapService.formatDistance(_distance), '')),
               const SizedBox(width: 8),
               Expanded(child: _buildDataCard('👟 步数', '$_steps', '步')),
             ],
@@ -502,14 +559,17 @@ class _WalkPageState extends State<WalkPage> {
           // 目标进度
           Builder(builder: (context) {
             final pet = state.pets.firstWhere(
-              (p) => p.id == (_selectedPets.isNotEmpty ? _selectedPets.first : ''),
+              (p) =>
+                  p.id == (_selectedPets.isNotEmpty ? _selectedPets.first : ''),
               orElse: () => state.pets.first,
             );
             final goal = pet.recommendedExerciseMinutes;
             final progress = (_elapsed.inMinutes / goal).clamp(0.0, 1.0);
             return Row(
               children: [
-                Text('🎯目标', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                Text('🎯目标',
+                    style:
+                        TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: ClipRRect(
@@ -517,13 +577,18 @@ class _WalkPageState extends State<WalkPage> {
                     child: LinearProgressIndicator(
                       value: progress,
                       backgroundColor: AppColors.sand,
-                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.mint),
+                      valueColor:
+                          const AlwaysStoppedAnimation<Color>(AppColors.mint),
                       minHeight: 6,
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text('${(progress * 100).clamp(0, 100).toInt()}%', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.mint)),
+                Text('${(progress * 100).clamp(0, 100).toInt()}%',
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.mint)),
               ],
             );
           }),
@@ -535,18 +600,25 @@ class _WalkPageState extends State<WalkPage> {
               GestureDetector(
                 onTap: () {},
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppColors.coralLight,
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: const Text('⚠️ 不舒服', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.coral)),
+                  child: const Text('⚠️ 不舒服',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.coral)),
                 ),
               ),
               const SizedBox(width: 6),
               ElevatedButton(
                 onPressed: _toggleWalk,
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.sand, foregroundColor: AppColors.text),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.sand,
+                    foregroundColor: AppColors.text),
                 child: const Text('⏹️ 结束', style: TextStyle(fontSize: 13)),
               ),
             ],
@@ -557,14 +629,17 @@ class _WalkPageState extends State<WalkPage> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: AppColors.mintLight,
-              border: Border.all(color: const Color(0xFFD0E9DC)),
+              border: Border.all(color: AppColors.mintLine),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               _elapsed.inMinutes > 0
-                ? '💡 已运动${_elapsed.inMinutes}分钟，记得适时补水'
-                : '💡 出发吧！记得带好拾便袋和水',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.mint),
+                  ? '💡 已运动${_elapsed.inMinutes}分钟，记得适时补水'
+                  : '💡 出发吧！记得带好拾便袋和水',
+              style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.mint),
               textAlign: TextAlign.center,
             ),
           ),
@@ -579,17 +654,27 @@ class _WalkPageState extends State<WalkPage> {
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
-            Text(label, style: TextStyle(fontSize: 10, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 10,
+                    color: AppColors.textSoft,
+                    fontWeight: FontWeight.w600)),
             const SizedBox(height: 3),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.mint)),
+                Text(value,
+                    style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.mint)),
                 if (unit.isNotEmpty) ...[
                   const SizedBox(width: 2),
-                  Text(unit, style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
+                  Text(unit,
+                      style:
+                          TextStyle(fontSize: 11, color: AppColors.textSoft)),
                 ],
               ],
             ),

@@ -21,7 +21,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
     {'name': '杂志风', 'color': const Color(0xFF7E57C2), 'icon': '📖'},
     {'name': '数据风', 'color': const Color(0xFF26C6DA), 'icon': '📊'},
     {'name': '夜景风', 'color': const Color(0xFF37474F), 'icon': '🌙'},
-    {'name': '生日风', 'color': const Color(0xFFFF8A65), 'icon': '🎂'},
+    {'name': '生日风', 'color': AppColors.coral, 'icon': '🎂'},
   ];
 
   @override
@@ -37,7 +37,9 @@ class _ShareCardPageState extends State<ShareCardPage> {
                 children: [
                   _buildCardPreview(),
                   const SizedBox(height: 20),
-                  const Text('选择模板', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                  const Text('选择模板',
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 10),
                   _buildTemplateSelector(),
                   const SizedBox(height: 16),
@@ -72,9 +74,14 @@ class _ShareCardPageState extends State<ShareCardPage> {
         children: [
           Row(
             children: [
-              Text(template['icon'] as String, style: const TextStyle(fontSize: 24)),
+              Text(template['icon'] as String,
+                  style: const TextStyle(fontSize: 24)),
               const SizedBox(width: 8),
-              const Text('宠动Keep', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+              const Text('宠动Keep',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white)),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -82,7 +89,11 @@ class _ShareCardPageState extends State<ShareCardPage> {
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text('🐕 遛狗', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                child: const Text('🐕 遛狗',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white)),
               ),
             ],
           ),
@@ -105,7 +116,8 @@ class _ShareCardPageState extends State<ShareCardPage> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildCardStat('${widget.record.duration.inMinutes}', '分钟'),
-              _buildCardStat('${widget.record.distance.toStringAsFixed(1)}', '公里'),
+              _buildCardStat(
+                  '${widget.record.distance.toStringAsFixed(1)}', '公里'),
               _buildCardStat('${widget.record.steps}', '步'),
             ],
           ),
@@ -113,11 +125,14 @@ class _ShareCardPageState extends State<ShareCardPage> {
           Text(
             (widget.record.locationName?.isEmpty ?? true)
                 ? ''
-                : (_showLocation ? '📍 ${widget.record.locationName!}' : '📍 位置已隐藏'),
+                : (_showLocation
+                    ? '📍 ${widget.record.locationName!}'
+                    : '📍 位置已隐藏'),
             style: const TextStyle(fontSize: 11, color: Colors.white70),
           ),
           const SizedBox(height: 8),
-          const Text('坚持运动，和宝贝一起健康成长', style: TextStyle(fontSize: 12, color: Colors.white70)),
+          const Text('坚持运动，和宝贝一起健康成长',
+              style: TextStyle(fontSize: 12, color: Colors.white70)),
         ],
       ),
     );
@@ -126,9 +141,14 @@ class _ShareCardPageState extends State<ShareCardPage> {
   Widget _buildCardStat(String value, String label) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Colors.white)),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.white70)),
+        Text(label,
+            style: const TextStyle(fontSize: 10, color: Colors.white70)),
       ],
     );
   }
@@ -160,9 +180,14 @@ class _ShareCardPageState extends State<ShareCardPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(template['icon'] as String, style: const TextStyle(fontSize: 20)),
+                  Text(template['icon'] as String,
+                      style: const TextStyle(fontSize: 20)),
                   const SizedBox(height: 3),
-                  Text(template['name'] as String, style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700)),
+                  Text(template['name'] as String,
+                      style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700)),
                 ],
               ),
             ),
@@ -217,7 +242,8 @@ class _ShareCardPageState extends State<ShareCardPage> {
           Expanded(
             child: ElevatedButton(
               onPressed: () async {
-                await Share.share('我在宠动Keep完成了${widget.record.duration.inMinutes}分钟的运动，一起来关注宠物健康吧！');
+                await Share.share(
+                    '我在宠动Keep完成了${widget.record.duration.inMinutes}分钟的运动，一起来关注宠物健康吧！');
               },
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.mint),
               child: const Text('📤 分享'),
@@ -244,8 +270,10 @@ class _CardRoutePainter extends CustomPainter {
 
     final path = Path()
       ..moveTo(10, size.height * 0.8)
-      ..quadraticBezierTo(size.width * 0.3, size.height * 0.3, size.width * 0.5, size.height * 0.6)
-      ..quadraticBezierTo(size.width * 0.7, size.height * 0.9, size.width * 0.85, size.height * 0.2)
+      ..quadraticBezierTo(size.width * 0.3, size.height * 0.3, size.width * 0.5,
+          size.height * 0.6)
+      ..quadraticBezierTo(size.width * 0.7, size.height * 0.9,
+          size.width * 0.85, size.height * 0.2)
       ..lineTo(size.width - 10, size.height * 0.4);
 
     canvas.drawPath(path, paint);
