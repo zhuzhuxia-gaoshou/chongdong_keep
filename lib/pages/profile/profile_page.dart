@@ -1,10 +1,11 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '../../theme/app_colors.dart';
+import '../../network/api_exception.dart';
+import '../../services/app_services.dart';
 import '../../services/app_state.dart';
-import '../../services/storage_service.dart';
+import '../../theme/app_colors.dart';
+import '../../widgets/user_avatar.dart';
 import '../pet/add_pet_page.dart';
 import '../pet/pet_detail_page.dart';
 import '../calendar/checkin_calendar_page.dart';
@@ -103,19 +104,11 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           Stack(
             children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.3),
-                  image: user?.avatarUrl != null
-                      ? DecorationImage(image: FileImage(File(user!.avatarUrl!)), fit: BoxFit.cover)
-                      : null,
-                ),
-                child: user?.avatarUrl == null
-                    ? const Center(child: Text('👩', style: TextStyle(fontSize: 32)))
-                    : null,
+              // 统一头像组件：兼容 emoji/本地路径/网络 URL 三态
+              UserAvatar(
+                url: user?.avatarUrl,
+                radius: 32,
+                fallbackEmoji: '👩',
               ),
               Positioned(
                 right: 0,
@@ -291,14 +284,18 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  /// 编辑资料底部弹窗：改头像（拍照/相册）+ 改昵称
+  /// 编辑资料底部弹窗：改头像（拍照/相册）+ 改昵称。
+  /// M1 流程：选图仅本地预览，点保存 → uploadAvatar → patchMe，
+  /// 以服务端回包为准提交（见《前端开发计划》§四）。
   void _showEditProfileSheet(BuildContext context) {
     final state = context.read<AppState>();
     final user = state.user;
     if (user == null) return;
 
     final nameController = TextEditingController(text: user.nickname);
-    String? avatarPath = user.avatarUrl;
+    XFile? pickedFile; // 新选的头像（未上传）
+    String? preview = user.avatarUrl; // 弹窗内头像预览源
+    bool saving = false;
 
     showModalBottomSheet(
       context: context,
@@ -306,6 +303,7 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) {
+          final messenger = ScaffoldMessenger.of(ctx);
           Future<void> pickImage(ImageSource source) async {
             try {
               final picked = await ImagePicker().pickImage(
@@ -314,14 +312,46 @@ class _ProfilePageState extends State<ProfilePage> {
                 maxWidth: 720,
               );
               if (picked == null) return;
-              final saved = await StorageService.savePickedImage(picked.path);
-              setSheetState(() => avatarPath = saved);
+              setSheetState(() {
+                pickedFile = picked;
+                preview = picked.path; // 本地临时路径仅供预览
+              });
             } catch (_) {
               if (ctx.mounted) {
                 ScaffoldMessenger.of(ctx).showSnackBar(
                   const SnackBar(content: Text('无法打开相机或相册，请检查权限')),
                 );
               }
+            }
+          }
+
+          Future<void> save() async {
+            final nickname = nameController.text.trim();
+            if (nickname.isEmpty) {
+              messenger.showSnackBar(const SnackBar(content: Text('昵称不能为空哦')));
+              return;
+            }
+            if (saving) return;
+            setSheetState(() => saving = true);
+            try {
+              String? avatarUrl;
+              if (pickedFile != null) {
+                avatarUrl =
+                    (await AppServices.instance.users.uploadAvatar(pickedFile!))
+                        .url;
+              }
+              final echo = await AppServices.instance.users
+                  .patchMe(nickname: nickname, avatarUrl: avatarUrl);
+              // ignore: use_build_context_synchronously
+              if (!ctx.mounted) return;
+              await ctx.read<AppState>().patchProfile(echo);
+              // ignore: use_build_context_synchronously
+              if (ctx.mounted) Navigator.pop(ctx);
+            } on ApiException catch (e) {
+              messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
+            } finally {
+              // 弹窗可能已随成功关闭而销毁；失败时恢复按钮
+              if (ctx.mounted) setSheetState(() => saving = false);
             }
           }
 
@@ -345,7 +375,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 16),
                       const Text('编辑资料', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                       const SizedBox(height: 20),
-                      // 头像预览
+                      // 头像预览（UserAvatar 兼容本地临时路径与历史 URL）
                       GestureDetector(
                         onTap: () => pickImage(ImageSource.camera),
                         child: Stack(
@@ -356,13 +386,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                 shape: BoxShape.circle,
                                 color: AppColors.mintLight,
                                 border: Border.all(color: AppColors.mint, width: 2),
-                                image: avatarPath != null
-                                    ? DecorationImage(image: FileImage(File(avatarPath!)), fit: BoxFit.cover)
-                                    : null,
                               ),
-                              child: avatarPath == null
-                                  ? const Center(child: Text('👩', style: TextStyle(fontSize: 40)))
-                                  : null,
+                              padding: const EdgeInsets.all(3),
+                              child: UserAvatar(
+                                url: preview,
+                                radius: 39,
+                                fallbackEmoji: '👩',
+                              ),
                             ),
                             Positioned(
                               right: 0,
@@ -407,19 +437,14 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            final nickname = nameController.text.trim();
-                            if (nickname.isEmpty) {
-                              ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('昵称不能为空哦')));
-                              return;
-                            }
-                            await ctx.read<AppState>().updateUser(
-                              user.copyWith(nickname: nickname, avatarUrl: avatarPath),
-                            );
-                            if (ctx.mounted) Navigator.pop(ctx);
-                          },
-                          child: const Text('保存'),
+                        child: ElevatedButton.icon(
+                          onPressed: saving ? null : save,
+                          icon: saving
+                              ? const SizedBox(
+                                  width: 16, height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2))
+                              : const Icon(Icons.check, size: 16),
+                          label: Text(saving ? '保存中…' : '保存'),
                         ),
                       ),
                     ],

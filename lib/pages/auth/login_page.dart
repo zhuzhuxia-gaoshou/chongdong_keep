@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../theme/app_colors.dart';
+import '../../network/api_exception.dart';
+import '../../services/app_services.dart';
 import '../../services/app_state.dart';
+import '../../theme/app_colors.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,6 +16,8 @@ class _LoginPageState extends State<LoginPage> {
   final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
   bool _agreed = false;
+  bool _sendingCode = false;
+  bool _busy = false;
   int _countdown = 0;
 
   @override
@@ -23,15 +27,26 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _sendCode() {
+  Future<void> _sendCode() async {
+    final messenger = ScaffoldMessenger.of(context);
     if (_phoneController.text.length != 11) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('请输入11位手机号')),
       );
       return;
     }
-    setState(() => _countdown = 60);
-    _tick();
+    if (_sendingCode || _countdown > 0) return;
+    setState(() => _sendingCode = true);
+    try {
+      await AppServices.instance.auth.sendSmsCode(_phoneController.text);
+      if (!mounted) return;
+      setState(() => _countdown = 60); // 成功后才启动倒计时
+      _tick();
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
+    } finally {
+      if (mounted) setState(() => _sendingCode = false);
+    }
   }
 
   void _tick() {
@@ -43,20 +58,36 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void _login() {
+  Future<void> _login() async {
+    final messenger = ScaffoldMessenger.of(context);
     if (!_agreed) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('请先同意用户协议和隐私政策')),
       );
       return;
     }
     if (_phoneController.text.length != 11 || _codeController.text.length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('请输入正确的手机号和验证码')),
       );
       return;
     }
-    context.read<AppState>().login(_phoneController.text);
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final result = await AppServices.instance.auth
+          .login(_phoneController.text, _codeController.text);
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(
+        content: Text(result.isNewUser ? '欢迎加入宠动Keep！' : '欢迎回来'),
+      ));
+      // ignore: use_build_context_synchronously
+      context.read<AppState>().applyLogin(result.user);
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
@@ -134,19 +165,26 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(width: 8),
                       GestureDetector(
-                        onTap: _countdown == 0 ? _sendCode : null,
+                        onTap:
+                            (_countdown == 0 && !_sendingCode) ? _sendCode : null,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                           decoration: BoxDecoration(
-                            color: _countdown == 0 ? AppColors.mintLight : AppColors.sand,
+                            color: (_countdown == 0 && !_sendingCode)
+                                ? AppColors.mintLight
+                                : AppColors.sand,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            _countdown == 0 ? '获取验证码' : '${_countdown}s',
+                            _sendingCode
+                                ? '发送中…'
+                                : (_countdown == 0 ? '获取验证码' : '${_countdown}s'),
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: _countdown == 0 ? AppColors.mint : AppColors.textMute,
+                              color: (_countdown == 0 && !_sendingCode)
+                                  ? AppColors.mint
+                                  : AppColors.textMute,
                             ),
                           ),
                         ),
@@ -159,9 +197,16 @@ class _LoginPageState extends State<LoginPage> {
               // 登录按钮
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _login,
-                  child: const Text('登录 / 注册'),
+                child: ElevatedButton.icon(
+                  onPressed: _busy ? null : _login,
+                  icon: _busy
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.pets, size: 16),
+                  label: Text(_busy ? '登录中…' : '登录 / 注册'),
                 ),
               ),
               const SizedBox(height: 16),

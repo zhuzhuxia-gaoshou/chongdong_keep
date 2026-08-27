@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/pet.dart';
 import '../models/user.dart';
 import '../models/exercise_record.dart';
+import '../network/api_exception.dart';
+import 'api_config.dart';
+import 'app_services.dart';
 import 'storage_service.dart';
 
 class AppState extends ChangeNotifier {
@@ -27,7 +30,26 @@ class AppState extends ChangeNotifier {
       _pets = await StorageService.loadPets();
       _records = await StorageService.loadRecords();
     }
+    // 服务端判定 refreshToken 失效时强制回登录页
+    AppServices.instance.api.onSessionExpired = _applySignedOut;
+    // Live 模式下静默复同步个人资料（Mock/测试环境不触发）
+    if (_isLoggedIn && ApiConfig.isLive) {
+      _syncMeSilently();
+    }
     notifyListeners();
+  }
+
+  /// 用服务端最新资料刷新本地（失败静默，沿用本地缓存）。
+  Future<void> _syncMeSilently() async {
+    try {
+      final fresh = await AppServices.instance.users.fetchMe();
+      if (!_isLoggedIn) return;
+      _user = fresh;
+      await StorageService.saveUser(fresh);
+      notifyListeners();
+    } on ApiException {
+      // 网络/会话异常均不阻塞启动流程
+    }
   }
 
   void setIndex(int index) {
@@ -35,15 +57,13 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login(String phone) async {
+  /// 登录成功后由登录页调用：以服务端返回的权威用户落地本地态。
+  Future<void> applyLogin(AppUser user) async {
     _isLoggedIn = true;
-    _user = AppUser(
-      id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-      phone: phone,
-      nickname: '铲屎官',
-      createdAt: DateTime.now(),
-    );
-    await StorageService.saveUser(_user!);
+    _user = user;
+    _pets = await StorageService.loadPets();
+    _records = await StorageService.loadRecords();
+    await StorageService.saveUser(user);
     notifyListeners();
   }
 
@@ -54,12 +74,33 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 用户主动登出：清本地态 + 通知服务端作废凭据（尽力而为）。
   Future<void> logout() async {
+    _applySignedOut();
+    try {
+      await AppServices.instance.auth.logout();
+    } catch (_) {
+      // 服务端失败不影响本地已登出
+    }
+  }
+
+  /// 会话被服务端判定失效（40104）时的强制登出回调入口。
+  void _applySignedOut() {
     _isLoggedIn = false;
     _user = null;
     _pets = [];
     _records = [];
-    await StorageService.clearAll();
+    notifyListeners();
+    // 尽力清理：token 与持久化数据，天气定位一并清除（可接受，见开发计划 §八）
+    StorageService.clearAll();
+    AppServices.instance.tokens.clear();
+  }
+
+  /// 个人资料编辑（M1）：以服务端回包为准写入本地。
+  Future<void> patchProfile(AppUser serverEcho) async {
+    if (!_isLoggedIn) return;
+    _user = serverEcho;
+    await StorageService.saveUser(serverEcho);
     notifyListeners();
   }
 

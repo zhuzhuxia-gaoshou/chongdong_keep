@@ -1,12 +1,13 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_colors.dart';
+import '../../services/api_config.dart';
 import '../../services/app_state.dart';
 import '../../services/storage_service.dart';
 import '../../services/weather_service.dart';
 import '../../services/map_service.dart';
 import '../../models/pet.dart';
+import '../../widgets/user_avatar.dart';
 import '../cat/cat_play_page.dart';
 import '../calendar/checkin_calendar_page.dart';
 import '../pet/add_pet_page.dart';
@@ -188,25 +189,30 @@ class _HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(colors: [AppColors.mintMid, AppColors.skyDeep]),
-                  image: state.user?.avatarUrl != null
-                      ? DecorationImage(image: FileImage(File(state.user!.avatarUrl!)), fit: BoxFit.cover)
-                      : null,
-                ),
-                child: state.user?.avatarUrl == null
-                    ? const Center(child: Text('👩', style: TextStyle(fontSize: 18)))
-                    : null,
-              ),
+              // 统一头像组件：兼容 emoji/本地路径/网络 URL 三态
+              UserAvatar(url: state.user?.avatarUrl, radius: 20, fallbackEmoji: '👩'),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(greeting, style: TextStyle(fontSize: 12, color: AppColors.textSoft, fontWeight: FontWeight.w500)),
+                  Row(
+                    children: [
+                      Text(greeting, style: TextStyle(fontSize: 12, color: AppColors.textSoft, fontWeight: FontWeight.w500)),
+                      // 仅 Mock 模式可见的环境角标（联调防呆）
+                      if (ApiConfig.isMock) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF3CD),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text('MOCK',
+                              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF8A6D3B))),
+                        ),
+                      ],
+                    ],
+                  ),
                   Text(state.user?.nickname ?? '铲屎官', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                 ],
               ),

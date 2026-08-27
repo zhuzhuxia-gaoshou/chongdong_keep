@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../services/api_config.dart';
+import '../../services/app_services.dart';
+import '../../services/app_state.dart';
 import '../../theme/app_colors.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -44,6 +48,8 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildNavTile('修改手机号', '当前: 138****8888', Icons.phone),
             _buildNavTile('注销账号', '删除所有数据和账号', Icons.person_off, isDanger: true),
           ]),
+          const SizedBox(height: 16),
+          _buildSection('开发环境', [_buildEnvTile()]),
           const SizedBox(height: 24),
           Center(
             child: TextButton(
@@ -156,6 +162,48 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  /// 开发环境行：显示当前 Mock/Live 与主机名，可一键测连通性（契约 ping）
+  Widget _buildEnvTile() {
+    final label = ApiConfig.isMock
+        ? 'MOCK（内置假数据）'
+        : '正式 · ${ApiConfig.liveHost ?? ApiConfig.apiBaseUrl}';
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          Icon(Icons.dns, size: 20, color: AppColors.textSoft),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('运行环境',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 2),
+                Text(label,
+                    style: TextStyle(fontSize: 11, color: AppColors.textMute)),
+              ],
+            ),
+          ),
+          TextButton.icon(
+            onPressed: _testConnection,
+            icon: const Icon(Icons.wifi_tethering, size: 16),
+            label: const Text('测试连接', style: TextStyle(fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _testConnection() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final ok = await AppServices.instance.api.ping();
+    messenger.showSnackBar(SnackBar(
+      content: Text(ok ? '服务正常' : '网络异常，暂时连不上服务'),
+    ));
+  }
+
   void _showLogoutConfirm() {
     showDialog(
       context: context,
@@ -165,9 +213,13 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.of(context).pushReplacementNamed('/login');
+            onPressed: () async {
+              final navigator = Navigator.of(ctx);
+              navigator.pop();
+              await context.read<AppState>().logout();
+              if (!mounted) return;
+              // 与"我的"页登出保持一致：回落到根（根会按登录态切到登录页）
+              Navigator.of(context).popUntil((r) => r.isFirst);
             },
             child: const Text('退出'),
           ),
