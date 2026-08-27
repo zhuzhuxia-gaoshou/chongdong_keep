@@ -4,6 +4,7 @@ import '../../network/api_exception.dart';
 import '../../services/app_services.dart';
 import '../../services/app_state.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimens.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -95,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppDimens.sp16),
           child: Column(
             children: [
               const SizedBox(height: 60),
@@ -105,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                 height: 80,
                 decoration: BoxDecoration(
                   color: AppColors.mintLight,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(AppDimens.rXl),
                 ),
                 child: const Center(
                   child: Text('🐾', style: TextStyle(fontSize: 40)),
@@ -130,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('手机号', style: TextStyle(fontSize: 12, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
+                  Text('手机号', style: TextStyle(fontSize: AppDimens.fsFoot, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _phoneController,
@@ -143,12 +144,12 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: AppDimens.sp16),
               // 验证码
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('验证码', style: TextStyle(fontSize: 12, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
+                  Text('验证码', style: TextStyle(fontSize: AppDimens.fsFoot, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
                   Row(
                     children: [
@@ -168,12 +169,14 @@ class _LoginPageState extends State<LoginPage> {
                         onTap:
                             (_countdown == 0 && !_sendingCode) ? _sendCode : null,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                          height: 48, // 与主题输入框精确等高
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: AppDimens.sp12),
                           decoration: BoxDecoration(
                             color: (_countdown == 0 && !_sendingCode)
                                 ? AppColors.mintLight
                                 : AppColors.sand,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppDimens.rMd),
                           ),
                           child: Text(
                             _sendingCode
@@ -213,32 +216,40 @@ class _LoginPageState extends State<LoginPage> {
               // 协议
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // 4px 透明热区，实际点击面积 ≥26px
                   GestureDetector(
                     onTap: () => setState(() => _agreed = !_agreed),
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: _agreed ? AppColors.mint : AppColors.textMute, width: 1.5),
-                        color: _agreed ? AppColors.mint : Colors.transparent,
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimens.sp4),
+                      child: Container(
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: _agreed ? AppColors.mint : AppColors.textMute, width: 1.5),
+                          color: _agreed ? AppColors.mint : Colors.transparent,
+                        ),
+                        child: _agreed
+                          ? const Icon(Icons.check, size: 13, color: Colors.white)
+                          : null,
                       ),
-                      child: _agreed
-                        ? const Icon(Icons.check, size: 12, color: Colors.white)
-                        : null,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Text.rich(
-                    TextSpan(
-                      text: '登录即同意',
-                      style: TextStyle(fontSize: 11, color: AppColors.textSoft),
-                      children: [
-                        TextSpan(text: '《用户协议》', style: TextStyle(color: AppColors.mint)),
-                        TextSpan(text: '和', style: TextStyle(color: AppColors.textSoft)),
-                        TextSpan(text: '《隐私政策》', style: TextStyle(color: AppColors.mint)),
-                      ],
+                  const SizedBox(width: AppDimens.sp4),
+                  Flexible(softWrap: true, child:
+                    child: Text.rich(
+                      softWrap: true,
+                      TextSpan(
+                        text: '登录即同意',
+                        style: TextStyle(fontSize: 11, color: AppColors.textSoft),
+                        children: [
+                          TextSpan(text: '《用户协议》', style: TextStyle(color: AppColors.mint)),
+                          TextSpan(text: '和', style: TextStyle(color: AppColors.textSoft)),
+                          TextSpan(text: '《隐私政策》', style: TextStyle(color: AppColors.mint)),
+                        ],
+                      ),
                     ),
                   ),
                 ],

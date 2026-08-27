@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_dimens.dart';
 import '../services/app_state.dart';
 import 'home/home_page.dart';
 import 'walk/walk_page.dart';
@@ -35,12 +36,12 @@ class MainPage extends StatelessWidget {
         children: pages,
       ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
+        decoration: const BoxDecoration(
+          color: AppColors.card,
           border: Border(top: BorderSide(color: AppColors.line, width: 1)),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(AppDimens.rXl),
+            topRight: Radius.circular(AppDimens.rXl),
           ),
         ),
         child: SafeArea(
@@ -106,11 +107,13 @@ class _TabItemState extends State<_TabItem> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          padding: EdgeInsets.symmetric(horizontal: selected ? 13 : 9, vertical: 5),
+          margin: const EdgeInsets.symmetric(horizontal: AppDimens.sp4),
+          padding: EdgeInsets.symmetric(
+              horizontal: selected ? AppDimens.sp12 : AppDimens.sp8,
+              vertical: 6),
           decoration: BoxDecoration(
             color: selected ? AppColors.mintLight : Colors.transparent,
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppDimens.rFull),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -125,7 +128,7 @@ class _TabItemState extends State<_TabItem> {
               AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 220),
                 style: TextStyle(
-                  fontSize: selected ? 11.5 : 11,
+                  fontSize: selected ? AppDimens.fsCaption + 1 : AppDimens.fsCaption,
                   fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                   color: selected ? AppColors.mint : AppColors.textMute,
                 ),
