@@ -238,7 +238,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(width: AppDimens.sp4),
-                  Flexible(softWrap: true, child:
+                  Flexible(
                     child: Text.rich(
                       softWrap: true,
                       TextSpan(
