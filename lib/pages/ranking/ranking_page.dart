@@ -8,7 +8,8 @@ class RankingPage extends StatefulWidget {
   State<RankingPage> createState() => _RankingPageState();
 }
 
-class _RankingPageState extends State<RankingPage> with SingleTickerProviderStateMixin {
+class _RankingPageState extends State<RankingPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -64,7 +65,11 @@ class _RankingPageState extends State<RankingPage> with SingleTickerProviderStat
 
   Widget _buildPodiumItem(int rank, String emoji, String name, int minutes) {
     final height = rank == 1 ? 90.0 : 70.0;
-    final color = rank == 1 ? AppColors.mint : rank == 2 ? AppColors.sand : AppColors.coralLight;
+    final color = rank == 1
+        ? AppColors.mint
+        : rank == 2
+            ? AppColors.sand
+            : AppColors.coralLight;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -75,7 +80,8 @@ class _RankingPageState extends State<RankingPage> with SingleTickerProviderStat
         ),
         const SizedBox(height: 6),
         Text(name, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-        Text('${minutes}分钟', style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
+        Text('${minutes}分钟',
+            style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
         const SizedBox(height: 4),
         Container(
           height: height,
@@ -85,7 +91,11 @@ class _RankingPageState extends State<RankingPage> with SingleTickerProviderStat
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
           ),
           child: Center(
-            child: Text('$rank', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
+            child: Text('$rank',
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white)),
           ),
         ),
       ],
@@ -108,7 +118,7 @@ class _RankingPageState extends State<RankingPage> with SingleTickerProviderStat
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: item['isMe'] as bool ? AppColors.mintLight : Colors.white,
+            color: item['isMe'] as bool ? AppColors.mintLight : AppColors.card,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: item['isMe'] as bool ? AppColors.mint : AppColors.line,
@@ -125,7 +135,9 @@ class _RankingPageState extends State<RankingPage> with SingleTickerProviderStat
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
-                  child: Text('${index + 4}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+                  child: Text('${index + 4}',
+                      style:
+                          TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -141,11 +153,13 @@ class _RankingPageState extends State<RankingPage> with SingleTickerProviderStat
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: item['isMe'] as bool ? AppColors.mint : AppColors.text,
+                    color:
+                        item['isMe'] as bool ? AppColors.mint : AppColors.text,
                   ),
                 ),
               ),
-              Text('${item['minutes']}分钟', style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+              Text('${item['minutes']}分钟',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
             ],
           ),
         );
@@ -158,7 +172,7 @@ class _RankingPageState extends State<RankingPage> with SingleTickerProviderStat
       padding: const EdgeInsets.all(12),
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: AppColors.line)),
-        color: Colors.white,
+        color: AppColors.card,
       ),
       child: Row(
         children: [
@@ -168,16 +182,23 @@ class _RankingPageState extends State<RankingPage> with SingleTickerProviderStat
               color: AppColors.mint,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text('第 2 名', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white)),
+            child: const Text('第 2 名',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white)),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('我的排行', style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
+                Text('我的排行',
+                    style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
                 const SizedBox(height: 2),
-                Text('本周累计运动 180 分钟', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                Text('本周累计运动 180 分钟',
+                    style:
+                        TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
               ],
             ),
           ),

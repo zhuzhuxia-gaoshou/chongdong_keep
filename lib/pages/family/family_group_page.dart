@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimens.dart';
 
 class FamilyGroupPage extends StatefulWidget {
   const FamilyGroupPage({super.key});
@@ -42,7 +43,7 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [AppColors.mint, Color(0xFF6BC89D)]),
+        gradient: AppColors.heroGradient,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -53,15 +54,24 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
               const Text('👨‍👩‍👧', style: TextStyle(fontSize: 28)),
               const SizedBox(width: 10),
               const Expanded(
-                child: Text('可乐的家', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
+                child: Text('可乐的家',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white)),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Text('管理员', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                child: const Text('管理员',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white)),
               ),
             ],
           ),
@@ -82,9 +92,14 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
   Widget _buildStat(String value, String label) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: Colors.white)),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.white70)),
+        Text(label,
+            style: const TextStyle(fontSize: 11, color: Colors.white70)),
       ],
     );
   }
@@ -93,7 +108,8 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('成员', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+        const Text('成员',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
         const SizedBox(height: 10),
         _buildMemberItem('我', '管理员', true, '👤'),
         _buildMemberItem('老婆', '照护者', false, '👩'),
@@ -103,7 +119,11 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
   }
 
   Widget _buildMemberItem(String name, String role, bool isMe, String emoji) {
-    final roleColor = role == '管理员' ? AppColors.mint : role == '照护者' ? AppColors.coral : AppColors.textSoft;
+    final roleColor = role == '管理员'
+        ? AppColors.mint
+        : role == '照护者'
+            ? AppColors.coral
+            : AppColors.textSoft;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -126,16 +146,23 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
               children: [
                 Row(
                   children: [
-                    Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                    Text(name,
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w700)),
                     if (isMe) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.mintLight,
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text('我', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.mint)),
+                        child: const Text('我',
+                            style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.mint)),
                       ),
                     ],
                   ],
@@ -144,12 +171,17 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: roleColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text(role, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: roleColor)),
+                      child: Text(role,
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: roleColor)),
                     ),
                   ],
                 ),
@@ -173,7 +205,8 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('共享宠物', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+        const Text('共享宠物',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
         const SizedBox(height: 10),
         Row(
           children: [
@@ -203,9 +236,13 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                  Text(name,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 2),
-                  Text(breed, style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
+                  Text(breed,
+                      style:
+                          TextStyle(fontSize: 11, color: AppColors.textSoft)),
                 ],
               ),
             ),
@@ -219,7 +256,8 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('权限说明', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+        const Text('权限说明',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
         const SizedBox(height: 10),
         _buildPermissionItem('管理员', '所有成员记录、修改角色、移除成员'),
         _buildPermissionItem('照护者', '记录运动、查看所有数据、不能修改设置'),
@@ -243,13 +281,19 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.mintLight,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(AppDimens.rSm),
             ),
-            child: Text(role, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.mint)),
+            child: Text(role,
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.mint)),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(desc, style: const TextStyle(fontSize: 12, color: AppColors.textSoft)),
+            child: Text(desc,
+                style:
+                    const TextStyle(fontSize: 12, color: AppColors.textSoft)),
           ),
         ],
       ),
@@ -272,7 +316,8 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 12),
-            const Text('或分享邀请链接', style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+            const Text('或分享邀请链接',
+                style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(10),
@@ -285,15 +330,21 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
                 children: [
                   Icon(Icons.link, size: 16, color: AppColors.mint),
                   SizedBox(width: 6),
-                  Text('复制邀请链接', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.mint)),
+                  Text('复制邀请链接',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.mint)),
                 ],
               ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx), child: const Text('发送邀请')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('发送邀请')),
         ],
       ),
     );

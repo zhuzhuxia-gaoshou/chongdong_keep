@@ -44,7 +44,7 @@ class BadgesPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [AppColors.mint, Color(0xFF6BC89D)]),
+        gradient: AppColors.heroGradient,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -55,9 +55,14 @@ class BadgesPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('已解锁 6 / 16 个徽章', style: TextStyle(fontSize: 14, color: Colors.white)),
+                    Text('已解锁 6 / 16 个徽章',
+                        style: TextStyle(fontSize: 14, color: Colors.white)),
                     SizedBox(height: 6),
-                    Text('继续加油！', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
+                    Text('继续加油！',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white)),
                   ],
                 ),
               ),
@@ -98,9 +103,14 @@ class BadgesPage extends StatelessWidget {
   Widget _buildHeaderStat(String value, String label) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Colors.white)),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.white70)),
+        Text(label,
+            style: const TextStyle(fontSize: 11, color: Colors.white70)),
       ],
     );
   }
@@ -113,7 +123,9 @@ class BadgesPage extends StatelessWidget {
           children: [
             Icon(icon, size: 18, color: AppColors.mint),
             const SizedBox(width: 8),
-            Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
           ],
         ),
         const SizedBox(height: 12),
@@ -130,7 +142,8 @@ class BadgesPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBadge(String name, String emoji, bool isUnlocked, String? progress) {
+  Widget _buildBadge(
+      String name, String emoji, bool isUnlocked, String? progress) {
     return Column(
       children: [
         Container(

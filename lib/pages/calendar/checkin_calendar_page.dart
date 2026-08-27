@@ -11,19 +11,23 @@ class CheckInCalendarPage extends StatefulWidget {
 }
 
 class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
-  DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  DateTime _currentMonth =
+      DateTime(DateTime.now().year, DateTime.now().month, 1);
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final checkIns = state.getMonthlyCheckIns(_currentMonth.year, _currentMonth.month);
+    final checkIns =
+        state.getMonthlyCheckIns(_currentMonth.year, _currentMonth.month);
     final today = DateTime.now();
     final checkedCount = checkIns.where((c) => c.isChecked).length;
     final signCards = state.user?.signCardCount ?? 3;
 
     final weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-    final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
-    final firstWeekday = DateTime(_currentMonth.year, _currentMonth.month, 1).weekday;
+    final daysInMonth =
+        DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
+    final firstWeekday =
+        DateTime(_currentMonth.year, _currentMonth.month, 1).weekday;
 
     return Scaffold(
       appBar: AppBar(title: const Text('📅 打卡日历')),
@@ -34,7 +38,8 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
             // 统计卡片
             Row(
               children: [
-                Expanded(child: _statCard('${state.user?.streakDays ?? 0}', '连续打卡')),
+                Expanded(
+                    child: _statCard('${state.user?.streakDays ?? 0}', '连续打卡')),
                 const SizedBox(width: 10),
                 Expanded(child: _statCard('$checkedCount', '本月打卡')),
                 const SizedBox(width: 10),
@@ -48,12 +53,16 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.chevron_left),
-                  onPressed: () => setState(() => _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1, 1)),
+                  onPressed: () => setState(() => _currentMonth =
+                      DateTime(_currentMonth.year, _currentMonth.month - 1, 1)),
                 ),
-                Text('${_currentMonth.year}年${_currentMonth.month}月', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                Text('${_currentMonth.year}年${_currentMonth.month}月',
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
                 IconButton(
                   icon: const Icon(Icons.chevron_right),
-                  onPressed: () => setState(() => _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 1)),
+                  onPressed: () => setState(() => _currentMonth =
+                      DateTime(_currentMonth.year, _currentMonth.month + 1, 1)),
                 ),
               ],
             ),
@@ -62,29 +71,41 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7, childAspectRatio: 1),
               itemCount: 7,
-              itemBuilder: (_, i) => Center(child: Text(weekdays[i], style: TextStyle(fontSize: 10, color: AppColors.textMute, fontWeight: FontWeight.w600))),
+              itemBuilder: (_, i) => Center(
+                  child: Text(weekdays[i],
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textMute,
+                          fontWeight: FontWeight.w600))),
             ),
             // 日历网格
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7, childAspectRatio: 1),
               itemCount: firstWeekday + daysInMonth,
               itemBuilder: (_, i) {
                 if (i < firstWeekday) return const SizedBox();
                 final day = i - firstWeekday + 1;
-                final date = DateTime(_currentMonth.year, _currentMonth.month, day);
+                final date =
+                    DateTime(_currentMonth.year, _currentMonth.month, day);
                 final isChecked = checkIns[day - 1].isChecked;
-                final isToday = date.year == today.year && date.month == today.month && date.day == today.day;
+                final isToday = date.year == today.year &&
+                    date.month == today.month &&
+                    date.day == today.day;
 
                 return Container(
                   margin: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     color: isChecked ? AppColors.mintLight : AppColors.card,
                     border: Border.all(
-                      color: isToday ? AppColors.mint : (isChecked ? AppColors.mint : AppColors.line),
+                      color: isToday
+                          ? AppColors.mint
+                          : (isChecked ? AppColors.mint : AppColors.line),
                       width: isToday ? 2 : 1,
                     ),
                     borderRadius: BorderRadius.circular(10),
@@ -108,7 +129,7 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: AppColors.coralLight,
-                border: Border.all(color: const Color(0xFFFFD9C8)),
+                border: Border.all(color: AppColors.coralLine),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -117,15 +138,22 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('🎫 补签卡', style: TextStyle(fontSize: 12, color: AppColors.coral, fontWeight: FontWeight.w700)),
-                      Text('使用补签卡恢复连续天数', style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
+                      Text('🎫 补签卡',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.coral,
+                              fontWeight: FontWeight.w700)),
+                      Text('使用补签卡恢复连续天数',
+                          style: TextStyle(
+                              fontSize: 10, color: AppColors.textSoft)),
                     ],
                   ),
                   ElevatedButton(
                     onPressed: signCards > 0 ? () {} : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.coral,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
                     ),
                     child: const Text('补签', style: TextStyle(fontSize: 12)),
                   ),
@@ -148,9 +176,14 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
       ),
       child: Column(
         children: [
-          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.mint)),
+          Text(value,
+              style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.mint)),
           const SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
+          Text(label,
+              style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
         ],
       ),
     );

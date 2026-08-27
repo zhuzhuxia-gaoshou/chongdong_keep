@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimens.dart';
 
 class WeeklyReportPage extends StatelessWidget {
   const WeeklyReportPage({super.key});
@@ -39,8 +40,8 @@ class WeeklyReportPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [AppColors.mint, Color(0xFF6BC89D)]),
-        borderRadius: BorderRadius.circular(18),
+        gradient: AppColors.heroGradient,
+        borderRadius: BorderRadius.circular(AppDimens.rLg),
       ),
       child: Column(
         children: [
@@ -50,18 +51,28 @@ class WeeklyReportPage extends StatelessWidget {
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('本周健康报告', style: TextStyle(fontSize: 13, color: Colors.white70)),
+                  Text('本周健康报告',
+                      style: TextStyle(fontSize: 13, color: Colors.white70)),
                   SizedBox(height: 4),
-                  Text('可乐 & 咪咪', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+                  Text('可乐 & 咪咪',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white)),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text('8.20-8.26', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                child: const Text('8.20-8.26',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white)),
               ),
             ],
           ),
@@ -69,14 +80,23 @@ class WeeklyReportPage extends StatelessWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('A+', style: TextStyle(fontSize: 56, fontWeight: FontWeight.w900, color: Colors.white)),
+              Text('A+',
+                  style: TextStyle(
+                      fontSize: 56,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white)),
               SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('综合评分', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                  Text('综合评分',
+                      style: TextStyle(fontSize: 12, color: Colors.white70)),
                   SizedBox(height: 4),
-                  Text('优秀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
+                  Text('优秀',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white)),
                 ],
               ),
             ],
@@ -101,9 +121,14 @@ class WeeklyReportPage extends StatelessWidget {
       children: [
         Text(emoji, style: const TextStyle(fontSize: 16)),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Colors.white)),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.white70)),
+        Text(label,
+            style: const TextStyle(fontSize: 10, color: Colors.white70)),
       ],
     );
   }
@@ -111,16 +136,21 @@ class WeeklyReportPage extends StatelessWidget {
   Widget _buildDataOverview() {
     return Row(
       children: [
-        Expanded(child: _buildOverviewCard('连续打卡', '7天', '🔥', AppColors.coralLight)),
+        Expanded(
+            child:
+                _buildOverviewCard('连续打卡', '7天', '🔥', AppColors.coralLight)),
         const SizedBox(width: 10),
-        Expanded(child: _buildOverviewCard('目标达成', '100%', '🎯', AppColors.mintLight)),
+        Expanded(
+            child:
+                _buildOverviewCard('目标达成', '100%', '🎯', AppColors.mintLight)),
         const SizedBox(width: 10),
         Expanded(child: _buildOverviewCard('好友排名', '第2', '🏆', AppColors.sand)),
       ],
     );
   }
 
-  Widget _buildOverviewCard(String label, String value, String emoji, Color bgColor) {
+  Widget _buildOverviewCard(
+      String label, String value, String emoji, Color bgColor) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -132,9 +162,12 @@ class WeeklyReportPage extends StatelessWidget {
         children: [
           Text(emoji, style: const TextStyle(fontSize: 20)),
           const SizedBox(height: 6),
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+          Text(value,
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
           const SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
+          Text(label,
+              style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
         ],
       ),
     );
@@ -156,15 +189,20 @@ class WeeklyReportPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('每日运动时长', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+              const Text('每日运动时长',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.mintLight,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(AppDimens.rSm),
                 ),
-                child: const Text('单位: 分钟', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.mint)),
+                child: const Text('单位: 分钟',
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.mint)),
               ),
             ],
           ),
@@ -175,7 +213,8 @@ class WeeklyReportPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: List.generate(7, (i) {
                 final height = values[i] / 100 * 100;
-                final isMax = values[i] == values.reduce((a, b) => a > b ? a : b);
+                final isMax =
+                    values[i] == values.reduce((a, b) => a > b ? a : b);
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -186,11 +225,14 @@ class WeeklyReportPage extends StatelessWidget {
                           height: height,
                           decoration: BoxDecoration(
                             color: isMax ? AppColors.mint : AppColors.sand,
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(AppDimens.rSm)),
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Text(days[i], style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
+                        Text(days[i],
+                            style: TextStyle(
+                                fontSize: 10, color: AppColors.textSoft)),
                       ],
                     ),
                   ),
@@ -207,7 +249,8 @@ class WeeklyReportPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('宠物本周表现', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+        const Text('宠物本周表现',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
         const SizedBox(height: 10),
         _buildPetRankItem('🐕', '可乐', '425分钟', '7天打卡', true),
         const SizedBox(height: 8),
@@ -216,13 +259,16 @@ class WeeklyReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPetRankItem(String emoji, String name, String minutes, String days, bool isTop) {
+  Widget _buildPetRankItem(
+      String emoji, String name, String minutes, String days, bool isTop) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isTop ? AppColors.mint : AppColors.line, width: isTop ? 2 : 1),
+        border: Border.all(
+            color: isTop ? AppColors.mint : AppColors.line,
+            width: isTop ? 2 : 1),
       ),
       child: Row(
         children: [
@@ -234,7 +280,9 @@ class WeeklyReportPage extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                    Text(name,
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w700)),
                     if (isTop) ...[
                       const SizedBox(width: 6),
                       const Text('👑', style: TextStyle(fontSize: 14)),
@@ -244,9 +292,15 @@ class WeeklyReportPage extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(minutes, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.mint)),
+                    Text(minutes,
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.mint)),
                     const SizedBox(width: 10),
-                    Text(days, style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
+                    Text(days,
+                        style:
+                            TextStyle(fontSize: 11, color: AppColors.textSoft)),
                   ],
                 ),
               ],
@@ -263,7 +317,7 @@ class WeeklyReportPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.coralLight.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFFE0D6)),
+        border: Border.all(color: AppColors.coralLine),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +326,11 @@ class WeeklyReportPage extends StatelessWidget {
             children: [
               Text('💡', style: TextStyle(fontSize: 16)),
               SizedBox(width: 6),
-              Text('AI健康建议', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.coral)),
+              Text('AI健康建议',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.coral)),
             ],
           ),
           SizedBox(height: 10),
@@ -291,7 +349,7 @@ class WeeklyReportPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.mintLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD0E9DC)),
+        border: Border.all(color: AppColors.mintLine),
       ),
       child: Row(
         children: [
@@ -299,9 +357,14 @@ class WeeklyReportPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('分享本周报告', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.mint)),
+                Text('分享本周报告',
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.mint)),
                 SizedBox(height: 4),
-                Text('生成精美卡片分享给朋友', style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
+                Text('生成精美卡片分享给朋友',
+                    style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
               ],
             ),
           ),
