@@ -8,17 +8,19 @@ import 'package:chongdong_keep/network/transport.dart';
 /// 可脚本化的假传输层：按 (method,path) 消费响应队列；记录全部请求。
 class FakeTransport implements Transport {
   final _queue = <String, List<Object>>{}; // 响应：Map=信封 / ApiException=故障
-  final requests = <({String method, String path, Map<String, String>? headers})>[];
+  final requests =
+      <({String method, String path, Map<String, String>? headers})>[];
 
   void enqueue(String key, Object response) =>
       (_queue[key] ??= []).add(response);
 
-  int count(String path) =>
-      requests.where((r) => r.path == path).length;
+  int count(String path) => requests.where((r) => r.path == path).length;
 
   @override
   Future<Map<String, dynamic>?> send(String method, String path,
-      {Object? body, Map<String, String>? query, Map<String, String>? headers}) async {
+      {Object? body,
+      Map<String, String>? query,
+      Map<String, String>? headers}) async {
     requests.add((method: method, path: path, headers: headers));
     final next = (_queue['$method $path'] ?? []).isEmpty
         ? null
@@ -40,6 +42,7 @@ class FakeTransport implements Transport {
 
 const ok = {'code': 0, 'data': {}};
 const expired = {'code': 40101};
+const gatewayDenied = {'code': 40100}; // 联调实测：网关对无效 token 回 40100
 Map<String, dynamic> refreshed({String access = 'v2', String refresh = 'r2'}) =>
     {
       'code': 0,
@@ -100,6 +103,46 @@ void main() {
     expect(t.requests.last.headers?['Authorization'], 'Bearer v2b');
   });
 
+  test('网关 40100（非契约 40101）同样触发刷新重放', () async {
+    final t = FakeTransport()
+      ..enqueue('GET /x', gatewayDenied)
+      ..enqueue('POST /api/v1/auth/refresh', refreshed())
+      ..enqueue('GET /x', ok);
+    final store = await freshStore();
+    await seedAccess(store);
+    final client = ApiClient(t, store);
+
+    unwrapEnvelope(await client.get('/x'));
+
+    expect(t.count('/api/v1/auth/refresh'), 1);
+    expect(t.requests.last.headers?['Authorization'], 'Bearer v2');
+  });
+
+  test('refresh 回包 expiresIn 为字符串 → 容错解析并按值续期', () async {
+    final t = FakeTransport()
+      ..enqueue('GET /x', expired)
+      ..enqueue('POST /api/v1/auth/refresh', {
+        'code': 0,
+        'data': {
+          'accessToken': 'v2',
+          'refreshToken': 'r2',
+          'expiresIn': '60', // 联调实测服务端发字符串
+        },
+      })
+      ..enqueue('GET /x', ok);
+    final store = await freshStore();
+    await seedAccess(store);
+    final client = ApiClient(t, store);
+
+    await client.get('/x');
+
+    final saved = await store.read();
+    expect(saved?.accessToken, 'v2');
+    final lead = saved!.expiresAtMs - DateTime.now().millisecondsSinceEpoch;
+    expect(lead, greaterThan(30 * 1000), reason: '字符串 60 应被解析为 60 秒');
+    expect(lead, lessThan(61 * 1000));
+  });
+
   test('刷新返回 40104 → 清 token、触发 onSessionExpired、上抛登录过期', () async {
     final t = FakeTransport()
       ..enqueue('GET /x', expired)
@@ -108,8 +151,7 @@ void main() {
     final store = await freshStore();
     await seedAccess(store);
     var signOuts = 0;
-    final client = ApiClient(t, store)
-      ..onSessionExpired = () => signOuts++;
+    final client = ApiClient(t, store)..onSessionExpired = () => signOuts++;
 
     await expectLater(
       client.get('/x'),
@@ -123,13 +165,11 @@ void main() {
   test('刷新期间网络故障 → 不清登录态、不登出、原样上抛', () async {
     final t = FakeTransport()
       ..enqueue('GET /x', expired)
-      ..enqueue(
-          'POST /api/v1/auth/refresh', ApiException(-1, 'network down'));
+      ..enqueue('POST /api/v1/auth/refresh', ApiException(-1, 'network down'));
     final store = await freshStore();
     await seedAccess(store);
     var signOuts = 0;
-    final client = ApiClient(t, store)
-      ..onSessionExpired = () => signOuts++;
+    final client = ApiClient(t, store)..onSessionExpired = () => signOuts++;
 
     await expectLater(client.get('/x'), throwsA(isA<ApiException>()));
     final kept = await store.read();

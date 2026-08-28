@@ -2,11 +2,12 @@ import 'token_store.dart';
 import 'transport.dart';
 import 'api_exception.dart';
 
-/// 统一 API 客户端：Bearer 注入、40101 单飞刷新并重放一次、会话失效回调。
+/// 统一 API 客户端：Bearer 注入、鉴权失效单飞刷新并重放一次、会话失效回调。
 ///
 /// 业务错误码不做解释（交给各 Repository 调 [unwrapEnvelope]）；
-/// 仅 40101 触发刷新链路，且同一时刻并发多个失败请求只会触发一次刷新
-/// （单飞保证）；刷新后重放**至多一次**。刷新请求直连 transport，
+/// 40101/40100（联调实测网关用后者回无效 token）触发刷新链路，
+/// 且同一时刻并发多个失败请求只会触发一次刷新（单飞保证）；
+/// 刷新后重放**至多一次**。刷新请求直连 transport，
 /// 不经过本类鉴权管道，天然避免递归。
 class ApiClient {
   ApiClient(this._transport, this._tokens);
@@ -91,8 +92,10 @@ class ApiClient {
       try {
         envelope = bytes != null
             ? await _transport.sendMultipart(path,
-                bytes: bytes, filename: filename ?? 'file.bin',
-                fields: fields, headers: headers)
+                bytes: bytes,
+                filename: filename ?? 'file.bin',
+                fields: fields,
+                headers: headers)
             : await _transport.send(method, path,
                 body: body, query: query, headers: headers);
       } on ApiException {
@@ -101,9 +104,12 @@ class ApiClient {
       }
 
       final rawCode = envelope?['code'];
-      final code =
-          rawCode is int ? rawCode : int.tryParse('${rawCode ?? ''}');
-      final expired = code == kCodeAccessExpired;
+      final code = rawCode is int ? rawCode : int.tryParse('${rawCode ?? ''}');
+      // 契约定义 40101=access 过期；联调实测网关对无效/损坏 token 返回
+      // 40100 —— 两者都按"可恢复鉴权错误"进入刷新重放链路（40102/40103
+      // 只出现在匿名认证接口，天然不在本路径）。
+      final expired =
+          code == kCodeAccessExpired || code == kCodeUnauthorizedGeneric;
 
       // 仅"本就携带凭据的请求"才进入刷新链路；匿名请求的 40101
       // （如未登录调受保护接口）原样上抛，由上层按业务错误处理。
@@ -144,7 +150,7 @@ class ApiClient {
       final data = unwrapEnvelope(envelope);
       final access = data['accessToken'] as String?;
       final refresh = data['refreshToken'] as String?;
-      final expiresIn = data['expiresIn'] as int? ?? 3600;
+      final expiresIn = asIntOrDefault(data['expiresIn'], or: 3600);
       if (access == null ||
           access.isEmpty ||
           refresh == null ||
@@ -155,8 +161,9 @@ class ApiClient {
       final next = SessionTokens(
         accessToken: access,
         refreshToken: refresh,
-        expiresAtMs:
-            DateTime.now().add(Duration(seconds: expiresIn)).millisecondsSinceEpoch,
+        expiresAtMs: DateTime.now()
+            .add(Duration(seconds: expiresIn))
+            .millisecondsSinceEpoch,
       );
       _cached = next;
       await _tokens.save(next);

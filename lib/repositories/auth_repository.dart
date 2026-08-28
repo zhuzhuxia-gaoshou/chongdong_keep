@@ -32,7 +32,7 @@ class AuthRepository {
       accessToken: data['accessToken'] as String,
       refreshToken: data['refreshToken'] as String,
       expiresAtMs: DateTime.now()
-          .add(Duration(seconds: (data['expiresIn'] as int?) ?? 3600))
+          .add(Duration(seconds: asIntOrDefault(data['expiresIn'], or: 3600)))
           .millisecondsSinceEpoch,
     );
     await _tokens.save(tokens);
