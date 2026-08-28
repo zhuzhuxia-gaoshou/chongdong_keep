@@ -11,6 +11,7 @@ import '../../services/storage_service.dart';
 import '../../widgets/tencent_map_widget.dart';
 import '../../models/pet.dart';
 import '../../models/exercise_record.dart';
+import '../../utils/uuid.dart';
 import '../share/share_card_page.dart';
 
 class WalkPage extends StatefulWidget {
@@ -220,6 +221,7 @@ class _WalkPageState extends State<WalkPage> {
     for (final petId in _selectedPets) {
       final record = ExerciseRecord(
         id: 'rec_${now.millisecondsSinceEpoch}_$petId',
+        clientRecordId: newUuidV4(), // ⑭ 上报幂等键（契约 §4.6）
         petId: petId,
         userId: state.user?.id ?? '',
         type: ExerciseType.walkDog,

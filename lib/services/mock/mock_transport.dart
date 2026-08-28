@@ -95,6 +95,10 @@ class MockTransport implements Transport {
     ],
   };
 
+  /// userId -> 运动记录行（契约 §4.6，行为 wire 格式；
+  /// clientRecordId 为幂等索引，重复提交返回既有行+duplicated 标记）
+  final Map<String, List<Map<String, dynamic>>> _recordsByUser = {};
+
   static Map<String, dynamic> _seedUser({
     required String id,
     required String phoneMasked,
@@ -219,6 +223,14 @@ class MockTransport implements Transport {
                   ? {'code': kCodePetNotFound, 'message': '缺少宠物 id'}
                   : _deletePet(petId, headers);
           }
+        }
+        if (path == '/api/v1/exercise-records') {
+          return method == 'POST'
+              ? _createRecord(body, headers)
+              : _listRecords(query, headers);
+        }
+        if (path == '/api/v1/checkins/calendar' && method == 'GET') {
+          return _calendar(query, headers);
         }
         throw ApiException(kCodeServerErrorBase, 'Mock 未实现该接口: $path');
     }
@@ -548,6 +560,212 @@ class MockTransport implements Transport {
         }
         return {'code': 0, 'data': <String, dynamic>{}}; // 软删：列表不再出现
       });
+
+  // ---- 运动记录（契约 ⑭⑮，幂等）----
+
+  Map<String, dynamic> _requireRecords(Map<String, String>? headers,
+      Map<String, dynamic> Function(String userId) handle) {
+    final userId = _userIdFromAuth(headers);
+    if (userId == null) {
+      return {'code': kCodeAccessExpired, 'message': '登录已过期'};
+    }
+    return handle(userId);
+  }
+
+  Map<String, dynamic> _createRecord(
+          Object? body, Map<String, String>? headers) =>
+      _requireRecords(headers, (userId) {
+        final map = (body as Map?)?.cast<String, dynamic>();
+        if (map == null) {
+          return {'code': kCodeParamInvalid, 'message': '请求体不能为空'};
+        }
+        final clientRecordId = map['clientRecordId'] as String?;
+        if (clientRecordId == null || clientRecordId.trim().isEmpty) {
+          return {'code': kCodeParamInvalid, 'message': '缺少幂等键 clientRecordId'};
+        }
+        final mine = _recordsByUser.putIfAbsent(userId, () => []);
+        // 幂等：同 clientRecordId 已入库 → 直接回既有行（附 duplicated 标记）
+        for (final row in mine) {
+          if (row['clientRecordId'] == clientRecordId) {
+            return {
+              'code': 0,
+              'data': {...Map<String, dynamic>.of(row), 'duplicated': true},
+            };
+          }
+        }
+        // 归属校验
+        final petId = map['petId'] as String?;
+        final denied =
+            _ownershipError(petId == null ? null : _findPetAny(petId), userId);
+        if (denied != null) return denied;
+        // 起止校验
+        final start = DateTime.tryParse('${map['startTime'] ?? ''}');
+        final end = DateTime.tryParse('${map['endTime'] ?? ''}');
+        if (start == null || end == null || !end.isAfter(start)) {
+          return {'code': kCodeParamInvalid, 'message': '结束时间须晚于开始时间'};
+        }
+        final type = (map['type'] as String?) ?? 'walkDog';
+        final isManual = map['isManual'] as bool? ?? false;
+        final rawRoute = (map['route'] as List?) ?? const [];
+        if (rawRoute.isEmpty && type != 'catPlay' && !isManual) {
+          return {
+            'code': kCodeParamInvalid,
+            'message': '遛狗记录必须携带轨迹点'
+          };
+        }
+        final distance = (map['distance'] as num?)?.toDouble() ?? 0.0;
+        final duration = _asInt(map['duration']) ??
+            end.difference(start).inSeconds;
+        final row = <String, dynamic>{
+          'id': 'r_${nowMs()}',
+          'clientRecordId': clientRecordId,
+          'petId': petId,
+          'userId': userId,
+          'type': type,
+          'startTime': map['startTime'],
+          'endTime': map['endTime'],
+          'duration': duration,
+          'distance': distance,
+          'steps': _asInt(map['steps']) ?? (distance * 1000 / 0.5).round(),
+          'route': rawRoute,
+          'locationName': map['locationName'],
+          'startPhotoUrl': map['startPhotoUrl'],
+          'isCompleted': map['isCompleted'] as bool? ?? true,
+          'isManual': isManual,
+          'createdAt': formatIsoWithOffset(now()),
+        };
+        mine.add(row);
+        return {'code': 0, 'data': Map<String, dynamic>.of(row)};
+      });
+
+  Map<String, dynamic> _listRecords(
+          Map<String, String>? query, Map<String, String>? headers) =>
+      _requireRecords(headers, (userId) {
+        final mine = _recordsByUser[userId] ?? const [];
+        final petId = query?['petId'];
+        final type = query?['type'];
+        final startDate = _dateOnlyOf(query?['startDate']);
+        final endDate = _dateOnlyOf(query?['endDate']);
+        final page = int.tryParse(query?['page'] ?? '') ?? 1;
+        final pageSize = (int.tryParse(query?['pageSize'] ?? '') ?? 20)
+            .clamp(1, 100);
+
+        var filtered = mine.where((row) {
+          if (petId != null && row['petId'] != petId) return false;
+          if (type != null && row['type'] != type) return false;
+          final d = _dateOnlyOf(_isoDate(row['startTime']));
+          if (d == null) return true;
+          if (startDate != null && d.isBefore(startDate)) return false;
+          if (endDate != null && d.isAfter(endDate)) return false;
+          return true;
+        }).toList()
+          ..sort((a, b) =>
+              _compareIso(b['startTime'], a['startTime'])); // startTime 倒序
+
+        final total = filtered.length;
+        final lo = ((page - 1) * pageSize).clamp(0, total);
+        final hi = (lo + pageSize).clamp(0, total);
+        final pageRows = filtered.sublist(lo, hi)
+            .map(_thinRouteForList)
+            .toList();
+        return {
+          'code': 0,
+          'data': {
+            'list': pageRows,
+            'total': total,
+            'page': page,
+            'pageSize': pageSize,
+          },
+        };
+      });
+
+  /// 列表接口抽稀轨迹（契约 ⑮：仅回部分点控流量，全量走 ⑯ 详情）。
+  Map<String, dynamic> _thinRouteForList(Map<String, dynamic> row) {
+    final route = row['route'] as List? ?? const [];
+    if (route.length <= 50) return Map<String, dynamic>.of(row);
+    final out = <Object?>[];
+    for (var i = 0; i < route.length; i += 50) {
+      out.add(route[i]);
+    }
+    return {...Map<String, dynamic>.of(row), 'route': out};
+  }
+
+  static String? _isoDate(Object? v) => v is String ? v : null;
+
+  static int _compareIso(Object? a, Object? b) {
+    final da = DateTime.tryParse('${a ?? ''}');
+    final db = DateTime.tryParse('${b ?? ''}');
+    if (da == null && db == null) return 0;
+    if (da == null) return 1;
+    if (db == null) return -1;
+    return da.compareTo(db);
+  }
+
+  static DateTime? _dateOnlyOf(String? iso) {
+    final d = DateTime.tryParse(iso ?? '');
+    return d == null ? null : DateTime(d.year, d.month, d.day);
+  }
+
+  // ---- 打卡日历（契约 ⑰；判定同 §4.7：完成且≥300秒，不限类型）----
+
+  Map<String, dynamic> _calendar(
+          Map<String, String>? query, Map<String, String>? headers) =>
+      _requireRecords(headers, (userId) {
+        final year = int.tryParse(query?['year'] ?? '') ?? now().year;
+        final month = int.tryParse(query?['month'] ?? '') ?? now().month;
+        final daysInMonth = DateTime(year, month + 1, 0).day;
+        final checked = <int>{};
+        for (final row in _recordsByUser[userId] ?? const []) {
+          if (row['isCompleted'] != true) continue;
+          if ((_asInt(row['duration']) ?? 0) < 300) continue;
+          final d = _dateOnlyOf('${row['startTime'] ?? ''}');
+          if (d != null && d.year == year && d.month == month) {
+            checked.add(d.day);
+          }
+        }
+        final days = List.generate(daysInMonth, (i) {
+          final dom = i + 1;
+          return {
+            'date': '${year.toString().padLeft(4, '0')}-'
+                '${month.toString().padLeft(2, '0')}-'
+                '${dom.toString().padLeft(2, '0')}',
+            'isChecked': checked.contains(dom),
+          };
+        });
+        return {
+          'code': 0,
+          'data': {
+            'days': days,
+            'monthCheckedCount': checked.length,
+            'streakDays': _streak(userId),
+          },
+        };
+      });
+
+  /// 截至最近的连续打卡天数（从昨天或今天往前数连续命中）。
+  int _streak(String userId) {
+    final rows = _recordsByUser[userId] ?? const [];
+    final dates = <DateTime>{};
+    for (final row in rows) {
+      if (row['isCompleted'] != true) continue;
+      if ((_asInt(row['duration']) ?? 0) < 300) continue;
+      final d = _dateOnlyOf('${row['startTime'] ?? ''}');
+      if (d != null) dates.add(d);
+    }
+    if (dates.isEmpty) return 0;
+    DateTime prev(DateTime d) => DateTime(d.year, d.month, d.day - 1);
+    var cursor = DateTime(now().year, now().month, now().day);
+    // 今天尚未打卡则从昨天起算
+    if (!dates.contains(cursor)) {
+      cursor = prev(cursor);
+    }
+    var streak = 0;
+    while (dates.contains(cursor)) {
+      streak++;
+      cursor = prev(cursor);
+    }
+    return streak;
+  }
 
   // ---- 测试辅助 ----
 

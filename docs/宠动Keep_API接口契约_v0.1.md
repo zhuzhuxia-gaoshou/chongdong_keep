@@ -47,10 +47,10 @@
 | 11 | PATCH | `/api/v1/pets/{petId}` | 编辑宠物 | ✅ | P0 | 草稿 |
 | 12 | DELETE | `/api/v1/pets/{petId}` | 删除宠物（软删除） | ✅ | P0 | 草稿 |
 | 13 | POST | `/api/v1/upload` | 图片上传（multipart） | ✅ | P0 | 草稿 |
-| 14 | POST | `/api/v1/exercise-records` | 上报一条完整运动记录 | ✅ | P0 | 草稿 |
-| 15 | GET | `/api/v1/exercise-records` | 查询运动记录（分页） | ✅ | P0 | 后端已实现 |
+| 14 | POST | `/api/v1/exercise-records` | 上报一条完整运动记录 | ✅ | P0 | 前端已对接（Mock 已实现，待后端 ⑭ 落地） |
+| 15 | GET | `/api/v1/exercise-records` | 查询运动记录（分页） | ✅ | P0 | 前端已对接 |
 | 16 | GET | `/api/v1/exercise-records/{id}` | 记录详情（含全量轨迹） | ✅ | P0 | 草稿 |
-| 17 | GET | `/api/v1/checkins/calendar` | 月历打卡数据 | ✅ | P0 | 草稿 |
+| 17 | GET | `/api/v1/checkins/calendar` | 月历打卡数据 | ✅ | P0 | 前端已对接（Mock 已实现，待后端 ⑰ 落地） |
 | 18 | GET | `/api/v1/checkins/today` | 今日打卡状态 | ✅ | P1 | 草稿 |
 | 19 | POST | `/api/v1/checkins/makeup` | 使用补签卡补签 | ✅ | P1 | 草稿 |
 | 20 | GET | `/api/v1/stats/weekly` | 周报聚合 | ✅ | P1 | 草稿 |
@@ -285,7 +285,9 @@ Mock 假后端不受此影响，仍用固定码 `123456`。
 
 ### 4.7 打卡
 
-判定规则（服务端执行）：**当日存在任一条 `type=walkDog && isCompleted && duration≥300秒` 的记录即视为打卡**。与前端现有 `canCheckIn`（≥5 分钟）逻辑一致。
+判定规则（服务端执行）：**当日存在任一条 `isCompleted && duration≥300秒` 的记录即视为打卡**。
+
+> ⚠️ v0.2 修订（2026-08-28，M3 前端对接时发现）：原写 `type=walkDog` 有误——产品既有语义与猫玩页文案「满5分钟即算今日打卡成功」均按**不限运动类型**判定，遛狗和猫玩达标都计入打卡。前端 `countsAsCheckIn = isCompleted && duration.inSeconds>=300` 已按不限类型实现。**请后端 ⑭/⑰ 打卡判定不要加 `type` 过滤**，否则猫主人永远打不了卡。若产品确要改为「仅遛狗」，需先改猫玩页文案再双确认。
 
 **⑰ GET /api/v1/checkins/calendar?year=2026&month=8**
 ```jsonc
@@ -392,6 +394,7 @@ Mock 假后端不受此影响，仍用固定码 `123456`。
 |---|---|---|---|
 | v0.1 | 2026-08-27 | 初稿：26 个接口骨架，P0 共 17 个详定义，含幂等上报、打卡规则、DTO 基线、8 个开放问题 | 前端负责人 |
 | v0.2 | 2026-08-28 | 联调实测对齐：① 填入 dev BaseURL（裸 http，前端已开明文白名单）；② 开放问题#5 拍板——dev 万能码 `8888`（需先发码），测试号 `13800138000`；③ 状态列标记 7 个已实现接口；④ 记录三处后端偏差（见下），前端已全部容错 | 前端负责人 |
+| v0.2a | 2026-08-28 | M3 前端对接：⑭（clientRecordId 幂等 + 5000 点抽稀）/⑮（分页+列表抽稀）/⑰（月历）前端已接通，Mock 已同步实现三接口语义；**§4.7 打卡判定纠错为不限类型**（见该节警示框），请后端实现时注意 | 前端负责人 |
 
 ### 联调实测偏差（v0.2，待后端修正或双方确认改契约）
 

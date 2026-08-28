@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../theme/app_colors.dart';
 import '../../services/app_state.dart';
 import '../../models/exercise_record.dart';
+import '../../utils/uuid.dart';
 
 class CatPlayPage extends StatefulWidget {
   const CatPlayPage({super.key});
@@ -154,6 +155,7 @@ class _CatPlayPageState extends State<CatPlayPage> {
     for (final catId in _selectedCatIds) {
       state.addRecord(ExerciseRecord(
         id: 'rec_${now.millisecondsSinceEpoch}_$catId',
+        clientRecordId: newUuidV4(), // ⑭ 上报幂等键；猫玩记录同样可上报
         petId: catId,
         userId: state.user?.id ?? '',
         type: ExerciseType.catPlay,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../models/pet.dart';
 import '../models/user.dart';
@@ -37,6 +39,7 @@ class AppState extends ChangeNotifier {
     if (_isLoggedIn && ApiConfig.isLive) {
       _syncMeSilently();
       _syncPetsSilently();
+      _syncRecordsSilently();
     }
     notifyListeners();
   }
@@ -82,6 +85,9 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     // 登录链路刚建好凭据，Mock/Live 均可安全拉取云端宠物列表
     _syncPetsSilently();
+    // 记录同步仅 Live：Mock 模式记录纯本地（假后端冷启动即空库，
+    // 拉取会把刚登出的设备上的本地记录误删）
+    if (ApiConfig.isLive) _syncRecordsSilently();
   }
 
   /// 更新用户资料（昵称/头像等）并持久化
@@ -153,10 +159,76 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 新增运动记录：本地先落（UI 即时可见），Live 模式下随后异步上报
+  /// 服务端（⑭，带 clientRecordId 幂等键）。上报失败静默——记录留在
+  /// 本地，下次冷启/登录的 _syncRecordsSilently 会自动补传。
   Future<void> addRecord(ExerciseRecord record) async {
     _records.add(record);
     await StorageService.saveRecords(_records);
     notifyListeners();
+    if (_isLoggedIn &&
+        ApiConfig.isLive &&
+        record.clientRecordId != null) {
+      unawaited(_uploadRecord(record));
+    }
+  }
+
+  /// 上报单条并以服务端回包替换本地条目（保留本地图片路径）。
+  Future<void> _uploadRecord(ExerciseRecord record) async {
+    try {
+      final echo = await AppServices.instance.records.createRecord(record);
+      final merged =
+          echo.copyWith(startPhotoPath: record.startPhotoPath);
+      final i = _records.indexWhere((r) =>
+          r.clientRecordId != null &&
+          r.clientRecordId == record.clientRecordId);
+      if (i != -1) {
+        _records[i] = merged;
+      } else {
+        _records.add(merged);
+      }
+      await StorageService.saveRecords(_records);
+      notifyListeners();
+    } on ApiException {
+      // 保留本地记录即可，重传交给下次同步
+    }
+  }
+
+  bool _recordsSyncing = false;
+
+  /// 云端拉记录并与本地合并（服务端副本优先），随后补传服务端缺席的本地记录。
+  /// 仅 Live 模式调用（Mock 冷启动无凭据，理由同 _syncPetsSilently）。
+  Future<void> _syncRecordsSilently() async {
+    if (_recordsSyncing) return;
+    _recordsSyncing = true;
+    try {
+      final server =
+          await AppServices.instance.records.fetchRecords(pageSize: 100);
+      if (!_isLoggedIn) return;
+      final serverCrids = {
+        for (final r in server)
+          if (r.clientRecordId != null) r.clientRecordId!
+      };
+      // 服务端没有的本地记录 = 存量老数据（不上传）或待补传，全部保留
+      final localOnly = _records
+          .where((r) =>
+              r.clientRecordId == null || !serverCrids.contains(r.clientRecordId))
+          .toList();
+      _records = [...server, ...localOnly]
+        ..sort((a, b) => b.startTime.compareTo(a.startTime));
+      await StorageService.saveRecords(_records);
+      notifyListeners();
+      // 补传：有幂等键但服务端查无此条
+      for (final r in localOnly) {
+        if (r.clientRecordId != null) {
+          unawaited(_uploadRecord(r));
+        }
+      }
+    } on ApiException {
+      // 网络/会话异常沿用本地缓存
+    } finally {
+      _recordsSyncing = false;
+    }
   }
 
   int getTodayExerciseMinutes(String petId) {
@@ -173,6 +245,8 @@ class AppState extends ChangeNotifier {
     return total;
   }
 
+  /// 本地兜底算法：与契约 §4.7 服务端判定严格同规则
+  /// （仅遛狗、已完成、≥300 秒；猫玩不计）。
   List<CheckInRecord> getMonthlyCheckIns(int year, int month) {
     final daysInMonth = DateTime(year, month + 1, 0).day;
     return List.generate(daysInMonth, (index) {
@@ -181,8 +255,23 @@ class AppState extends ChangeNotifier {
           r.startTime.year == date.year &&
           r.startTime.month == date.month &&
           r.startTime.day == date.day &&
-          r.canCheckIn);
+          r.countsAsCheckIn);
       return CheckInRecord(date: date, isChecked: isChecked);
     });
+  }
+
+  /// 月历打卡（M3）：Live 优先服务端 ⑰（含跨设备记录），
+  /// 失败或 Mock 回退本地算法——日历永不空白。
+  Future<List<CheckInRecord>> loadMonthlyCheckIns(int year, int month) async {
+    if (_isLoggedIn && ApiConfig.isLive) {
+      try {
+        final days =
+            await AppServices.instance.records.fetchCalendar(year, month);
+        if (days.isNotEmpty) return days;
+      } on ApiException {
+        // 静默回退
+      }
+    }
+    return getMonthlyCheckIns(year, month);
   }
 }

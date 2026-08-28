@@ -3,6 +3,7 @@ import '../network/token_store.dart';
 import '../network/transport.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/pet_repository.dart';
+import '../repositories/record_repository.dart';
 import '../repositories/user_repository.dart';
 import 'api_config.dart';
 import 'mock/mock_transport.dart';
@@ -18,6 +19,7 @@ class AppServices {
     required this.auth,
     required this.users,
     required this.pets,
+    required this.records,
   });
 
   static AppServices? _instance;
@@ -45,6 +47,7 @@ class AppServices {
       auth: AuthRepository(api, tokens),
       users: UserRepository(api),
       pets: PetRepository(api),
+      records: RecordRepository(api),
     );
   }
 
@@ -57,4 +60,5 @@ class AppServices {
   final AuthRepository auth;
   final UserRepository users;
   final PetRepository pets;
+  final RecordRepository records;
 }
