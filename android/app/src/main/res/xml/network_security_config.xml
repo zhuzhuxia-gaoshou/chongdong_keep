@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  网络安全配置：默认保持 Android 9+ 的"禁止明文 HTTP"策略，
+  仅对开发环境 ECS 裸 IP 白名单放行（后端暂无 HTTPS/域名，2026-08-28 联调接入）。
+  上线切换 HTTPS 后删除该 domain 条目（见协作规范 §7）。
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">47.104.129.148</domain>
+    </domain-config>
+</network-security-config>

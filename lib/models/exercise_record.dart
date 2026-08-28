@@ -17,6 +17,10 @@ class ExerciseRecord {
   final bool isCompleted;
   final bool isManual;
 
+  /// 客户端生成的幂等键（契约 §4.6 ⑭）。M3 之前的存量本地记录为 null，
+  /// 按开放问题#4 不回填、不上传。
+  final String? clientRecordId;
+
   ExerciseRecord({
     required this.id,
     required this.petId,
@@ -32,13 +36,37 @@ class ExerciseRecord {
     this.startPhotoPath,
     this.isCompleted = true,
     this.isManual = false,
+    this.clientRecordId,
   });
 
   int get durationMinutes => duration.inMinutes;
   bool get canCheckIn => durationMinutes >= 5;
 
+  /// 打卡判定口径（契约 §4.7）：完成且 ≥300 秒即计入，**不限运动类型**
+  /// （遛狗与猫玩均可，与既有 canCheckIn / 猫玩页文案一致）。服务端同规则。
+  bool get countsAsCheckIn => isCompleted && duration.inSeconds >= 300;
+
+  ExerciseRecord copyWith({String? startPhotoPath}) => ExerciseRecord(
+        id: id,
+        petId: petId,
+        userId: userId,
+        type: type,
+        startTime: startTime,
+        endTime: endTime,
+        duration: duration,
+        distance: distance,
+        steps: steps,
+        route: route,
+        locationName: locationName,
+        startPhotoPath: startPhotoPath ?? this.startPhotoPath,
+        isCompleted: isCompleted,
+        isManual: isManual,
+        clientRecordId: clientRecordId,
+      );
+
   Map<String, dynamic> toJson() => {
     'id': id,
+    'clientRecordId': clientRecordId,
     'petId': petId,
     'userId': userId,
     'type': type.index,
@@ -69,6 +97,7 @@ class ExerciseRecord {
     startPhotoPath: json['startPhotoPath'] as String?,
     isCompleted: json['isCompleted'] as bool? ?? true,
     isManual: json['isManual'] as bool? ?? false,
+    clientRecordId: json['clientRecordId'] as String?,
   );
 }
 

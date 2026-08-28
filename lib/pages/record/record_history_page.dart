@@ -11,10 +11,11 @@ import '../../theme/app_dimens.dart';
 import '../../widgets/app_bottom_sheet.dart';
 import '../share/share_card_page.dart';
 
-/// 运动记录列表页（当前为本地版）
+/// 运动记录列表页
 ///
-/// 数据源 = AppState.records（本地 SharedPreferences 持久化）。
-/// M3 后端就绪后，数据源替换为记录上报/查询仓库即可，本页结构不变。
+/// 数据源 = AppState.records：Mock 下为纯本地持久化；Live 下由
+/// [AppState] 拉取服务端 ⑮ 并与本地未上报记录合并（服务端副本优先、
+/// 幂等键去重），本页对数据源无感知、结构不随 M3 改变。
 class RecordHistoryPage extends StatelessWidget {
   const RecordHistoryPage({super.key});
 

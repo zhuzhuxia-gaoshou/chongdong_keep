@@ -5,6 +5,7 @@ const int kCodePetLimit = 40003;
 const int kCodeMakeupInvalid = 40004;
 const int kCodeUploadType = 40006; // 图片类型不支持
 const int kCodeUploadSize = 40007; // 图片大小超限
+const int kCodeUnauthorizedGeneric = 40100; // 网关未授权（token 无效/损坏；联调实测）
 const int kCodeSmsWrong = 40102; // 验证码错误或过期
 const int kCodeSmsTooFrequent = 40103; // 发送过于频繁
 const int kCodeAccessExpired = 40101; // accessToken 过期
@@ -15,6 +16,14 @@ const int kCodeNotFoundBase = 40400; // 不存在分段起点
 const int kCodePetNotFound = 40401; // 宠物不存在或已删除
 const int kCodeTooFrequentBase = 42900; // 限流分段起点
 const int kCodeServerErrorBase = 50000; // 服务端异常分段起点
+
+/// 宽松整数解析：服务端可能把数值字段下发成字符串（联调实测
+/// expiresIn="604800"），解析失败一律回退默认值，绝不让类型崩到界面。
+int asIntOrDefault(Object? v, {required int or}) {
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  return int.tryParse('${v ?? ''}') ?? or;
+}
 
 /// 统一业务异常。
 ///
