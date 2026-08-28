@@ -38,6 +38,8 @@ class ApiClient {
   Future<Map<String, dynamic>> patch(String path, {Object? body}) =>
       _send('PATCH', path, body: body);
 
+  Future<Map<String, dynamic>> delete(String path) => _send('DELETE', path);
+
   Future<Map<String, dynamic>> upload(
     String path, {
     required List<int> bytes,
