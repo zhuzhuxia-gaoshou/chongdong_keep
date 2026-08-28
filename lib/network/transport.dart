@@ -46,6 +46,15 @@ class HttpTransport implements Transport {
   Uri _uri(String path, Map<String, String>? query) =>
       Uri.parse('$baseUrl$path').replace(queryParameters: query);
 
+  /// package:http 对 String body 默认打 text/plain，Express 只认
+  /// application/json 才解析请求体——联调实测（2026-08-28）：不带此
+  /// 头则登录/上报等所有带体请求被后端判成"参数缺失"。所有 JSON 请求
+  /// 显式声明编码；调用方已给 content-type 时不覆盖。
+  static Map<String, String> _jsonHeaders(Map<String, String>? headers) => {
+        'Content-Type': 'application/json; charset=utf-8',
+        ...?headers,
+      };
+
   @override
   Future<Map<String, dynamic>?> send(
     String method,
@@ -58,16 +67,22 @@ class HttpTransport implements Transport {
     try {
       final m = method.toUpperCase();
       late final http.Response resp;
-      if (m == 'GET') {
-        resp = await _client.get(uri, headers: headers).timeout(timeout);
-      } else if (m == 'PATCH') {
-        resp = await _client
-            .patch(uri, body: jsonEncode(body), headers: headers)
-            .timeout(timeout);
-      } else {
-        resp = await _client
-            .post(uri, body: jsonEncode(body), headers: headers)
-            .timeout(timeout);
+      switch (m) {
+        case 'GET':
+          resp = await _client.get(uri, headers: headers).timeout(timeout);
+        case 'PATCH':
+          resp = await _client
+              .patch(uri,
+                  body: jsonEncode(body), headers: _jsonHeaders(headers))
+              .timeout(timeout);
+        case 'DELETE':
+          // 联调坑：早期实现落入 else→post 分支，DELETE 被当 POST 发出
+          resp = await _client.delete(uri, headers: headers).timeout(timeout);
+        default:
+          resp = await _client
+              .post(uri,
+                  body: jsonEncode(body), headers: _jsonHeaders(headers))
+              .timeout(timeout);
       }
       return _decode(resp);
     } on TimeoutException {
