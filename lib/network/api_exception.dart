@@ -63,6 +63,11 @@ class ApiException implements Exception {
       case kCodeUploadSize:
         return '图片大小超出限制';
     }
+    // 400xx 参数族兜底：联调实测后端会用 40000（契约只定义了 40001 起），
+    // 这类回包的 message 本身即中文可展示文案（如"手机号格式不正确"）。
+    if (code >= 40000 && code < kCodeUnauthorizedGeneric) {
+      return message.isNotEmpty ? message : '请求参数有误';
+    }
     if (code >= kCodeForbiddenBase && code < kCodeForbiddenBase + 100) {
       return '没有权限执行此操作';
     }
