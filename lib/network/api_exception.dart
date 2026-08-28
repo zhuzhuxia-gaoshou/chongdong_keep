@@ -10,7 +10,9 @@ const int kCodeSmsTooFrequent = 40103; // 发送过于频繁
 const int kCodeAccessExpired = 40101; // accessToken 过期
 const int kCodeRefreshInvalid = 40104; // refreshToken 无效或过期
 const int kCodeForbiddenBase = 40300; // 权限类分段起点
+const int kCodeNotOwner = 40301; // 非本人资源（契约 §4.4/§4.6）
 const int kCodeNotFoundBase = 40400; // 不存在分段起点
+const int kCodePetNotFound = 40401; // 宠物不存在或已删除
 const int kCodeTooFrequentBase = 42900; // 限流分段起点
 const int kCodeServerErrorBase = 50000; // 服务端异常分段起点
 
