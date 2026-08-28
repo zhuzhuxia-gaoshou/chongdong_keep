@@ -11,6 +11,7 @@ import '../../services/storage_service.dart';
 import '../../widgets/tencent_map_widget.dart';
 import '../../models/pet.dart';
 import '../../models/exercise_record.dart';
+import '../share/share_card_page.dart';
 
 class WalkPage extends StatefulWidget {
   const WalkPage({super.key});
@@ -215,8 +216,9 @@ class _WalkPageState extends State<WalkPage> {
 
     final state = context.read<AppState>();
     final now = DateTime.now();
+    ExerciseRecord? shareRecord; // 分享卡片用（多宠取第一只）
     for (final petId in _selectedPets) {
-      state.addRecord(ExerciseRecord(
+      final record = ExerciseRecord(
         id: 'rec_${now.millisecondsSinceEpoch}_$petId',
         petId: petId,
         userId: state.user?.id ?? '',
@@ -229,15 +231,17 @@ class _WalkPageState extends State<WalkPage> {
         route: List.of(_route),
         locationName: _locationName,
         startPhotoPath: _startPhotoPath,
-      ));
+      );
+      state.addRecord(record);
+      shareRecord ??= record;
     }
 
     if (mounted && _elapsed.inMinutes >= 1) {
-      _showWalkResult();
+      _showWalkResult(record: shareRecord);
     }
   }
 
-  void _showWalkResult() {
+  void _showWalkResult({ExerciseRecord? record}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -330,7 +334,12 @@ class _WalkPageState extends State<WalkPage> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        Navigator.pop(ctx);
+                        final nav = Navigator.of(ctx);
+                        nav.pop();
+                        if (record != null) {
+                          nav.push(MaterialPageRoute(
+                              builder: (_) => ShareCardPage(record: record)));
+                        }
                       },
                       child: const Text('🎨 生成卡片'),
                     ),

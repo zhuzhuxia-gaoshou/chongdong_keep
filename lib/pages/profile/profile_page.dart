@@ -17,6 +17,7 @@ import '../health/health_safety_page.dart';
 import '../pet/add_pet_page.dart';
 import '../pet/pet_detail_page.dart';
 import '../ranking/ranking_page.dart';
+import '../record/record_history_page.dart';
 import '../report/weekly_report_page.dart';
 import '../route/route_favorites_page.dart';
 import '../settings/settings_page.dart';
@@ -83,6 +84,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         context,
                         MaterialPageRoute(
                             builder: (_) => const CheckInCalendarPage()))),
+                _menuTile(
+                    '📋',
+                    '运动记录',
+                    '${state.records.length}次',
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const RecordHistoryPage()))),
                 _menuTile(
                     '🏆',
                     '排行榜',
