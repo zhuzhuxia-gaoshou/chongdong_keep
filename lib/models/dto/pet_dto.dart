@@ -18,8 +18,8 @@ class PetDto {
         gender: genderFromWire('${j['gender'] ?? 'male'}'),
         ageYears: _asInt(j['ageYears']) ?? 0,
         weight: _asDouble(j['weight']) ?? 0,
-        birthDate: DateTime.tryParse('${j['birthDate'] ?? ''}') ??
-            DateTime.now(),
+        birthDate:
+            DateTime.tryParse('${j['birthDate'] ?? ''}') ?? DateTime.now(),
         avatarUrl: j['avatarUrl'] as String?,
         allergies: _strList(j['allergies']),
         chronicConditions: _strList(j['chronicConditions']),

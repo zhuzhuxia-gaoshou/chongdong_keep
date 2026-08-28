@@ -1,27 +1,89 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../theme/app_colors.dart';
-import '../../services/app_state.dart';
-import '../../models/pet.dart';
 
+import '../../models/pet.dart';
+import '../../network/api_exception.dart';
+import '../../services/app_state.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimens.dart';
+
+/// 添加/编辑宠物档案。传入 [pet] 即编辑模式（PATCH 上报，服务端回包为准）。
 class AddPetPage extends StatefulWidget {
-  const AddPetPage({super.key});
+  const AddPetPage({super.key, this.pet});
+
+  final Pet? pet;
 
   @override
   State<AddPetPage> createState() => _AddPetPageState();
 }
 
 class _AddPetPageState extends State<AddPetPage> {
-  PetSpecies _species = PetSpecies.dog;
-  final _nameController = TextEditingController();
-  String _breed = '柯基';
-  PetGender _gender = PetGender.male;
-  final _ageController = TextEditingController(text: '2');
-  final _weightController = TextEditingController(text: '10.5');
-  final _allergyController = TextEditingController();
+  late PetSpecies _species;
+  late final TextEditingController _nameController;
+  late String _breed;
+  late PetGender _gender;
+  late final TextEditingController _ageController;
+  late final TextEditingController _weightController;
+  late final TextEditingController _allergyController;
+  bool _saving = false;
 
-  final _dogBreeds = ['柯基', '金毛', '拉布拉多', '边牧', '法斗', '哈士奇', '泰迪', '柴犬', '萨摩耶', '德牧', '比熊', '博美', '雪纳瑞', '阿拉斯加', '秋田'];
-  final _catBreeds = ['橘猫', '英短蓝猫', '布偶猫', '美短', '暹罗猫', '波斯猫', '缅因猫', '狸花猫', '加菲猫', '斯芬克斯', '孟买猫', '暹罗', '折耳猫', '波斯', '其他'];
+  final _dogBreeds = [
+    '柯基',
+    '金毛',
+    '拉布拉多',
+    '边牧',
+    '法斗',
+    '哈士奇',
+    '泰迪',
+    '柴犬',
+    '萨摩耶',
+    '德牧',
+    '比熊',
+    '博美',
+    '雪纳瑞',
+    '阿拉斯加',
+    '秋田'
+  ];
+  final _catBreeds = [
+    '橘猫',
+    '英短蓝猫',
+    '布偶猫',
+    '美短',
+    '暹罗猫',
+    '波斯猫',
+    '缅因猫',
+    '狸花猫',
+    '加菲猫',
+    '斯芬克斯',
+    '孟买猫',
+    '暹罗',
+    '折耳猫',
+    '波斯',
+    '其他'
+  ];
+
+  bool get _isEditing => widget.pet != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.pet;
+    _species = p?.species ?? PetSpecies.dog;
+    _nameController = TextEditingController(text: p?.name ?? '');
+    _breed = p?.breed ?? _dogBreeds.first;
+    _gender = p?.gender ?? PetGender.male;
+    _ageController =
+        TextEditingController(text: p != null ? '${p.ageYears}' : '2');
+    _weightController =
+        TextEditingController(text: p != null ? '${p.weight}' : '10.5');
+    _allergyController = TextEditingController(
+        text: p == null
+            ? ''
+            : [
+                ...p.allergies,
+                ...p.chronicConditions,
+              ].join('、'));
+  }
 
   @override
   void dispose() {
@@ -32,35 +94,74 @@ class _AddPetPageState extends State<AddPetPage> {
     super.dispose();
   }
 
-  void _save() {
-    if (_nameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请输入宠物名字')));
+  Future<void> _save() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      messenger.showSnackBar(const SnackBar(content: Text('请输入宠物名字')));
       return;
     }
+    final weight = double.tryParse(_weightController.text) ?? 0;
+    if (weight <= 0) {
+      messenger.showSnackBar(const SnackBar(content: Text('体重需大于 0 kg')));
+      return;
+    }
+    if (_saving) return;
+    setState(() => _saving = true);
+
+    final age = int.tryParse(_ageController.text) ?? 1;
     final pet = Pet(
-      id: 'pet_${DateTime.now().millisecondsSinceEpoch}',
-      name: _nameController.text,
+      id: widget.pet?.id ?? 'pet_${DateTime.now().millisecondsSinceEpoch}',
+      name: name,
       species: _species,
       breed: _breed,
       gender: _gender,
-      ageYears: int.tryParse(_ageController.text) ?? 1,
-      weight: double.tryParse(_weightController.text) ?? 5.0,
-      birthDate: DateTime.now().subtract(Duration(days: (int.tryParse(_ageController.text) ?? 1) * 365)),
-      allergies: _allergyController.text.isNotEmpty ? _allergyController.text.split(RegExp(r'[,，、]')) : [],
+      ageYears: age,
+      weight: weight,
+      birthDate: widget.pet?.birthDate ??
+          DateTime.now().subtract(Duration(days: age * 365)),
+      avatarUrl: widget.pet?.avatarUrl,
+      allergies: _allergyController.text.isNotEmpty
+          ? _allergyController.text
+              .split(RegExp(r'[,，、]'))
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList()
+          : const [],
+      chronicConditions: widget.pet?.chronicConditions ?? const [],
+      isNeutered: widget.pet?.isNeutered ?? false,
+      isVaccinated: widget.pet?.isVaccinated ?? false,
+      emergencyContact: widget.pet?.emergencyContact,
     );
-    context.read<AppState>().addPet(pet);
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('宠物添加成功 🐾')));
+
+    try {
+      final state = context.read<AppState>();
+      if (_isEditing) {
+        await state.updatePet(pet);
+      } else {
+        await state.addPet(pet);
+      }
+      // ignore: use_build_context_synchronously
+      if (!mounted) return;
+      Navigator.pop(context);
+      messenger.showSnackBar(
+          SnackBar(content: Text(_isEditing ? '档案已更新 🎉' : '宠物添加成功 🐾')));
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final breeds = _species == PetSpecies.dog ? _dogBreeds : _catBreeds;
+    final breeds =
+        List<String>.of(_species == PetSpecies.dog ? _dogBreeds : _catBreeds);
+    if (!breeds.contains(_breed)) breeds.insert(0, _breed);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('添加宠物 🐾')),
+      appBar: AppBar(title: Text(_isEditing ? '编辑档案 ✏️' : '添加宠物 🐾')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimens.sp16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -72,57 +173,111 @@ class _AddPetPageState extends State<AddPetPage> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.mintLight,
-                  border: Border.all(color: AppColors.mint, width: 2, style: BorderStyle.solid),
+                  border: Border.all(
+                      color: AppColors.mint,
+                      width: 2,
+                      style: BorderStyle.solid),
                 ),
-                child: const Center(child: Text('📷', style: TextStyle(fontSize: 32))),
+                child: const Center(
+                    child: Text('📷', style: TextStyle(fontSize: 32))),
               ),
             ),
-            const SizedBox(height: 20),
-            Text('选择物种', style: TextStyle(fontSize: 12, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppDimens.sp20),
+            Text('选择物种',
+                style: TextStyle(
+                    fontSize: AppDimens.fsFoot,
+                    color: AppColors.textSoft,
+                    fontWeight: FontWeight.w600)),
+            const SizedBox(height: AppDimens.sp8),
             Row(
               children: [
                 Expanded(child: _speciesBtn(PetSpecies.dog, '🐕', '狗狗')),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimens.sp8),
                 Expanded(child: _speciesBtn(PetSpecies.cat, '🐈', '猫咪')),
               ],
             ),
-            const SizedBox(height: 14),
-            _buildField('宠物名字', TextField(controller: _nameController, decoration: const InputDecoration(hintText: '给宝贝起个名字'))),
-            const SizedBox(height: 14),
-            _buildField('品种', DropdownButtonFormField<String>(
-              value: _breed,
-              decoration: const InputDecoration(),
-              items: breeds.map((b) => DropdownMenuItem(value: b, child: Text(b))).toList(),
-              onChanged: (v) => setState(() => _breed = v!),
-            )),
-            const SizedBox(height: 14),
+            const SizedBox(height: AppDimens.sp16),
+            _buildField(
+                '宠物名字',
+                TextField(
+                  controller: _nameController,
+                  maxLength: 8,
+                  decoration: const InputDecoration(
+                      hintText: '给宝贝起个名字', counterText: ''),
+                )),
+            const SizedBox(height: AppDimens.sp16),
+            _buildField(
+                '品种',
+                DropdownButtonFormField<String>(
+                  value: _breed,
+                  decoration: const InputDecoration(),
+                  items: breeds
+                      .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _breed = v ?? _breed),
+                )),
+            const SizedBox(height: AppDimens.sp16),
             Row(
               children: [
-                Expanded(child: _buildField('性别', DropdownButtonFormField<PetGender>(
-                  value: _gender,
-                  decoration: const InputDecoration(),
-                  items: const [DropdownMenuItem(value: PetGender.male, child: Text('公')), DropdownMenuItem(value: PetGender.female, child: Text('母'))],
-                  onChanged: (v) => setState(() => _gender = v!),
-                ))),
-                const SizedBox(width: 8),
-                Expanded(child: _buildField('年龄', TextField(controller: _ageController, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: '岁')))),
+                Expanded(
+                    child: _buildField(
+                        '性别',
+                        DropdownButtonFormField<PetGender>(
+                          value: _gender,
+                          decoration: const InputDecoration(),
+                          items: const [
+                            DropdownMenuItem(
+                                value: PetGender.male, child: Text('公')),
+                            DropdownMenuItem(
+                                value: PetGender.female, child: Text('母')),
+                          ],
+                          onChanged: (v) => setState(() => _gender = v!),
+                        ))),
+                const SizedBox(width: AppDimens.sp8),
+                Expanded(
+                    child: _buildField(
+                        '年龄',
+                        TextField(
+                            controller: _ageController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(hintText: '岁')))),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: AppDimens.sp16),
             Row(
               children: [
-                Expanded(child: _buildField('体重', TextField(controller: _weightController, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: 'kg')))),
-                const SizedBox(width: 8),
+                Expanded(
+                    child: _buildField(
+                        '体重',
+                        TextField(
+                            controller: _weightController,
+                            keyboardType: TextInputType.number,
+                            decoration:
+                                const InputDecoration(hintText: 'kg')))),
+                const SizedBox(width: AppDimens.sp8),
                 const Expanded(child: SizedBox()),
               ],
             ),
-            const SizedBox(height: 14),
-            _buildField('过敏/慢病（可选）', TextField(controller: _allergyController, decoration: const InputDecoration(hintText: '如：鸡肉过敏、关节问题'))),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppDimens.sp16),
+            _buildField(
+                '过敏/慢病（可选）',
+                TextField(
+                    controller: _allergyController,
+                    decoration:
+                        const InputDecoration(hintText: '如：鸡肉过敏、关节问题'))),
+            const SizedBox(height: AppDimens.sp24),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(onPressed: _save, child: const Text('✅ 保存宠物档案')),
+              child: ElevatedButton.icon(
+                onPressed: _saving ? null : _save,
+                icon: _saving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.check, size: AppDimens.sp16),
+                label: Text(_saving ? '保存中…' : '✅ 保存宠物档案'),
+              ),
             ),
           ],
         ),
@@ -135,20 +290,27 @@ class _AddPetPageState extends State<AddPetPage> {
     return GestureDetector(
       onTap: () => setState(() {
         _species = species;
-        _breed = species == PetSpecies.dog ? _dogBreeds.first : _catBreeds.first;
+        _breed =
+            species == PetSpecies.dog ? _dogBreeds.first : _catBreeds.first;
       }),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(AppDimens.sp16),
         decoration: BoxDecoration(
           color: isActive ? AppColors.mintLight : AppColors.card,
-          border: Border.all(color: isActive ? AppColors.mint : AppColors.line, width: isActive ? 2 : 1),
-          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: isActive ? AppColors.mint : AppColors.line,
+              width: isActive ? 2 : 1),
+          borderRadius: BorderRadius.circular(AppDimens.rMd),
         ),
         child: Column(
           children: [
             Text(emoji, style: const TextStyle(fontSize: 24)),
-            const SizedBox(height: 4),
-            Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: isActive ? AppColors.mint : AppColors.text)),
+            const SizedBox(height: AppDimens.sp4),
+            Text(label,
+                style: TextStyle(
+                    fontSize: AppDimens.fsBody,
+                    fontWeight: FontWeight.w700,
+                    color: isActive ? AppColors.mint : AppColors.text)),
           ],
         ),
       ),
@@ -159,8 +321,12 @@ class _AddPetPageState extends State<AddPetPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 6),
+        Text(label,
+            style: TextStyle(
+                fontSize: AppDimens.fsFoot,
+                color: AppColors.textSoft,
+                fontWeight: FontWeight.w600)),
+        const SizedBox(height: AppDimens.sp8),
         child,
       ],
     );

@@ -32,11 +32,26 @@ class AppState extends ChangeNotifier {
     }
     // 服务端判定 refreshToken 失效时强制回登录页
     AppServices.instance.api.onSessionExpired = _applySignedOut;
-    // Live 模式下静默复同步个人资料（Mock/测试环境不触发）
+    // Live 模式下静默复同步个人资料与宠物列表（Mock/测试环境不触发：
+    // 冷启动后 Mock 内存态已丢凭据，误触发会连锁刷新→强制登出）
     if (_isLoggedIn && ApiConfig.isLive) {
       _syncMeSilently();
+      _syncPetsSilently();
     }
     notifyListeners();
+  }
+
+  /// 云端拉宠物列表，本地缓存兜底（失败静默，不阻塞启动/登录）。
+  Future<void> _syncPetsSilently() async {
+    try {
+      final server = await AppServices.instance.pets.fetchPets();
+      if (!_isLoggedIn) return;
+      _pets = server;
+      await StorageService.savePets(_pets);
+      notifyListeners();
+    } on ApiException {
+      // 网络/会话异常沿用本地缓存（同 _syncMeSilently 语义）
+    }
   }
 
   /// 用服务端最新资料刷新本地（失败静默，沿用本地缓存）。
@@ -65,6 +80,8 @@ class AppState extends ChangeNotifier {
     _records = await StorageService.loadRecords();
     await StorageService.saveUser(user);
     notifyListeners();
+    // 登录链路刚建好凭据，Mock/Live 均可安全拉取云端宠物列表
+    _syncPetsSilently();
   }
 
   /// 更新用户资料（昵称/头像等）并持久化
@@ -104,22 +121,33 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addPet(Pet pet) async {
-    _pets.add(pet);
+  /// 新增宠物（M2）：服务端权威——id/派生字段以回包为准；
+  /// 业务/网络异常原样上抛，由页面提示 friendlyMessage。
+  Future<Pet> addPet(Pet pet) async {
+    final created = await AppServices.instance.pets.createPet(pet);
+    _pets.add(created);
     await StorageService.savePets(_pets);
     notifyListeners();
+    return created;
   }
 
-  Future<void> updatePet(Pet pet) async {
-    final index = _pets.indexWhere((p) => p.id == pet.id);
+  /// 编辑宠物（M2）：PATCH 回包替换本地条目。
+  Future<Pet> updatePet(Pet pet) async {
+    final echo = await AppServices.instance.pets.patchPet(pet);
+    final index = _pets.indexWhere((p) => p.id == echo.id);
     if (index != -1) {
-      _pets[index] = pet;
-      await StorageService.savePets(_pets);
-      notifyListeners();
+      _pets[index] = echo;
+    } else {
+      _pets.add(echo);
     }
+    await StorageService.savePets(_pets);
+    notifyListeners();
+    return echo;
   }
 
+  /// 删除宠物（M2，服务端软删）：运动记录保留供历史周报。
   Future<void> removePet(String petId) async {
+    await AppServices.instance.pets.deletePet(petId);
     _pets.removeWhere((p) => p.id == petId);
     await StorageService.savePets(_pets);
     notifyListeners();
@@ -150,11 +178,10 @@ class AppState extends ChangeNotifier {
     return List.generate(daysInMonth, (index) {
       final date = DateTime(year, month, index + 1);
       final isChecked = _records.any((r) =>
-        r.startTime.year == date.year &&
-        r.startTime.month == date.month &&
-        r.startTime.day == date.day &&
-        r.canCheckIn
-      );
+          r.startTime.year == date.year &&
+          r.startTime.month == date.month &&
+          r.startTime.day == date.day &&
+          r.canCheckIn);
       return CheckInRecord(date: date, isChecked: isChecked);
     });
   }

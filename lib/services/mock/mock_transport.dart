@@ -51,6 +51,7 @@ class MockTransport implements Transport {
 
   /// accessToken -> (过期时刻, 归属用户id)
   final Map<String, ({DateTime expiresAt, String userId})> _accessTokens = {};
+
   /// refreshToken -> 归属用户id（一次性轮换：用后即换新）
   final Map<String, String> _refreshTokens = {};
 
@@ -157,9 +158,7 @@ class MockTransport implements Transport {
     if (species == 'cat') {
       return 15 + (ageYears < 2 ? 15 : (ageYears > 7 ? -5 : 0));
     }
-    if (breed.contains('柯基') ||
-        breed.contains('法斗') ||
-        breed.contains('吉娃娃')) {
+    if (breed.contains('柯基') || breed.contains('法斗') || breed.contains('吉娃娃')) {
       return ageYears < 1 ? 20 : (ageYears > 8 ? 15 : 30);
     }
     if (breed.contains('金毛') ||
@@ -177,7 +176,9 @@ class MockTransport implements Transport {
 
   @override
   Future<Map<String, dynamic>?> send(String method, String path,
-      {Object? body, Map<String, String>? query, Map<String, String>? headers}) async {
+      {Object? body,
+      Map<String, String>? query,
+      Map<String, String>? headers}) async {
     await Future<void>.delayed(delay);
     switch ('$method $path') {
       case 'GET /api/v1/ping':
@@ -196,9 +197,7 @@ class MockTransport implements Transport {
         return _refresh(body);
       default:
         if (path == '/api/v1/users/me') {
-          return method == 'PATCH'
-              ? _patchMe(body, headers)
-              : _me(headers);
+          return method == 'PATCH' ? _patchMe(body, headers) : _me(headers);
         }
         if (path == '/api/v1/pets' || path.startsWith('/api/v1/pets/')) {
           final petId = path.length > '/api/v1/pets'.length
@@ -235,9 +234,8 @@ class MockTransport implements Transport {
     if (path != '/api/v1/upload') {
       throw ApiException(kCodeServerErrorBase, 'Mock 未实现该上传: $path');
     }
-    final ext = filename.contains('.')
-        ? filename.split('.').last.toLowerCase()
-        : '';
+    final ext =
+        filename.contains('.') ? filename.split('.').last.toLowerCase() : '';
     const allowed = {'jpg', 'jpeg', 'png', 'webp'};
     if (!allowed.contains(ext)) return _respond({'code': kCodeUploadType});
     final type = fields['businessType'] ?? 'avatar';
@@ -246,7 +244,8 @@ class MockTransport implements Transport {
     return _respond({
       'code': 0,
       'data': {
-        'url': 'https://mock.cdn/$type/${DateTime.now().millisecondsSinceEpoch}.$ext',
+        'url':
+            'https://mock.cdn/$type/${DateTime.now().millisecondsSinceEpoch}.$ext',
         'fileSize': bytes.length,
       },
     });
@@ -297,7 +296,8 @@ class MockTransport implements Transport {
     final user = _usersByPhone[phone]!;
     final access = 'mock-access-${nowMs()}-$phone';
     final refresh = 'mock-refresh-${nowMs()}-$phone';
-    _accessTokens[access] = (expiresAt: now().add(accessTtl), userId: user['id'] as String);
+    _accessTokens[access] =
+        (expiresAt: now().add(accessTtl), userId: user['id'] as String);
     _refreshTokens[refresh] = user['id'] as String;
     return {
       'code': 0,
@@ -345,8 +345,7 @@ class MockTransport implements Transport {
   Map<String, dynamic> _me(Map<String, String>? headers) {
     final userId = _userIdFromAuth(headers);
     if (userId == null) return {'code': kCodeAccessExpired, 'message': '登录已过期'};
-    final user =
-        _usersByPhone.values.firstWhere((u) => u['id'] == userId);
+    final user = _usersByPhone.values.firstWhere((u) => u['id'] == userId);
     return {'code': 0, 'data': Map<String, dynamic>.of(user)};
   }
 
@@ -431,7 +430,8 @@ class MockTransport implements Transport {
 
   /// 契约 §4.4：不存在 → 40401；存在但非本人 → 40301。
   /// 返回 null 表示归属校验通过。
-  Map<String, dynamic>? _ownershipError(Map<String, dynamic>? row, String userId) {
+  Map<String, dynamic>? _ownershipError(
+      Map<String, dynamic>? row, String userId) {
     if (row == null) {
       return {'code': kCodePetNotFound, 'message': '宠物不存在或已删除'};
     }
@@ -491,7 +491,7 @@ class MockTransport implements Transport {
       });
 
   Map<String, dynamic> _patchPet(
-      String petId, Object? body, Map<String, String>? headers) =>
+          String petId, Object? body, Map<String, String>? headers) =>
       _requirePets(headers, (userId) {
         final map = (body as Map?)?.cast<String, dynamic>();
         final invalid = _validatePetBody(map, partial: true);

@@ -22,9 +22,8 @@ class PetRepository {
   }
 
   /// 新增：客户端临时 id 不参与线上协议，返回的 Pet 携带服务端 id。
-  Future<Pet> createPet(Pet pet) async => PetDto.fromWire(
-      unwrapEnvelope(
-          await _client.post('/api/v1/pets', body: PetDto.toWire(pet))));
+  Future<Pet> createPet(Pet pet) async => PetDto.fromWire(unwrapEnvelope(
+      await _client.post('/api/v1/pets', body: PetDto.toWire(pet))));
 
   Future<Pet> patchPet(Pet pet) async => PetDto.fromWire(unwrapEnvelope(
       await _client.patch('/api/v1/pets/${Uri.encodeComponent(pet.id)}',
