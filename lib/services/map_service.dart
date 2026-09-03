@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'api_config.dart';
 import '../models/exercise_record.dart';
+import '../utils/coord_convert.dart';
 
 /// GPS定位与地图服务
 class MapService {
@@ -30,8 +31,10 @@ class MapService {
       final hasPermission = await checkPermission();
       if (!hasPermission) return null;
       return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
       );
     } catch (e) {
       return null;
@@ -104,8 +107,10 @@ class MapService {
       return '当前位置';
     }
     try {
+      // 腾讯 WebService 接受 GCJ-02，入参先转换（GPS 原始值为 WGS-84）
+      final (gcjLat, gcjLng) = wgs84ToGcj02(lat, lng);
       final response = await http.get(Uri.parse(
-        'https://apis.map.qq.com/ws/geocoder/v1/?location=$lat,$lng&key=${ApiConfig.tencentMapKey}&output=json',
+        'https://apis.map.qq.com/ws/geocoder/v1/?location=$gcjLat,$gcjLng&key=${ApiConfig.tencentMapKey}&output=json',
       ));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

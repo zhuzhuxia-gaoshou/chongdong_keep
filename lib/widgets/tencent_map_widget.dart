@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../services/api_config.dart';
 import '../models/exercise_record.dart';
+import '../utils/coord_convert.dart';
 import '../theme/app_colors.dart';
 
 /// 遛狗地图组件
@@ -90,9 +91,11 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
         _controller != null &&
         widget.route.length > _lastPushedSize) {
       _lastPushedSize = widget.route.length;
-      final points = widget.route
-          .map((p) => '{"lat":${p.latitude},"lng":${p.longitude}}')
-          .join(',');
+      // 底图为 GCJ-02：显示前转换（存储/上报仍是 WGS-84）
+      final points = widget.route.map((p) {
+        final (lat, lng) = wgs84ToGcj02(p.latitude, p.longitude);
+        return '{"lat":$lat,"lng":$lng}';
+      }).join(',');
       _controller!
           .runJavaScript('window.updateRoute && window.updateRoute([$points]);')
           .catchError((_) {});
@@ -106,9 +109,12 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
   }
 
   String _generateMapHtml() {
-    final initialPoints = widget.route
-        .map((p) => '{lat: ${p.latitude}, lng: ${p.longitude}}')
-        .join(',');
+    final (initLat, initLng) =
+        wgs84ToGcj02(widget.initialLat, widget.initialLng);
+    final initialPoints = widget.route.map((p) {
+      final (lat, lng) = wgs84ToGcj02(p.latitude, p.longitude);
+      return '{lat: $lat, lng: $lng}';
+    }).join(',');
 
     return '''
 <!DOCTYPE html>
@@ -193,7 +199,7 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
     window.updateRoute = function(points) { drawRoute(points); };
 
     function initMap() {
-      var center = new TMap.LatLng(${widget.initialLat}, ${widget.initialLng});
+      var center = new TMap.LatLng($initLat, $initLng);
       map = new TMap.Map("container", {
         center: center,
         zoom: 16,
