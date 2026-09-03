@@ -8,6 +8,7 @@ import '../network/api_exception.dart';
 import 'api_config.dart';
 import 'app_services.dart';
 import 'storage_service.dart';
+import 'upload_retry_schedule.dart';
 
 class AppState extends ChangeNotifier {
   bool _isLoggedIn = false;
@@ -113,6 +114,10 @@ class AppState extends ChangeNotifier {
     _user = null;
     _pets = [];
     _records = [];
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    _pendingUploads.clear();
+    _pendingFailures.clear();
     notifyListeners();
     // 尽力清理：token 与持久化数据，天气定位一并清除（可接受，见开发计划 §八）
     StorageService.clearAll();
@@ -160,8 +165,9 @@ class AppState extends ChangeNotifier {
   }
 
   /// 新增运动记录：本地先落（UI 即时可见），Live 模式下随后异步上报
-  /// 服务端（⑭，带 clientRecordId 幂等键）。上报失败静默——记录留在
-  /// 本地，下次冷启/登录的 _syncRecordsSilently 会自动补传。
+  /// 服务端（⑭，带 clientRecordId 幂等键）。上报失败进入会话内退避重试
+  /// 队列（见 _uploadRecord），跨会话的兜底由冷启/登录的
+  /// _syncRecordsSilently 补传。
   Future<void> addRecord(ExerciseRecord record) async {
     _records.add(record);
     await StorageService.saveRecords(_records);
@@ -173,10 +179,22 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // ---- 会话内上传重试队列（弱网兜底，幂等键保证重复提交安全）----
+  final Map<String, ExerciseRecord> _pendingUploads = {};
+  final Map<String, int> _pendingFailures = {};
+  Timer? _retryTimer;
+
+  /// 待补传条数（供界面/调试观察弱网积压）
+  int get pendingUploadCount => _pendingUploads.length;
+
   /// 上报单条并以服务端回包替换本地条目（保留本地图片路径）。
+  /// 失败进入会话内退避重试队列（30s→1m→2m→5m 封顶循环）。
   Future<void> _uploadRecord(ExerciseRecord record) async {
+    final crid = record.clientRecordId;
+    if (crid == null) return;
     try {
       final echo = await AppServices.instance.records.createRecord(record);
+      if (!_isLoggedIn) return; // 登出竞态守卫：不再写入已清空的本地态
       final merged =
           echo.copyWith(startPhotoPath: record.startPhotoPath);
       final i = _records.indexWhere((r) =>
@@ -188,11 +206,32 @@ class AppState extends ChangeNotifier {
         _records.add(merged);
       }
       await StorageService.saveRecords(_records);
+      _pendingUploads.remove(crid);
+      _pendingFailures.remove(crid);
       notifyListeners();
     } on ApiException {
-      // 保留本地记录即可，重传交给下次同步
+      // 保留本地记录；按失败次数排下一次退避重试
+      if (!_isLoggedIn || !ApiConfig.isLive) return;
+      _pendingUploads[crid] = record;
+      final n = (_pendingFailures[crid] ?? 0) + 1;
+      _pendingFailures[crid] = n;
+      // 已有待触发的定时器则沿用最早一次（单飞，避免叠加）
+      _retryTimer ??=
+          Timer(UploadRetrySchedule.nextDelay(n), _retryPendingUploads);
     }
   }
+
+  Future<void> _retryPendingUploads() async {
+    _retryTimer = null;
+    if (!_isLoggedIn || !ApiConfig.isLive || _pendingUploads.isEmpty) return;
+    final batch = List.of(_pendingUploads.values);
+    for (final r in batch) {
+      await _uploadRecord(r);
+    }
+  }
+
+  /// 供 App 前台恢复（resumed）等时机立即触发补传
+  Future<void> retryPendingUploadsNow() => _retryPendingUploads();
 
   bool _recordsSyncing = false;
 

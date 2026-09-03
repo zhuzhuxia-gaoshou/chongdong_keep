@@ -19,19 +19,56 @@ class ChongDongKeepApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => AppState()..init(),
-      child: MaterialApp(
-        title: '宠动Keep',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        home: Consumer<AppState>(
-          builder: (context, state, _) {
-            if (state.isLoggedIn) {
-              return const MainPage();
-            }
-            return const LoginPage();
-          },
+      child: _AppLifecycleObserver(
+        child: MaterialApp(
+          title: '宠动Keep',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          home: Consumer<AppState>(
+            builder: (context, state, _) {
+              if (state.isLoggedIn) {
+                return const MainPage();
+              }
+              return const LoginPage();
+            },
+          ),
         ),
       ),
     );
   }
+}
+
+/// 监听应用生命周期：切后台恢复时立即补传弱网期间积压的运动记录
+class _AppLifecycleObserver extends StatefulWidget {
+  final Widget child;
+
+  const _AppLifecycleObserver({required this.child});
+
+  @override
+  State<_AppLifecycleObserver> createState() => _AppLifecycleObserverState();
+}
+
+class _AppLifecycleObserverState extends State<_AppLifecycleObserver>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      context.read<AppState>().retryPendingUploadsNow();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
