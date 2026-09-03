@@ -35,6 +35,10 @@ class _WalkPageState extends State<WalkPage> {
   double _currentLng = 116.4;
   String _locationName = '';
   String? _startPhotoPath;
+  // GPS 质量监控（PRD 4.2.3）：弱信号/错误横幅
+  bool _weakGps = false;
+  String? _gpsError;
+  DateTime _lastGoodFixAt = DateTime.now();
 
   Future<void> _toggleWalk() async {
     if (_isWalking) {
@@ -150,6 +154,9 @@ class _WalkPageState extends State<WalkPage> {
       _distance = 0;
       _steps = 0;
       _startPhotoPath = startPhotoPath;
+      _weakGps = false;
+      _gpsError = null;
+      _lastGoodFixAt = DateTime.now();
     });
 
     final initialPos = await MapService.getCurrentPosition();
@@ -181,21 +188,39 @@ class _WalkPageState extends State<WalkPage> {
         if (last != null && MapService.isAbnormalPoint(last, point)) {
           return;
         }
+        final weak =
+            position.accuracy > MapService.kWeakGpsAccuracyMeters;
+        _lastGoodFixAt = DateTime.now();
+        if (!mounted) return;
         setState(() {
           _route.add(point);
           _currentLat = position.latitude;
           _currentLng = position.longitude;
           _distance = MapService.calculateRouteDistance(_route);
           _steps = MapService.estimateSteps(_distance);
+          _weakGps = weak;
         });
       },
-      onError: (e) {},
+      onError: (e) {
+        // 不再静默：定位服务异常时提示用户轨迹可能不完整（每次会话提示一次）
+        if (!_isWalking || !mounted || _gpsError != null) return;
+        setState(() => _gpsError = '定位服务异常，轨迹可能不完整');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('定位出现异常，已尽力记录时长，路线可能不完整哦')),
+        );
+      },
     );
 
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (_startTime != null && _isWalking) {
         setState(() {
           _elapsed = DateTime.now().difference(_startTime!);
+          // 长时间无有效定位点 → 视为弱信号停滞
+          if (!_weakGps &&
+              DateTime.now().difference(_lastGoodFixAt) >
+                  MapService.kWeakGpsStaleness) {
+            _weakGps = true;
+          }
         });
       }
     });
@@ -497,8 +522,10 @@ class _WalkPageState extends State<WalkPage> {
                       Expanded(
                         child: Text(
                           _selectedPets
-                              .map((id) =>
-                                  state.pets.firstWhere((p) => p.id == id).name)
+                              .map((id) => state.pets
+                                  .firstWhere((p) => p.id == id,
+                                      orElse: () => state.pets.first)
+                                  .name)
                               .join(' + '),
                           style: const TextStyle(
                               fontSize: 12,
@@ -539,6 +566,26 @@ class _WalkPageState extends State<WalkPage> {
                 ],
               ),
             ),
+          // GPS 质量横幅（弱信号 / 定位异常，PRD 4.2.3）
+          if (_weakGps || _gpsError != null) ...[
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF4E0),
+                border: Border.all(color: const Color(0xFFF5C36B)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                _gpsError ?? '定位信号较弱，数据可能有偏差哦',
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF9A6B1F)),
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           // 腾讯地图区域
           Expanded(

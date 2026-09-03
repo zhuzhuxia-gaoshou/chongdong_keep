@@ -8,6 +8,12 @@ import '../utils/coord_convert.dart';
 
 /// GPS定位与地图服务
 class MapService {
+  /// 定位精度差于该值（米）视为弱信号（PRD 4.2.3）
+  static const double kWeakGpsAccuracyMeters = 30;
+
+  /// 超过该时长未收到有效定位点视为信号停滞（PRD 4.2.3 的">30秒提示"）
+  static const Duration kWeakGpsStaleness = Duration(seconds: 30);
+
   /// 检查并请求定位权限
   static Future<bool> checkPermission() async {
     var status = await Permission.location.status;
