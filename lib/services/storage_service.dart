@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/pet.dart';
 import '../models/exercise_record.dart';
 import '../models/user.dart';
+import '../models/walk_session.dart';
 
 class StorageService {
   StorageService._();
@@ -86,6 +87,28 @@ class StorageService {
   static Future<void> clearWeatherLocation() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('weather_location');
+  }
+
+  /// 遛狗进行中的可恢复会话（进程被杀后用于恢复弹窗，PRD 4.2.3）
+  static Future<void> saveWalkSession(WalkSession session) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('walk_session', json.encode(session.toJson()));
+  }
+
+  static Future<WalkSession?> loadWalkSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('walk_session');
+    if (data == null) return null;
+    try {
+      return WalkSession.fromJson(json.decode(data));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<void> clearWalkSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('walk_session');
   }
 
   static Future<void> saveCheckinDays(Set<String> days) async {

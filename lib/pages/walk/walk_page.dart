@@ -11,6 +11,7 @@ import '../../services/storage_service.dart';
 import '../../widgets/tencent_map_widget.dart';
 import '../../models/pet.dart';
 import '../../models/exercise_record.dart';
+import '../../models/walk_session.dart';
 import '../../utils/uuid.dart';
 import '../share/share_card_page.dart';
 
@@ -39,6 +40,9 @@ class _WalkPageState extends State<WalkPage> {
   bool _weakGps = false;
   String? _gpsError;
   DateTime _lastGoodFixAt = DateTime.now();
+
+  /// 启动恢复检查只做一次（等宠物列表异步就绪后在 build 里触发）
+  bool _recoveryChecked = false;
 
   Future<void> _toggleWalk() async {
     if (_isWalking) {
@@ -174,6 +178,11 @@ class _WalkPageState extends State<WalkPage> {
       _loadLocationName(initialPos.latitude, initialPos.longitude);
     }
 
+    if (mounted) _startStreams();
+  }
+
+  /// 启动GPS流与秒级计时器（开始运动 / 恢复会话共用）
+  void _startStreams() {
     _positionSub = MapService.startTracking().listen(
       (Position position) {
         if (!_isWalking) return;
@@ -222,8 +231,27 @@ class _WalkPageState extends State<WalkPage> {
             _weakGps = true;
           }
         });
+        // 每10秒落盘快照，进程被杀/闪退后可恢复（PRD 4.2.3）
+        if (_elapsed.inSeconds % 10 == 0) _persistWalkSession();
       }
     });
+  }
+
+  /// 把进行中的运动写入可恢复快照（轨迹超限自动裁头，防体积膨胀）
+  void _persistWalkSession() {
+    if (_startTime == null) return;
+    StorageService.saveWalkSession(WalkSession(
+      selectedPetIds: List.of(_selectedPets),
+      startTime: _startTime!,
+      elapsedSeconds: _elapsed.inSeconds,
+      route: List.of(_route),
+      distance: _distance,
+      steps: _steps,
+      locationName: _locationName,
+      startPhotoPath: _startPhotoPath,
+      currentLat: _currentLat,
+      currentLng: _currentLng,
+    ));
   }
 
   Future<void> _loadLocationName(double lat, double lng) async {
@@ -239,10 +267,20 @@ class _WalkPageState extends State<WalkPage> {
     _timer?.cancel();
     _timer = null;
     setState(() => _isWalking = false);
+    StorageService.clearWalkSession(); // 已正常结束，快照不再需要
 
+    final shareRecord = _buildAndSaveRecords();
+    if (mounted && _elapsed.inMinutes >= 1) {
+      _showWalkResult(record: shareRecord);
+    }
+  }
+
+  /// 按当前选中宠物逐只落库（多宠同遛各记一条），返回分享卡片用的
+  /// 第一条记录。
+  ExerciseRecord? _buildAndSaveRecords() {
     final state = context.read<AppState>();
     final now = DateTime.now();
-    ExerciseRecord? shareRecord; // 分享卡片用（多宠取第一只）
+    ExerciseRecord? shareRecord;
     for (final petId in _selectedPets) {
       final record = ExerciseRecord(
         id: 'rec_${now.millisecondsSinceEpoch}_$petId',
@@ -262,10 +300,144 @@ class _WalkPageState extends State<WalkPage> {
       state.addRecord(record);
       shareRecord ??= record;
     }
+    return shareRecord;
+  }
 
-    if (mounted && _elapsed.inMinutes >= 1) {
+  /// 启动时检测未完成会话（进程被杀/闪退），弹「继续/结束保存/放弃」
+  /// （PRD 4.2.3）。会话中宠物已被删除时过滤，全部失效则只能放弃。
+  Future<void> _maybeRecoverSession(AppState state) async {
+    final session = await StorageService.loadWalkSession();
+    if (session == null || !mounted || _isWalking) return;
+    final validPets = session.selectedPetIds
+        .where((id) => state.pets.any((p) => p.id == id))
+        .toList();
+    final mins = session.elapsedSeconds ~/ 60;
+    final secs = session.elapsedSeconds % 60;
+
+    final choice = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('🐾 发现一条未完成的运动'),
+        content: Text(validPets.isEmpty
+            ? '已记录 $mins 分 $secs 秒，但本次一起运动的宠物已被删除，无法保存记录哦。'
+            : '上次运动被中断，已记录 $mins 分 $secs 秒。要怎么处理呢？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'discard'),
+            child: const Text('放弃'),
+          ),
+          if (validPets.isNotEmpty) ...[
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'save'),
+              child: const Text('结束保存'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, 'continue'),
+              child: const Text('继续'),
+            ),
+          ],
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (choice == 'continue' && validPets.isNotEmpty) {
+      await _resumeSession(session, validPets);
+    } else if (choice == 'save' && validPets.isNotEmpty) {
+      _saveRecoveredSession(session, validPets);
+    } else {
+      StorageService.clearWalkSession();
+    }
+  }
+
+  /// 恢复字段后直接按已记录时长落库并展示结果面板（不重启GPS）。
+  Future<void> _saveRecoveredSession(
+      WalkSession s, List<String> petIds) async {
+    setState(() {
+      _selectedPets
+        ..clear()
+        ..addAll(petIds);
+      _startTime = s.startTime;
+      _elapsed = Duration(seconds: s.elapsedSeconds);
+      _distance = s.distance;
+      _steps = s.steps;
+      _route
+        ..clear()
+        ..addAll(s.route);
+      _locationName = s.locationName;
+      _startPhotoPath = s.startPhotoPath;
+      _currentLat = s.currentLat;
+      _currentLng = s.currentLng;
+    });
+    await StorageService.clearWalkSession();
+    if (!mounted) return;
+    final shareRecord = _buildAndSaveRecords();
+    if (_elapsed.inMinutes >= 1) {
       _showWalkResult(record: shareRecord);
     }
+  }
+
+  /// 恢复进行中状态并重启GPS流/计时器。时长从快照续算（进程死亡期间
+  /// 的空档不计入）；若期间设备被大幅移动（>200m），旧轨迹封存、新段
+  /// 从当前位置重新起绘，避免一条长直线污染路线。
+  Future<void> _resumeSession(WalkSession s, List<String> petIds) async {
+    setState(() {
+      _isWalking = true;
+      _selectedPets
+        ..clear()
+        ..addAll(petIds);
+      _startTime =
+          DateTime.now().subtract(Duration(seconds: s.elapsedSeconds));
+      _elapsed = Duration(seconds: s.elapsedSeconds);
+      _distance = s.distance;
+      _steps = s.steps;
+      _route
+        ..clear()
+        ..addAll(s.route);
+      _locationName = s.locationName;
+      _startPhotoPath = s.startPhotoPath;
+      _currentLat = s.currentLat;
+      _currentLng = s.currentLng;
+      _weakGps = false;
+      _gpsError = null;
+      _lastGoodFixAt = DateTime.now();
+    });
+
+    final pos = await MapService.getCurrentPosition();
+    if (pos != null && mounted && _isWalking) {
+      final fresh = GeoPoint(
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        timestamp: DateTime.now(),
+        accuracy: pos.accuracy,
+      );
+      final last = _route.isEmpty ? null : _route.last;
+      final gap = last == null
+          ? 0.0
+          : MapService.distanceBetween(
+              last.latitude, last.longitude, fresh.latitude, fresh.longitude);
+      final bigJump = last != null && gap > MapService.kResumeGapMeters;
+      final okPoint =
+          last == null || bigJump || !MapService.isAbnormalPoint(last, fresh);
+      if (okPoint) {
+        setState(() {
+          if (bigJump) {
+            // 距离已随快照累计，旧轨迹不拼接长直线，从当前位置重新起绘
+            _route
+              ..clear()
+              ..add(fresh);
+          } else {
+            _route.add(fresh);
+          }
+          _currentLat = fresh.latitude;
+          _currentLng = fresh.longitude;
+        });
+      }
+      _loadLocationName(fresh.latitude, fresh.longitude);
+    }
+    if (!mounted || !_isWalking) return;
+    _startStreams();
+    _persistWalkSession(); // 恢复后立即落一次快照
   }
 
   void _showWalkResult({ExerciseRecord? record}) {
@@ -413,6 +585,14 @@ class _WalkPageState extends State<WalkPage> {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final pets = state.pets;
+
+    // 启动恢复检查：等宠物列表就绪后触发一次（进程被杀场景，PRD 4.2.3）
+    if (!_recoveryChecked && !_isWalking && pets.isNotEmpty) {
+      _recoveryChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_isWalking) _maybeRecoverSession(state);
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('运动')),

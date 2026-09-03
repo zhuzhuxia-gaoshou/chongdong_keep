@@ -14,6 +14,10 @@ class MapService {
   /// 超过该时长未收到有效定位点视为信号停滞（PRD 4.2.3 的">30秒提示"）
   static const Duration kWeakGpsStaleness = Duration(seconds: 30);
 
+  /// 恢复会话时新旧轨迹衔接点距离超过该值（米），视为进程死亡期间已被
+  /// 移动到别处：旧轨迹封存（距离已累计），新段从当前位置重新起绘
+  static const double kResumeGapMeters = 200;
+
   /// 检查并请求定位权限
   static Future<bool> checkPermission() async {
     var status = await Permission.location.status;
