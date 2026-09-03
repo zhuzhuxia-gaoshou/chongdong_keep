@@ -4,9 +4,20 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'api_config.dart';
 import '../models/exercise_record.dart';
+import '../utils/coord_convert.dart';
 
 /// GPS定位与地图服务
 class MapService {
+  /// 定位精度差于该值（米）视为弱信号（PRD 4.2.3）
+  static const double kWeakGpsAccuracyMeters = 30;
+
+  /// 超过该时长未收到有效定位点视为信号停滞（PRD 4.2.3 的">30秒提示"）
+  static const Duration kWeakGpsStaleness = Duration(seconds: 30);
+
+  /// 恢复会话时新旧轨迹衔接点距离超过该值（米），视为进程死亡期间已被
+  /// 移动到别处：旧轨迹封存（距离已累计），新段从当前位置重新起绘
+  static const double kResumeGapMeters = 200;
+
   /// 检查并请求定位权限
   static Future<bool> checkPermission() async {
     var status = await Permission.location.status;
@@ -30,8 +41,10 @@ class MapService {
       final hasPermission = await checkPermission();
       if (!hasPermission) return null;
       return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
       );
     } catch (e) {
       return null;
@@ -104,8 +117,10 @@ class MapService {
       return '当前位置';
     }
     try {
+      // 腾讯 WebService 接受 GCJ-02，入参先转换（GPS 原始值为 WGS-84）
+      final (gcjLat, gcjLng) = wgs84ToGcj02(lat, lng);
       final response = await http.get(Uri.parse(
-        'https://apis.map.qq.com/ws/geocoder/v1/?location=$lat,$lng&key=${ApiConfig.tencentMapKey}&output=json',
+        'https://apis.map.qq.com/ws/geocoder/v1/?location=$gcjLat,$gcjLng&key=${ApiConfig.tencentMapKey}&output=json',
       ));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
