@@ -4,7 +4,7 @@
 
 选择要一起运动的宠物，GPS 自动记录遛狗路线、距离与时长；运动满 5 分钟即打卡成功，可生成分享卡片、查看打卡日历、周报与徽章，还能根据天气判断今天适不适合出门。
 
-> 双模式运行：默认内置 Mock 假后端；通过 `--dart-define=API_BASE_URL=...` 连接真实后端（登录/宠物/运动记录/打卡日历走服务端，本地 `shared_preferences` 作缓存兜底）。详见《前后端协作规范》与《API 接口契约》。
+> 双模式运行：默认内置 Mock 假后端；通过 `--dart-define=API_BASE_URL=...` 连接真实后端（登录/宠物/运动记录/打卡日历走服务端，本地 `shared_preferences` 作缓存兜底）。产品/技术/进度文档见 `D:\myprojects` 下的 PRD.md / SPEC.md / PROGRESS.md。
 
 ## 功能特性
 
