@@ -267,10 +267,82 @@ class _PetDetailPageState extends State<PetDetailPage> {
               ],
             ),
           ),
-          TextButton(onPressed: () {}, child: const Text('添加')),
+          TextButton(
+            onPressed: () => _editEmergencyContact(pet),
+            child: Text(pet.emergencyContact == null ? '添加' : '修改'),
+          ),
         ],
       ),
     );
+  }
+
+  /// 紧急联系人编辑（PRD 4.5.2）：姓名+电话，保存走既有 PATCH 链路
+  Future<void> _editEmergencyContact(Pet pet) async {
+    final nameCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('紧急联系人'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                  labelText: '称呼（如：李姐/爸爸）'),
+              maxLength: 12,
+            ),
+            TextField(
+              controller: phoneCtrl,
+              keyboardType: TextInputType.phone,
+              decoration:
+                  const InputDecoration(labelText: '电话'),
+              maxLength: 15,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+    if (saved != true || !mounted) return;
+    final name = nameCtrl.text.trim();
+    final phone = phoneCtrl.text.trim();
+    final contact = (name.isEmpty || phone.isEmpty) ? null : '$name $phone';
+    try {
+      await context.read<AppState>().updatePet(Pet(
+            id: pet.id,
+            name: pet.name,
+            species: pet.species,
+            breed: pet.breed,
+            gender: pet.gender,
+            ageYears: pet.ageYears,
+            weight: pet.weight,
+            birthDate: pet.birthDate,
+            avatarUrl: pet.avatarUrl,
+            allergies: pet.allergies,
+            chronicConditions: pet.chronicConditions,
+            isNeutered: pet.isNeutered,
+            isVaccinated: pet.isVaccinated,
+            emergencyContact: contact,
+          ));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(contact == null ? '已清除紧急联系人' : '紧急联系人已保存')));
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.friendlyMessage)));
+    }
   }
 
   // ---- 近期运动（真实本地记录，M3 接查询接口后同源切换） ----

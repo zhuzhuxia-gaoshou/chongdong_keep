@@ -14,6 +14,7 @@ import '../../models/exercise_record.dart';
 import '../../models/walk_session.dart';
 import '../../utils/uuid.dart';
 import '../share/share_card_page.dart';
+import '../health/emergency_care_page.dart';
 
 class WalkPage extends StatefulWidget {
   const WalkPage({super.key});
@@ -574,6 +575,88 @@ class _WalkPageState extends State<WalkPage> {
     );
   }
 
+  /// 「宠物不舒服」（PRD 4.5.2）：选症状 → 高风险直跳紧急就医页，
+  /// 非高风险建议暂停观察，可选结束保存当前运动。
+  Future<void> _onDiscomfort() async {
+    final state = context.read<AppState>();
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('宝贝怎么啦？🥺',
+                    style:
+                        TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                Text('选一下症状，我来帮你判断要不要就医',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final s in const [
+                      ('😫', '累了'),
+                      ('🤮', '呕吐'),
+                      ('😷', '咳嗽'),
+                      ('🦴', '瘸了'),
+                      ('❓', '其他'),
+                    ])
+                      OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx, s.$2),
+                        child: Text('${s.$1} ${s.$2}'),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (!mounted || choice == null) return;
+
+    final highRisk = choice == '呕吐' || choice == '瘸了';
+    if (highRisk) {
+      // 高风险：先停下保存进度再就医，避免一路带着计时
+      _stopWalk();
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => EmergencyCarePage(pet: state.currentPet)));
+      return;
+    }
+    // 非高风险：建议暂停观察，用户可选继续或结束保存
+    final stop = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('关于「$choice」'),
+        content: const Text('先暂停运动休息一下观察，持续的话去医院哦💗\n要结束本次运动并保存记录吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('继续遛'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('结束并保存'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (stop == true) _stopWalk();
+  }
+
   @override
   void dispose() {
     _positionSub?.cancel();
@@ -836,7 +919,7 @@ class _WalkPageState extends State<WalkPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               GestureDetector(
-                onTap: () {},
+                onTap: _onDiscomfort,
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
