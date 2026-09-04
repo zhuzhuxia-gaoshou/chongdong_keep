@@ -110,7 +110,7 @@ class _CatPlayPageState extends State<CatPlayPage> {
                         children: [
                           _circleBtn(Icons.remove, () => setState(() => _duration = (_duration - 5).clamp(5, 120))),
                           const SizedBox(width: 10),
-                          Text('${_duration}分', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                          Text('$_duration分', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                           const SizedBox(width: 10),
                           _circleBtn(Icons.add, () => setState(() => _duration = (_duration + 5).clamp(5, 120))),
                         ],

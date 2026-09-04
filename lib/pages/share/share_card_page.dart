@@ -117,7 +117,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
             children: [
               _buildCardStat('${widget.record.duration.inMinutes}', '分钟'),
               _buildCardStat(
-                  '${widget.record.distance.toStringAsFixed(1)}', '公里'),
+                  widget.record.distance.toStringAsFixed(1), '公里'),
               _buildCardStat('${widget.record.steps}', '步'),
             ],
           ),
