@@ -80,7 +80,7 @@ class _RankingPageState extends State<RankingPage>
         ),
         const SizedBox(height: 6),
         Text(name, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-        Text('${minutes}分钟',
+        Text('$minutes分钟',
             style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
         const SizedBox(height: 4),
         Container(

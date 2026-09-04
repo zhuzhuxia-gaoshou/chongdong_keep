@@ -10,7 +10,6 @@ import '../utils/coord_convert.dart';
 class MapService {
   /// 定位精度差于该值（米）视为弱信号（PRD 4.2.3）
   static const double kWeakGpsAccuracyMeters = 30;
-
   /// 超过该时长未收到有效定位点视为信号停滞（PRD 4.2.3 的">30秒提示"）
   static const Duration kWeakGpsStaleness = Duration(seconds: 30);
 
@@ -167,5 +166,59 @@ class MapService {
       return '';
     }
     return 'https://apis.map.qq.com/ws/staticmap/v2/?center=$lat,$lng&zoom=$zoom&size=$width*$height&key=${ApiConfig.tencentMapKey}';
+  }
+
+  /// 搜索附近宠物医院（腾讯 WebService 地点搜索，PRD 4.5.2）。
+  /// 入参为 WGS-84，内部先转 GCJ-02 再请求。
+  /// 无 Key / 请求失败 / 配额不足返回 null（调用方降级为友好空态）。
+  static Future<List<PetHospital>?> searchNearbyPetHospitals(
+      double lat, double lng,
+      {int radiusMeters = 5000}) async {
+    if (!ApiConfig.hasTencentMap) return null;
+    final (gcjLat, gcjLng) = wgs84ToGcj02(lat, lng);
+    try {
+      final url = 'https://apis.map.qq.com/ws/place/v1/search'
+          '?keyword=${Uri.encodeComponent('宠物医院')}'
+          '&boundary=nearby($gcjLat,$gcjLng,$radiusMeters)'
+          '&orderby=_distance&page_size=10'
+          '&key=${ApiConfig.tencentMapKey}';
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) return null;
+      final data = json.decode(response.body);
+      if (data['status'] != 0 || data['data'] is! List) return null;
+      return (data['data'] as List)
+          .whereType<Map<String, dynamic>>()
+          .map(PetHospital.fromMap)
+          .toList();
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+/// 附近宠物医院搜索结果
+class PetHospital {
+  final String title;
+  final String address;
+  final double? distanceMeters; // 距查询点直线距离（米）
+  final String? tel;
+
+  PetHospital({
+    required this.title,
+    required this.address,
+    this.distanceMeters,
+    this.tel,
+  });
+
+  factory PetHospital.fromMap(Map<String, dynamic> m) => PetHospital(
+        title: m['title'] as String? ?? '未知医院',
+        address: m['address'] as String? ?? '',
+        distanceMeters: (m['_distance'] as num?)?.toDouble(),
+        tel: _cleanTel(m['tel'] as String?),
+      );
+
+  static String? _cleanTel(String? raw) {
+    final t = raw?.trim();
+    return (t == null || t.isEmpty) ? null : t;
   }
 }

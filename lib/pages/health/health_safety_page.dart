@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../services/app_state.dart';
+import '../../services/map_service.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/nearby_hospitals_section.dart';
+import 'emergency_care_page.dart';
 
 class HealthSafetyPage extends StatefulWidget {
   const HealthSafetyPage({super.key});
@@ -10,6 +15,46 @@ class HealthSafetyPage extends StatefulWidget {
 
 class _HealthSafetyPageState extends State<HealthSafetyPage> {
   String? _selectedSymptom;
+  double? _lat;
+  double? _lng;
+  final GlobalKey _hospitalSectionKey = GlobalKey();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _locate();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _locate() async {
+    final pos = await MapService.getCurrentPosition();
+    if (pos != null && mounted) {
+      setState(() {
+        _lat = pos.latitude;
+        _lng = pos.longitude;
+      });
+    }
+  }
+
+  void _jumpToHospitals() {
+    final ctx = _hospitalSectionKey.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(ctx,
+          duration: const Duration(milliseconds: 400), alignment: 0.05);
+    }
+  }
+
+  void _openEmergencyCare() {
+    final pet = context.read<AppState>().currentPet;
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => EmergencyCarePage(pet: pet)));
+  }
 
   final List<Map<String, dynamic>> _symptoms = [
     {'icon': '😷', 'name': '咳嗽/喷嚏', 'level': 'low', 'advice': '观察是否有其他症状，多喝水'},
@@ -47,6 +92,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('健康安全')),
       body: SingleChildScrollView(
+        controller: _scrollController,
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,32 +145,38 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
+                    GestureDetector(
+                      onTap: _openEmergencyCare,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text('📞 就医协助',
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.coral)),
                       ),
-                      child: const Text('📞 呼叫医院',
-                          style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.coral)),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(8),
+                    GestureDetector(
+                      onTap: _jumpToHospitals,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text('📍 附近医院',
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white)),
                       ),
-                      child: const Text('📍 附近医院',
-                          style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white)),
                     ),
                   ],
                 ),
@@ -243,16 +295,18 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
-                  child: const Text('查看兽医建议'),
+                  onPressed: _jumpToHospitals,
+                  child: const Text('📍 附近医院'),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(backgroundColor: levelColor),
-                  child: const Text('附近医院'),
+                  onPressed: _openEmergencyCare,
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          level == 'high' ? AppColors.coral : AppColors.mint),
+                  child: Text(level == 'high' ? '🚨 立即就医' : '就医协助'),
                 ),
               ),
             ],
@@ -265,85 +319,24 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
   Widget _buildNearbyHospitals() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      key: _hospitalSectionKey,
       children: [
-        const Text('附近宠物医院',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 10),
-        _buildHospitalItem('新瑞鹏宠物医院', '1.2km', '24小时急诊', true),
-        const SizedBox(height: 8),
-        _buildHospitalItem('瑞鹏动物医院', '2.5km', '9:00-22:00', false),
-        const SizedBox(height: 8),
-        _buildHospitalItem('宠爱动物诊所', '3.8km', '8:30-20:00', false),
-      ],
-    );
-  }
-
-  Widget _buildHospitalItem(
-      String name, String distance, String hours, bool isEmergency) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.line),
-      ),
-      child: Row(
-        children: [
+        if (_lat != null && _lng != null)
+          NearbyHospitalsSection(wgsLat: _lat!, wgsLng: _lng!)
+        else
           Container(
-            padding: const EdgeInsets.all(10),
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isEmergency ? AppColors.coralLight : AppColors.mintLight,
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.line),
             ),
-            child: Text(isEmergency ? '🏥' : '🏪',
-                style: const TextStyle(fontSize: 20)),
+            child: const Text('正在获取当前位置以查找附近医院…\n可检查定位权限后下拉稍候',
+                style: TextStyle(
+                    fontSize: 12, color: AppColors.textSoft, height: 1.5)),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(name,
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w700)),
-                    if (isEmergency) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.coral,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text('急诊',
-                            style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white)),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(hours,
-                    style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
-                const SizedBox(height: 2),
-                Text(distance,
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.mint,
-                        fontWeight: FontWeight.w600)),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.phone, color: AppColors.mint),
-            onPressed: () {},
-          ),
-        ],
-      ),
+      ],
     );
   }
 

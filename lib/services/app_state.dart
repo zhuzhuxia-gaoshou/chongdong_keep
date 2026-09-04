@@ -285,7 +285,7 @@ class AppState extends ChangeNotifier {
   }
 
   /// 本地兜底算法：与契约 §4.7 服务端判定严格同规则
-  /// （仅遛狗、已完成、≥300 秒；猫玩不计）。
+  /// （不限运动类型、已完成、≥300 秒——遛狗与猫玩均计入）。
   List<CheckInRecord> getMonthlyCheckIns(int year, int month) {
     final daysInMonth = DateTime(year, month + 1, 0).day;
     return List.generate(daysInMonth, (index) {
