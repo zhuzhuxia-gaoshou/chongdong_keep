@@ -248,14 +248,14 @@ class WeeklyReportPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
+          // 高度预算：柱体最大88 + 数值标签~14 + 间距8 + 星期文字~14 = 124 < 150
           SizedBox(
-            height: 120,
+            height: 150,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: List.generate(7, (i) {
-                // 高度按本周峰值归一（封顶 90px），避免一天爆量压扁其余柱
                 final height =
-                    maxVal <= 0 ? 0.0 : values[i] / maxVal * 90.0;
+                    maxVal <= 0 ? 0.0 : values[i] / maxVal * 88.0;
                 final isToday = i == todayIdx;
                 final isMax = maxVal > 0 && values[i] == maxVal;
                 return Expanded(
@@ -270,7 +270,7 @@ class WeeklyReportPage extends StatelessWidget {
                                   fontSize: 9, color: AppColors.textSoft)),
                         const SizedBox(height: 2),
                         Container(
-                          height: height,
+                          height: values[i] > 0 ? height : 4, // 零数据画基线小柱
                           decoration: BoxDecoration(
                             color: values[i] <= 0
                                 ? AppColors.sand
@@ -279,9 +279,6 @@ class WeeklyReportPage extends StatelessWidget {
                                     : AppColors.mint.withValues(alpha: 0.55),
                             borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(AppDimens.rSm)),
-                            border: isToday && values[i] <= 0
-                                ? Border.all(color: AppColors.line)
-                                : null,
                           ),
                         ),
                         const SizedBox(height: 6),
