@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +7,7 @@ import '../../services/map_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 import '../../widgets/app_bottom_sheet.dart';
+import '../../widgets/local_image.dart';
 import '../share/share_card_page.dart';
 
 /// 运动记录列表页
@@ -263,11 +262,10 @@ class RecordHistoryPage extends StatelessWidget {
           if (r.startPhotoPath != null) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(AppDimens.rMd),
-              child: Image.file(
-                File(r.startPhotoPath!),
+              child: buildLocalImage(
+                r.startPhotoPath!,
                 height: 160,
                 width: double.infinity,
-                fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   height: 160,
                   color: AppColors.sand,

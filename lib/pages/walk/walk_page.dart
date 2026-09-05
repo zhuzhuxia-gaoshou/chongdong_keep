@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +8,7 @@ import '../../services/app_state.dart';
 import '../../services/map_service.dart';
 import '../../services/storage_service.dart';
 import '../../widgets/tencent_map_widget.dart';
+import '../../widgets/local_image.dart';
 import '../../models/pet.dart';
 import '../../models/exercise_record.dart';
 import '../../models/walk_session.dart';
@@ -480,11 +480,10 @@ class _WalkPageState extends State<WalkPage> {
                 const SizedBox(height: 14),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.file(
-                    File(_startPhotoPath!),
+                  child: buildLocalImage(
+                    _startPhotoPath!,
                     height: 140,
                     width: double.infinity,
-                    fit: BoxFit.cover,
                   ),
                 ),
               ],

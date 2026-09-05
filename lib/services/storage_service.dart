@@ -1,27 +1,18 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/pet.dart';
 import '../models/exercise_record.dart';
 import '../models/user.dart';
 import '../models/walk_session.dart';
+import 'picked_image_io.dart'
+    if (dart.library.html) 'picked_image_web.dart' as picked_image;
 
 class StorageService {
   StorageService._();
 
-  /// 把临时图片复制到应用文档目录持久化，返回新路径
-  static Future<String> savePickedImage(String sourcePath) async {
-    final docs = await getApplicationDocumentsDirectory();
-    final dir = Directory('${docs.path}/images');
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
-    final ext = sourcePath.contains('.') ? sourcePath.split('.').last : 'jpg';
-    final dest = File('${dir.path}/img_${DateTime.now().millisecondsSinceEpoch}.$ext');
-    await File(sourcePath).copy(dest.path);
-    return dest.path;
-  }
+  /// 把临时图片持久化：移动端复制到应用文档目录；Web 端返回 blob 地址（本会话有效）
+  static Future<String> savePickedImage(String sourcePath) =>
+      picked_image.persistPickedImage(sourcePath);
 
   /// 保存手动选择的天气位置（name/lat/lng）
   static Future<void> saveWeatherLocation(String name, double lat, double lng) async {

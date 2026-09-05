@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../services/api_config.dart';
 import '../models/exercise_record.dart';
+import '../utils/app_platform.dart';
 import '../utils/coord_convert.dart';
 import '../theme/app_colors.dart';
 
@@ -39,7 +40,7 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
   Timer? _loadTimeout;
   int _lastPushedSize = 0;
 
-  bool get _hasKey => ApiConfig.hasTencentMap;
+  bool get _hasKey => ApiConfig.hasTencentMap && !AppPlatform.isWeb;
 
   @override
   void initState() {
@@ -223,7 +224,9 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
     if (_useFallback) {
       return _TrackView(
         route: widget.route,
-        badgeText: _hasKey ? '离线轨迹模式' : '离线轨迹模式 · 未配置地图Key',
+        badgeText: AppPlatform.isWeb
+            ? '离线轨迹模式 · 网页版'
+            : (_hasKey ? '离线轨迹模式' : '离线轨迹模式 · 未配置地图Key'),
       );
     }
 
