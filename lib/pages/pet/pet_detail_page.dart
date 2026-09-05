@@ -23,18 +23,23 @@ class PetDetailPage extends StatefulWidget {
 }
 
 class _PetDetailPageState extends State<PetDetailPage> {
+  /// 当前展示的宠物 id；可切换查看其他宠物
+  late String _selectedId = widget.pet.id;
+
   /// 云端化后的"活"宠物：列表里被编辑/删除立刻反映到本页。
   Pet get _pet =>
       context
           .watch<AppState>()
           .pets
-          .where((p) => p.id == widget.pet.id)
+          .where((p) => p.id == _selectedId)
           .firstOrNull ??
+      context.watch<AppState>().pets.firstOrNull ??
       widget.pet;
 
   @override
   Widget build(BuildContext context) {
     final pet = _pet;
+    final allPets = context.watch<AppState>().pets;
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -45,6 +50,10 @@ class _PetDetailPageState extends State<PetDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (allPets.length > 1) ...[
+                    const SizedBox(height: AppDimens.sp12),
+                    _buildPetSwitcher(allPets, pet),
+                  ],
                   _buildBasicInfo(pet),
                   const SizedBox(height: AppDimens.sp16),
                   _buildHealthInfo(pet),
@@ -57,6 +66,54 @@ class _PetDetailPageState extends State<PetDetailPage> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  /// 多宠物切换条（仅一只时隐藏）
+  Widget _buildPetSwitcher(List<Pet> pets, Pet current) {
+    return SizedBox(
+      height: 44,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          for (final p in pets)
+            Padding(
+              padding: const EdgeInsets.only(right: AppDimens.sp8),
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedId = p.id),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimens.sp12, vertical: AppDimens.sp8),
+                  decoration: BoxDecoration(
+                    color: p.id == current.id
+                        ? AppColors.mintLight
+                        : AppColors.card,
+                    borderRadius: BorderRadius.circular(AppDimens.rFull),
+                    border: Border.all(
+                      color: p.id == current.id ? AppColors.mint : AppColors.line,
+                      width: p.id == current.id ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(p.speciesEmoji,
+                          style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: AppDimens.sp4),
+                      Text(p.name,
+                          style: TextStyle(
+                              fontSize: AppDimens.fsFoot,
+                              fontWeight: FontWeight.w700,
+                              color: p.id == current.id
+                                  ? AppColors.mint
+                                  : AppColors.text)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

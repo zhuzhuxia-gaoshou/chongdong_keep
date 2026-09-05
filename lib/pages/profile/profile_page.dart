@@ -20,7 +20,6 @@ import '../pet/pet_detail_page.dart';
 import '../ranking/ranking_page.dart';
 import '../record/record_history_page.dart';
 import '../report/weekly_report_page.dart';
-import '../route/route_favorites_page.dart';
 import '../settings/settings_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -112,24 +111,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 _menuTile(
                     Icons.workspace_premium_rounded,
                     '徽章成就',
-                    '6/16已解锁',
+                    '解锁你的专属荣誉',
                     () => Navigator.push(context,
                         MaterialPageRoute(builder: (_) => const BadgesPage()))),
-                _menuTile(
-                    Icons.route_rounded,
-                    '收藏路线',
-                    '3条路线',
-                    () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const RouteFavoritesPage()))),
               ]),
               const SizedBox(height: AppDimens.sp12),
               SectionCard(title: '家庭与健康', children: [
                 _menuTile(
                     Icons.groups_rounded,
                     '家庭照护组',
-                    '3位成员',
+                    '和家人一起照护宝贝',
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(

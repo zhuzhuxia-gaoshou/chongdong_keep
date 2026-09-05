@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/pet.dart';
 import '../../network/api_exception.dart';
+import '../../services/app_services.dart';
 import '../../services/app_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../widgets/local_image.dart';
 
 /// 添加/编辑宠物档案。传入 [pet] 即编辑模式（PATCH 上报，服务端回包为准）。
 class AddPetPage extends StatefulWidget {
@@ -26,6 +29,7 @@ class _AddPetPageState extends State<AddPetPage> {
   late final TextEditingController _weightController;
   late final TextEditingController _allergyController;
   bool _saving = false;
+  XFile? _pickedAvatar;
 
   final _dogBreeds = [
     '柯基',
@@ -108,6 +112,21 @@ class _AddPetPageState extends State<AddPetPage> {
     }
     if (_saving) return;
     setState(() => _saving = true);
+    final state = context.read<AppState>();
+
+    // 头像上传（可跳过）：失败不阻塞档案保存
+    String? avatarUrl = widget.pet?.avatarUrl;
+    if (_pickedAvatar != null) {
+      try {
+        avatarUrl = (await AppServices.instance.users
+                .uploadAvatar(_pickedAvatar!))
+            .url;
+      } on ApiException catch (e) {
+        if (!mounted) return;
+        messenger.showSnackBar(SnackBar(
+            content: Text('头像上传失败：${e.friendlyMessage}，档案仍会保存')));
+      }
+    }
 
     final age = int.tryParse(_ageController.text) ?? 1;
     final pet = Pet(
@@ -120,7 +139,7 @@ class _AddPetPageState extends State<AddPetPage> {
       weight: weight,
       birthDate: widget.pet?.birthDate ??
           DateTime.now().subtract(Duration(days: age * 365)),
-      avatarUrl: widget.pet?.avatarUrl,
+      avatarUrl: avatarUrl,
       allergies: _allergyController.text.isNotEmpty
           ? _allergyController.text
               .split(RegExp(r'[,，、]'))
@@ -135,7 +154,6 @@ class _AddPetPageState extends State<AddPetPage> {
     );
 
     try {
-      final state = context.read<AppState>();
       if (_isEditing) {
         await state.updatePet(pet);
       } else {
@@ -165,21 +183,24 @@ class _AddPetPageState extends State<AddPetPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 头像上传
+            // 头像上传（点选相册图片）
             Center(
-              child: Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.mintLight,
-                  border: Border.all(
-                      color: AppColors.mint,
-                      width: 2,
-                      style: BorderStyle.solid),
+              child: GestureDetector(
+                onTap: _pickAvatar,
+                child: Container(
+                  width: 90,
+                  height: 90,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.mintLight,
+                    border: Border.all(
+                        color: AppColors.mint,
+                        width: 2,
+                        style: BorderStyle.solid),
+                  ),
+                  child: _avatarChild(),
                 ),
-                child: const Center(
-                    child: Icon(Icons.add_a_photo_rounded, size: 30, color: AppColors.textSoft)),
               ),
             ),
             const SizedBox(height: AppDimens.sp20),
@@ -283,6 +304,41 @@ class _AddPetPageState extends State<AddPetPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _pickAvatar() async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+        maxWidth: 1024,
+      );
+      if (picked != null && mounted) setState(() => _pickedAvatar = picked);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('无法打开相册，请检查权限')),
+        );
+      }
+    }
+  }
+
+  Widget _avatarChild() {
+    if (_pickedAvatar != null) {
+      return buildLocalImage(_pickedAvatar!.path, width: 86, height: 86);
+    }
+    final existing = widget.pet?.avatarUrl;
+    if (existing != null && existing.startsWith('http')) {
+      return Image.network(existing,
+          width: 86,
+          height: 86,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const Icon(Icons.pets_rounded,
+              size: 30, color: AppColors.textSoft));
+    }
+    return const Center(
+        child: Icon(Icons.add_a_photo_rounded,
+            size: 30, color: AppColors.textSoft));
   }
 
   Widget _speciesBtn(PetSpecies species, String emoji, String label) {
