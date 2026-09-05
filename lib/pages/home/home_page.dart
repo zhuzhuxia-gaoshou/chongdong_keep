@@ -772,8 +772,10 @@ class _HomePageState extends State<HomePage> {
   /// - 当前是猫 →「开始遛狗」/「陪{name}玩」
   Widget _buildExerciseEntries(BuildContext context, Pet pet) {
     final isDog = pet.species == PetSpecies.dog;
+    // 勿用 CrossAxisAlignment.stretch：本 Row 处于滚动视图的无界高度环境，
+    // stretch 会把无限高度传给子级导致渲染崩溃（真机红屏事故根因）。
+    // 两卡片内容结构一致，默认高度天然相同。
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
           child: _exerciseEntry(
