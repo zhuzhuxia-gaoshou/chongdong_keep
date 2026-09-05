@@ -3,6 +3,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../theme/app_colors.dart';
 import '../../models/exercise_record.dart';
+import '../../services/storage_service.dart';
 
 class ShareCardPage extends StatefulWidget {
   final ExerciseRecord record;
@@ -16,6 +17,7 @@ class ShareCardPage extends StatefulWidget {
 class _ShareCardPageState extends State<ShareCardPage> {
   int _selectedTemplate = 0;
   bool _showLocation = false;
+  bool _showDistance = true;
   bool _saving = false;
   final ScreenshotController _screenshotController = ScreenshotController();
 
@@ -26,6 +28,22 @@ class _ShareCardPageState extends State<ShareCardPage> {
     {'name': '夜景风', 'color': const Color(0xFF37474F), 'icon': '🌙'},
     {'name': '生日风', 'color': AppColors.coral, 'icon': '🎂'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrivacySettings();
+  }
+
+  /// 隐私设置（设置页）：分享位置作为页内开关的初始值，显示距离控制公里数展示。
+  Future<void> _loadPrivacySettings() async {
+    final s = await StorageService.loadAppSettings();
+    if (!mounted) return;
+    setState(() {
+      _showLocation = (s['shareLocation'] as bool?) ?? false;
+      _showDistance = (s['showDistance'] as bool?) ?? true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,8 +144,9 @@ class _ShareCardPageState extends State<ShareCardPage> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildCardStat('${widget.record.duration.inMinutes}', '分钟'),
-              _buildCardStat(
-                  widget.record.distance.toStringAsFixed(1), '公里'),
+              if (_showDistance)
+                _buildCardStat(
+                    widget.record.distance.toStringAsFixed(1), '公里'),
               _buildCardStat('${widget.record.steps}', '步'),
             ],
           ),
