@@ -114,10 +114,17 @@ class MapService {
   }
 
   /// 腾讯地图逆地址解析 - 根据坐标获取地址描述
+  /// 结果按 ~110 米网格缓存（会话内），避免重复消耗 WebService 日配额
+  static final Map<String, String> _placeCache = {};
+
   static Future<String> getLocationName(double lat, double lng) async {
     if (!ApiConfig.hasTencentMap) {
       return '当前位置';
     }
+    final cacheKey =
+        '${lat.toStringAsFixed(3)},${lng.toStringAsFixed(3)}';
+    final cached = _placeCache[cacheKey];
+    if (cached != null) return cached;
     try {
       // 腾讯 WebService 接受 GCJ-02，入参先转换（GPS 原始值为 WGS-84）
       final (gcjLat, gcjLng) = wgs84ToGcj02(lat, lng);
@@ -129,6 +136,7 @@ class MapService {
         if (data['status'] == 0 && data['result'] != null) {
           final address = data['result']['address'] ?? '未知位置';
           final poi = data['result']['formatted_addresses']?['recommend'] ?? address;
+          _placeCache[cacheKey] = poi as String;
           return poi;
         }
       }
