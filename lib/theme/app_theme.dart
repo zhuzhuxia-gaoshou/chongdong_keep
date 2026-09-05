@@ -144,6 +144,29 @@ class AppTheme {
         ),
       ),
       dividerTheme: const DividerThemeData(color: AppColors.line, thickness: 1),
+      // 时间选择器：ColorScheme 未覆盖的槽位（primaryContainer 等）会走
+      // Material 基线蓝，这里把 AM/PM 选择块、表盘指针等全部统一成薄荷绿
+      timePickerTheme: TimePickerThemeData(
+        backgroundColor: AppColors.card,
+        hourMinuteTextColor: AppColors.text,
+        hourMinuteColor: AppColors.sand,
+        dialHandColor: AppColors.mint,
+        dialBackgroundColor: AppColors.sand,
+        dialTextColor: AppColors.text,
+        dayPeriodColor: AppColors.mintLight,
+        dayPeriodTextColor: AppColors.text,
+        dayPeriodBorderSide: const BorderSide(color: AppColors.line),
+        hourMinuteShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.rMd),
+        ),
+        helpTextStyle: const TextStyle(
+            fontSize: AppDimens.fsBody, color: AppColors.textSoft),
+        cancelButtonStyle: TextButton.styleFrom(
+            foregroundColor: AppColors.textSoft),
+        confirmButtonStyle: TextButton.styleFrom(
+            foregroundColor: AppColors.mint,
+            textStyle: const TextStyle(fontWeight: FontWeight.w800)),
+      ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.mint,
         linearTrackColor: AppColors.sand,

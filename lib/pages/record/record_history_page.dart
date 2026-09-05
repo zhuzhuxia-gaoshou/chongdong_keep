@@ -128,7 +128,7 @@ class RecordHistoryPage extends StatelessWidget {
       BuildContext context, AppState state, ExerciseRecord r) {
     final petName =
         state.pets.where((p) => p.id == r.petId).firstOrNull?.name ?? '宝贝';
-    final typeName = _typeLabel(r);
+    final typeName = r.typeDisplayName;
     final emoji = r.type == ExerciseType.walkDog ? '🐕' : '🐈';
 
     return Material(
@@ -250,17 +250,6 @@ class RecordHistoryPage extends StatelessWidget {
   }
 
   // ---- 详情弹窗 ----
-
-  /// 类型名：猫玩记录附带玩法（落库见契约 ⑭ catPlayType），如「陪猫玩 · 逗猫棒」。
-  static String _typeLabel(ExerciseRecord r) {
-    if (r.type == ExerciseType.walkDog) return '遛狗';
-    if (r.catPlayType == null) return '陪猫玩';
-    return CatPlayType.values
-            .where((t) => t.name == r.catPlayType)
-            .firstOrNull
-            ?.label ??
-        '陪猫玩';
-  }
 
   /// 出发照片：优先本地路径（本机产生的记录），丢失时回退服务端图床 URL
   /// （重装/换设备场景，⑬）。都没有则显示占位。

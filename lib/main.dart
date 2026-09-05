@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'services/app_services.dart';
 import 'theme/app_theme.dart';
@@ -24,6 +25,15 @@ class ChongDongKeepApp extends StatelessWidget {
           title: '宠动Keep',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
+          // 全局中文化：时间选择器/日期选择器/对话框按钮等 Material 组件
+          // 默认跟随英文，这里固定中文（Select time → 选择时间 等）
+          locale: const Locale('zh'),
+          supportedLocales: const [Locale('zh'), Locale('en')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           home: Consumer<AppState>(
             builder: (context, state, _) {
               if (state.isLoggedIn) {
