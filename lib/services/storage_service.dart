@@ -102,6 +102,25 @@ class StorageService {
     await prefs.remove('walk_session');
   }
 
+  /// 应用设置开关持久化（键值 JSON 存储）
+  static const String _kAppSettings = 'app_settings';
+
+  static Future<void> saveAppSettings(Map<String, Object?> settings) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kAppSettings, json.encode(settings));
+  }
+
+  static Future<Map<String, Object?>> loadAppSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_kAppSettings);
+    if (raw == null) return {};
+    try {
+      return (json.decode(raw) as Map).cast<String, Object?>();
+    } catch (_) {
+      return {};
+    }
+  }
+
   static Future<void> saveCheckinDays(Set<String> days) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('checkin_days', days.toList());

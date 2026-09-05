@@ -1,42 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../../models/pet.dart';
+import '../../services/app_state.dart';
+import '../../services/weekly_summary.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 
+/// 周报页：本地聚合真实运动数据（M4 过渡方案，后端 ⑳ 就绪后切换）。
 class WeeklyReportPage extends StatelessWidget {
   const WeeklyReportPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final now = DateTime.now();
+    final summary = WeeklySummary.compute(state.records, now);
+    final petNames = state.pets.isEmpty
+        ? '还没有宠物档案'
+        : state.pets.map((p) => p.name).join(' & ');
+    final weekEnd = summary.weekStart.add(const Duration(days: 6));
+    final period =
+        '${summary.weekStart.month}.${summary.weekStart.day} - ${weekEnd.month}.${weekEnd.day}';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('周报'),
         actions: [
-          IconButton(icon: const Icon(Icons.share_outlined), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: '分享周报',
+            onPressed: () => _shareSummary(context, summary, petNames),
+          ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimens.sp16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildScoreCard(),
-            const SizedBox(height: 20),
-            _buildDataOverview(),
-            const SizedBox(height: 20),
-            _buildWeeklyChart(),
-            const SizedBox(height: 20),
-            _buildPetRanking(),
-            const SizedBox(height: 20),
-            _buildTips(),
-            const SizedBox(height: 20),
-            _buildShareCard(),
+            _buildScoreCard(summary, petNames, period),
+            const SizedBox(height: AppDimens.sp20),
+            _buildDataOverview(state, summary),
+            const SizedBox(height: AppDimens.sp20),
+            _buildWeeklyChart(summary),
+            const SizedBox(height: AppDimens.sp20),
+            _buildPetRanking(state, summary, now),
+            const SizedBox(height: AppDimens.sp20),
+            _buildTips(summary),
+            const SizedBox(height: AppDimens.sp20),
+            _buildShareCard(context, summary, petNames),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildScoreCard() {
+  void _shareSummary(BuildContext context, WeeklySummary summary,
+      String petNames) {
+    final text = summary.totalMinutes <= 0
+        ? '我在宠动Keep关注宠物健康，这周一起动起来吧！'
+        : '我这周在宠动Keep陪$petNames运动了 ${summary.totalMinutes} 分钟，'
+            '打卡 ${summary.checkedDays} 天、合计 ${summary.totalKm.toStringAsFixed(1)} 公里，一起坚持吧！';
+    Share.share(text);
+  }
+
+  Widget _buildScoreCard(WeeklySummary s, String petNames, String period) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -48,17 +78,20 @@ class WeeklyReportPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('本周健康报告',
-                      style: TextStyle(fontSize: 13, color: Colors.white70)),
-                  SizedBox(height: 4),
-                  Text('可乐 & 咪咪',
+                  const Text('本周健康报告',
                       style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.onAccent,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Text(petNames,
+                      style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: Colors.white)),
+                          color: AppColors.onAccent)),
                 ],
               ),
               Container(
@@ -68,35 +101,35 @@ class WeeklyReportPage extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text('8.20-8.26',
-                    style: TextStyle(
+                child: Text(period,
+                    style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white)),
+                        color: AppColors.onAccent)),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('A+',
-                  style: TextStyle(
+              Text(s.grade,
+                  style: const TextStyle(
                       fontSize: 56,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white)),
-              SizedBox(width: 12),
+                      color: AppColors.onAccent)),
+              const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('综合评分',
-                      style: TextStyle(fontSize: 12, color: Colors.white70)),
-                  SizedBox(height: 4),
-                  Text('优秀',
-                      style: TextStyle(
+                  Text('本周完成率 ${s.completionRate}%',
+                      style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                  const SizedBox(height: 4),
+                  Text(s.gradeLabel,
+                      style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          color: Colors.white)),
+                          color: AppColors.onAccent)),
                 ],
               ),
             ],
@@ -105,10 +138,14 @@ class WeeklyReportPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildScoreItem('7', '打卡天', Icons.event_available_rounded),
-              _buildScoreItem('425', '总分钟', Icons.timer_rounded),
-              _buildScoreItem('3.8', '总公里', Icons.route_rounded),
-              _buildScoreItem('12,560', '总步数', Icons.directions_walk_rounded),
+              _buildScoreItem('${s.checkedDays}', '打卡天',
+                  Icons.event_available_rounded),
+              _buildScoreItem('${s.totalMinutes}', '总分钟',
+                  Icons.timer_rounded),
+              _buildScoreItem(s.totalKm.toStringAsFixed(1), '总公里',
+                  Icons.route_rounded),
+              _buildScoreItem('${s.totalSteps}', '总步数',
+                  Icons.directions_walk_rounded),
             ],
           ),
         ],
@@ -125,7 +162,7 @@ class WeeklyReportPage extends StatelessWidget {
             style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: Colors.white)),
+                color: AppColors.onAccent)),
         const SizedBox(height: 2),
         Text(label,
             style: const TextStyle(fontSize: 10, color: Colors.white70)),
@@ -133,18 +170,20 @@ class WeeklyReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDataOverview() {
+  Widget _buildDataOverview(AppState state, WeeklySummary s) {
     return Row(
       children: [
         Expanded(
-            child:
-                _buildOverviewCard('连续打卡', '7天', Icons.local_fire_department_rounded, AppColors.coral)),
+            child: _buildOverviewCard('连续打卡', '${state.user?.streakDays ?? 0}天',
+                Icons.local_fire_department_rounded, AppColors.coral)),
         const SizedBox(width: 10),
         Expanded(
-            child:
-                _buildOverviewCard('目标达成', '100%', Icons.track_changes_rounded, AppColors.mint)),
+            child: _buildOverviewCard('目标达成', '${s.completionRate}%',
+                Icons.track_changes_rounded, AppColors.mint)),
         const SizedBox(width: 10),
-        Expanded(child: _buildOverviewCard('好友排名', '第2', Icons.leaderboard_rounded, AppColors.skyDeep)),
+        Expanded(
+            child: _buildOverviewCard('本周次数', '${s.recordCount}',
+                Icons.list_alt_rounded, AppColors.skyDeep)),
       ],
     );
   }
@@ -173,9 +212,11 @@ class WeeklyReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildWeeklyChart() {
+  Widget _buildWeeklyChart(WeeklySummary s) {
     final days = ['一', '二', '三', '四', '五', '六', '日'];
-    final values = [45, 60, 30, 55, 70, 80, 65];
+    final values = s.dailyMinutes;
+    final maxVal = values.reduce((a, b) => a > b ? a : b);
+    final todayIdx = s.daysElapsed - 1;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -207,24 +248,35 @@ class WeeklyReportPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
+          // 高度预算：柱体最大88 + 数值标签~14 + 间距8 + 星期文字~14 = 124 < 150
           SizedBox(
-            height: 120,
+            height: 150,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: List.generate(7, (i) {
-                final height = values[i] / 100 * 100;
-                final isMax =
-                    values[i] == values.reduce((a, b) => a > b ? a : b);
+                final height =
+                    maxVal <= 0 ? 0.0 : values[i] / maxVal * 88.0;
+                final isToday = i == todayIdx;
+                final isMax = maxVal > 0 && values[i] == maxVal;
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        if (values[i] > 0)
+                          Text('${values[i]}',
+                              style: const TextStyle(
+                                  fontSize: 9, color: AppColors.textSoft)),
+                        const SizedBox(height: 2),
                         Container(
-                          height: height,
+                          height: values[i] > 0 ? height : 4, // 零数据画基线小柱
                           decoration: BoxDecoration(
-                            color: isMax ? AppColors.mint : AppColors.sand,
+                            color: values[i] <= 0
+                                ? AppColors.sand
+                                : isMax
+                                    ? AppColors.mint
+                                    : AppColors.mint.withValues(alpha: 0.55),
                             borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(AppDimens.rSm)),
                           ),
@@ -232,7 +284,13 @@ class WeeklyReportPage extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(days[i],
                             style: TextStyle(
-                                fontSize: 10, color: AppColors.textSoft)),
+                                fontSize: 10,
+                                fontWeight: isToday
+                                    ? FontWeight.w800
+                                    : FontWeight.w500,
+                                color: isToday
+                                    ? AppColors.mint
+                                    : AppColors.textSoft)),
                       ],
                     ),
                   ),
@@ -245,22 +303,47 @@ class WeeklyReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPetRanking() {
+  Widget _buildPetRanking(AppState state, WeeklySummary s, DateTime now) {
+    final minutes = WeeklySummary.minutesByPet(state.records, now);
+    final counts = WeeklySummary.countByPet(state.records, now);
+    final rows = state.pets
+        .map((p) => (
+              pet: p,
+              mins: minutes[p.id] ?? 0,
+              count: counts[p.id] ?? 0,
+            ))
+        .toList()
+      ..sort((a, b) => b.mins.compareTo(a.mins));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('宠物本周表现',
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
         const SizedBox(height: 10),
-        _buildPetRankItem('🐕', '可乐', '425分钟', '7天打卡', true),
-        const SizedBox(height: 8),
-        _buildPetRankItem('🐈', '咪咪', '95分钟', '5天玩耍', false),
+        if (rows.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: AppDimens.cardBox(borderColor: AppColors.line),
+            child: const Text('添加宠物后，这里会展示每只宝贝的本周表现',
+                style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+          )
+        else
+          for (var i = 0; i < rows.length; i++) ...[
+            _buildPetRankItem(
+                pet: rows[i].pet,
+                mins: rows[i].mins,
+                count: rows[i].count,
+                isTop: i == 0 && rows[i].mins > 0),
+            if (i != rows.length - 1) const SizedBox(height: 8),
+          ],
       ],
     );
   }
 
   Widget _buildPetRankItem(
-      String emoji, String name, String minutes, String days, bool isTop) {
+      {required Pet pet, required int mins, required int count, required bool isTop}) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -272,7 +355,7 @@ class WeeklyReportPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 28)),
+          Text(pet.speciesEmoji, style: const TextStyle(fontSize: 28)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -280,25 +363,28 @@ class WeeklyReportPage extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(name,
+                    Text(pet.name,
                         style: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w700)),
                     if (isTop) ...[
                       const SizedBox(width: 6),
-                      const Text('👑', style: TextStyle(fontSize: 14)),
+                      const Icon(Icons.emoji_events_rounded,
+                          size: 15, color: AppColors.coral),
                     ],
                   ],
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(minutes,
+                    Text('$mins分钟',
                         style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.mint)),
+                            color: mins > 0
+                                ? AppColors.mint
+                                : AppColors.textMute)),
                     const SizedBox(width: 10),
-                    Text(days,
+                    Text('本周 $count 次',
                         style:
                             TextStyle(fontSize: 11, color: AppColors.textSoft)),
                   ],
@@ -311,7 +397,15 @@ class WeeklyReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTips() {
+  Widget _buildTips(WeeklySummary s) {
+    final advice = s.recordCount == 0
+        ? '本周还没有运动记录哦。哪怕陪宝贝玩 5 分钟也算打卡，现在出发也不晚呀🌸'
+        : s.completionRate >= 80
+            ? '本周打卡 ${s.checkedDays} 天、共 ${s.totalMinutes} 分钟，表现非常棒！下周保持节奏，可以试着增加 5-10 分钟轻松活动哦💗'
+            : s.completionRate >= 50
+                ? '本周完成率 ${s.completionRate}%，稳扎稳打！挑一两个状态好的日子多遛 10 分钟，很快就能突破啦🐾'
+                : '本周有点忙吧？别有压力，每天陪宝贝玩 5 分钟就能保住打卡，慢慢来就好🥺';
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -319,31 +413,32 @@ class WeeklyReportPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.coralLine),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              Icon(Icons.tips_and_updates_rounded, size: 16, color: AppColors.coral),
+              Icon(Icons.tips_and_updates_rounded,
+                  size: 16, color: AppColors.coral),
               SizedBox(width: 6),
-              Text('AI健康建议',
+              Text('本周小结',
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
                       color: AppColors.coral)),
             ],
           ),
-          SizedBox(height: 10),
-          Text(
-            '本周表现非常优秀！可乐的运动达标率100%，建议下周可以尝试增加5-10分钟的轻松跑步。咪咪的玩耍时间偏少，建议每天增加10分钟逗猫时间。',
-            style: TextStyle(fontSize: 12, color: AppColors.text, height: 1.6),
-          ),
+          const SizedBox(height: 10),
+          Text(advice,
+              style:
+                  const TextStyle(fontSize: 12, color: AppColors.text, height: 1.6)),
         ],
       ),
     );
   }
 
-  Widget _buildShareCard() {
+  Widget _buildShareCard(
+      BuildContext context, WeeklySummary s, String petNames) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -363,15 +458,16 @@ class WeeklyReportPage extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                         color: AppColors.mint)),
                 SizedBox(height: 4),
-                Text('生成精美卡片分享给朋友',
+                Text('把这份坚持分享给朋友吧',
                     style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
               ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () {},
+          ElevatedButton.icon(
+            onPressed: () => _shareSummary(context, s, petNames),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.mint),
-            child: const Text('生成卡片'),
+            icon: const Icon(Icons.ios_share_rounded, size: 15),
+            label: const Text('分享周报'),
           ),
         ],
       ),

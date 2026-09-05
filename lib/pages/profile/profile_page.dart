@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../network/api_exception.dart';
+import '../../services/api_config.dart';
 import '../../services/app_services.dart';
 import '../../services/app_state.dart';
 import '../../theme/app_colors.dart';
@@ -400,17 +401,38 @@ class _ProfilePageState extends State<ProfilePage> {
             if (saving) return;
             setSheetState(() => saving = true);
             try {
+              // 头像上传失败不阻塞昵称保存（格式/网络问题单独提示）
               String? avatarUrl;
+              String? avatarWarning;
               if (pickedFile != null) {
-                avatarUrl =
-                    (await AppServices.instance.users.uploadAvatar(pickedFile!))
-                        .url;
+                try {
+                  avatarUrl = (await AppServices.instance.users
+                          .uploadAvatar(pickedFile!))
+                      .url;
+                } on ApiException catch (e) {
+                  avatarWarning = '头像上传失败：${e.friendlyMessage}，昵称仍会保存';
+                }
               }
               final echo = await AppServices.instance.users
                   .patchMe(nickname: nickname, avatarUrl: avatarUrl);
               // ignore: use_build_context_synchronously
               if (!ctx.mounted) return;
-              await ctx.read<AppState>().patchProfile(echo);
+              // Mock 模式的假 CDN 图无法加载：
+              // 换了头像 → 本会话用本地预览路径；只改昵称 → 沿用当前显示的头像
+              var localEcho = echo;
+              if (ApiConfig.isMock) {
+                final currentAvatar = ctx.read<AppState>().user?.avatarUrl;
+                final displayAvatar = pickedFile != null
+                    ? pickedFile!.path
+                    : currentAvatar ?? echo.avatarUrl;
+                localEcho = echo.copyWith(avatarUrl: displayAvatar);
+              }
+              await ctx.read<AppState>().patchProfile(localEcho);
+              // ignore: use_build_context_synchronously
+              if (!ctx.mounted) return;
+              if (avatarWarning != null) {
+                messenger.showSnackBar(SnackBar(content: Text(avatarWarning)));
+              }
               // ignore: use_build_context_synchronously
               if (ctx.mounted) Navigator.pop(ctx);
             } on ApiException catch (e) {
