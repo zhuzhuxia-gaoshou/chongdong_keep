@@ -43,6 +43,7 @@ class _HomePageState extends State<HomePage> {
   WeatherData? _weather;
   bool _loadingWeather = false;
   String? _manualCity; // 手动选择的城市名，null = 跟随定位
+  String? _selectedPetId; // 首页展示的宠物，null = 第一只
 
   @override
   void initState() {
@@ -164,7 +165,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final pet = state.currentPet;
+    final pet = state.pets
+            .where((p) => p.id == _selectedPetId)
+            .firstOrNull ??
+        state.currentPet;
 
     return Scaffold(
       body: SafeArea(
@@ -273,6 +277,47 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 多宠切换底部弹窗：选择首页展示的宠物
+  void _showPetPicker(BuildContext context, AppState state) {
+    final effectiveId =
+        _selectedPetId ?? state.currentPet?.id;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(14),
+              child: Text('选择要查看的宠物',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+            ),
+            for (final p in state.pets)
+              ListTile(
+                leading:
+                    Text(p.speciesEmoji, style: const TextStyle(fontSize: 22)),
+                title: Text(p.name,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                subtitle: Text(p.breed),
+                trailing: p.id == effectiveId
+                    ? const Icon(Icons.check_rounded, color: AppColors.mint)
+                    : null,
+                onTap: () {
+                  setState(() => _selectedPetId = p.id);
+                  Navigator.pop(ctx);
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
@@ -489,6 +534,32 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
+              // 多宠切换入口
+              if (state.pets.length > 1)
+                GestureDetector(
+                  onTap: () => _showPetPicker(context, state),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimens.sp8, vertical: AppDimens.sp4),
+                    decoration: BoxDecoration(
+                      color: AppColors.sand,
+                      borderRadius: BorderRadius.circular(AppDimens.rFull),
+                      border: Border.all(color: AppColors.line),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.swap_horiz_rounded,
+                            size: 14, color: AppColors.textSoft),
+                        SizedBox(width: 2),
+                        Text('切换',
+                            style: TextStyle(
+                                fontSize: AppDimens.fsMicro,
+                                color: AppColors.textSoft)),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: AppDimens.sp12),

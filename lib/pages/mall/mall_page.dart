@@ -23,7 +23,7 @@ class MallPage extends StatelessWidget {
                         color: AppColors.mint)),
                 const SizedBox(height: 8),
                 Text(
-                  '精选宠物粮、零食、用品、保健品\n按你家宝贝的档案智能推荐\n运动打卡还能换优惠券 🎁',
+                  '精选宠物粮、零食、用品\n按你家宝贝的档案智能推荐\n运动打卡还能换优惠券 🎁',
                   style: TextStyle(
                       fontSize: 13, color: AppColors.textSoft, height: 1.6),
                   textAlign: TextAlign.center,
@@ -37,7 +37,6 @@ class MallPage extends StatelessWidget {
                     _featTag('🍖 主食'),
                     _featTag('🦴 零食'),
                     _featTag('🎾 用品'),
-                    _featTag('💊 保健品'),
                     _featTag('⌚ 智能硬件'),
                   ],
                 ),
