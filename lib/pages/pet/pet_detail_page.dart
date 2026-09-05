@@ -145,8 +145,19 @@ class _PetDetailPageState extends State<PetDetailPage> {
                 CircleAvatar(
                   radius: 45,
                   backgroundColor: Colors.white.withValues(alpha: 0.3),
-                  child: Text(pet.speciesEmoji,
-                      style: const TextStyle(fontSize: 48)),
+                  child: pet.avatarUrl != null
+                      ? ClipOval(
+                          child: Image.network(
+                              pet.avatarUrl!,
+                              width: 90,
+                              height: 90,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Text(
+                                  pet.speciesEmoji,
+                                  style: const TextStyle(fontSize: 48))),
+                        )
+                      : Text(pet.speciesEmoji,
+                          style: const TextStyle(fontSize: 48)),
                 ),
                 const SizedBox(height: AppDimens.sp12),
                 Text(pet.name,
