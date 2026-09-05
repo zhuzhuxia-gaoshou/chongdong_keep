@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'api_config.dart';
 import '../models/exercise_record.dart';
+import '../utils/app_platform.dart';
 import '../utils/coord_convert.dart';
 
 /// GPS定位与地图服务
@@ -19,6 +20,8 @@ class MapService {
 
   /// 检查并请求定位权限
   static Future<bool> checkPermission() async {
+    // Web：浏览器自行管理定位授权，geolocator 取位置时会触发授权弹窗
+    if (AppPlatform.isWeb) return true;
     var status = await Permission.location.status;
     if (status.isDenied) {
       status = await Permission.location.request();

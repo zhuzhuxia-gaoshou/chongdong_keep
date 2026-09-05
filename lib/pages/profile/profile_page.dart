@@ -53,7 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: AppDimens.sp16),
               SectionCard(title: '我的宠物', children: [
                 MenuTile(
-                  leading: _emoji('🐕'),
+                  leading: _menuIcon(Icons.pets_rounded),
                   title: '宠物档案',
                   subtitle: '${state.pets.length}只宠物',
                   onTap: () {
@@ -68,7 +68,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   },
                 ),
                 _menuTile(
-                    '➕',
+                    Icons.add_rounded,
                     '添加宠物',
                     null,
                     () => Navigator.push(context,
@@ -77,7 +77,7 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: AppDimens.sp12),
               SectionCard(title: '运动与打卡', children: [
                 _menuTile(
-                    '📅',
+                    Icons.calendar_month_rounded,
                     '打卡日历',
                     '${user?.streakDays ?? 0}天连续',
                     () => Navigator.push(
@@ -85,7 +85,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         MaterialPageRoute(
                             builder: (_) => const CheckInCalendarPage()))),
                 _menuTile(
-                    '📋',
+                    Icons.list_alt_rounded,
                     '运动记录',
                     '${state.records.length}次',
                     () => Navigator.push(
@@ -93,7 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         MaterialPageRoute(
                             builder: (_) => const RecordHistoryPage()))),
                 _menuTile(
-                    '🏆',
+                    Icons.emoji_events_rounded,
                     '排行榜',
                     '好友周榜',
                     () => Navigator.push(
@@ -101,7 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         MaterialPageRoute(
                             builder: (_) => const RankingPage()))),
                 _menuTile(
-                    '📊',
+                    Icons.bar_chart_rounded,
                     '周报月报',
                     '查看本周报告',
                     () => Navigator.push(
@@ -109,13 +109,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         MaterialPageRoute(
                             builder: (_) => const WeeklyReportPage()))),
                 _menuTile(
-                    '🏅',
+                    Icons.workspace_premium_rounded,
                     '徽章成就',
                     '6/16已解锁',
                     () => Navigator.push(context,
                         MaterialPageRoute(builder: (_) => const BadgesPage()))),
                 _menuTile(
-                    '🗺️',
+                    Icons.route_rounded,
                     '收藏路线',
                     '3条路线',
                     () => Navigator.push(
@@ -126,7 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: AppDimens.sp12),
               SectionCard(title: '家庭与健康', children: [
                 _menuTile(
-                    '👨‍👩‍👧',
+                    Icons.groups_rounded,
                     '家庭照护组',
                     '3位成员',
                     () => Navigator.push(
@@ -134,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         MaterialPageRoute(
                             builder: (_) => const FamilyGroupPage()))),
                 _menuTile(
-                    '🏥',
+                    Icons.health_and_safety_rounded,
                     '健康安全',
                     '症状自查/附近医院',
                     () => Navigator.push(
@@ -145,14 +145,14 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: AppDimens.sp12),
               SectionCard(title: '设置', children: [
                 _menuTile(
-                    '🔒',
+                    Icons.lock_outline_rounded,
                     '隐私与设置',
                     null,
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (_) => const SettingsPage()))),
-                _menuTile('📤', '分享宠动Keep', null, null),
+                _menuTile(Icons.ios_share_rounded, '分享宠动Keep', null, null),
               ]),
               const SizedBox(height: AppDimens.sp16),
               SizedBox(
@@ -172,18 +172,26 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _emoji(String emoji) =>
-      Text(emoji, style: const TextStyle(fontSize: AppDimens.fsTitle));
+  /// 着色圆角图标底：菜单行统一的高级感前导件
+  Widget _menuIcon(IconData icon) => Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: AppColors.mintLight,
+          borderRadius: BorderRadius.circular(AppDimens.rSm),
+        ),
+        child: Icon(icon, size: 20, color: AppColors.mint),
+      );
 
-  /// 菜单行快捷构造：emoji 图标 + 标题 + 副标题 + 统一右箭头。
+  /// 菜单行快捷构造：着色图标底 + 标题 + 副标题 + 统一右箭头。
   Widget _menuTile(
-    String emoji,
+    IconData icon,
     String title,
     String? subtitle,
     VoidCallback? onTap,
   ) {
     return MenuTile(
-      leading: _emoji(emoji),
+      leading: _menuIcon(icon),
       title: title,
       subtitle: subtitle,
       onTap: onTap,

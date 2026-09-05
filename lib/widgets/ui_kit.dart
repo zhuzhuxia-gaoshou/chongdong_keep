@@ -18,13 +18,14 @@ class SectionCard extends StatelessWidget {
       children: [
         if (title != null)
           Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: AppDimens.sp4, vertical: AppDimens.sp4),
+            padding: const EdgeInsets.only(
+                left: AppDimens.sp4, bottom: AppDimens.sp8),
             child: Text(
               title!,
               style: TextStyle(
                 fontSize: AppDimens.fsFoot,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
                 color: AppColors.textSoft,
               ),
             ),
@@ -33,8 +34,16 @@ class SectionCard extends StatelessWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             color: AppColors.card,
-            borderRadius: BorderRadius.circular(AppDimens.rMd),
+            borderRadius: BorderRadius.circular(AppDimens.rLg),
             border: Border.all(color: AppColors.line),
+            boxShadow: [
+              // 极淡的环境投影：让白卡从米白底上"浮"起来（高级感关键）
+              BoxShadow(
+                color: AppColors.text.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(children: children),

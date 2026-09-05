@@ -105,10 +105,10 @@ class WeeklyReportPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildScoreItem('7', '打卡天', '✅'),
-              _buildScoreItem('425', '总分钟', '⏱️'),
-              _buildScoreItem('3.8', '总公里', '📏'),
-              _buildScoreItem('12,560', '总步数', '👟'),
+              _buildScoreItem('7', '打卡天', Icons.event_available_rounded),
+              _buildScoreItem('425', '总分钟', Icons.timer_rounded),
+              _buildScoreItem('3.8', '总公里', Icons.route_rounded),
+              _buildScoreItem('12,560', '总步数', Icons.directions_walk_rounded),
             ],
           ),
         ],
@@ -116,10 +116,10 @@ class WeeklyReportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreItem(String value, String label, String emoji) {
+  Widget _buildScoreItem(String value, String label, IconData icon) {
     return Column(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 16)),
+        Icon(icon, size: 16, color: Colors.white),
         const SizedBox(height: 4),
         Text(value,
             style: const TextStyle(
@@ -138,29 +138,29 @@ class WeeklyReportPage extends StatelessWidget {
       children: [
         Expanded(
             child:
-                _buildOverviewCard('连续打卡', '7天', '🔥', AppColors.coralLight)),
+                _buildOverviewCard('连续打卡', '7天', Icons.local_fire_department_rounded, AppColors.coral)),
         const SizedBox(width: 10),
         Expanded(
             child:
-                _buildOverviewCard('目标达成', '100%', '🎯', AppColors.mintLight)),
+                _buildOverviewCard('目标达成', '100%', Icons.track_changes_rounded, AppColors.mint)),
         const SizedBox(width: 10),
-        Expanded(child: _buildOverviewCard('好友排名', '第2', '🏆', AppColors.sand)),
+        Expanded(child: _buildOverviewCard('好友排名', '第2', Icons.leaderboard_rounded, AppColors.skyDeep)),
       ],
     );
   }
 
   Widget _buildOverviewCard(
-      String label, String value, String emoji, Color bgColor) {
+      String label, String value, IconData icon, Color iconColor) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.line),
       ),
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 20)),
+          Icon(icon, size: 20, color: iconColor),
           const SizedBox(height: 6),
           Text(value,
               style:
@@ -180,7 +180,7 @@ class WeeklyReportPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.line),
       ),
@@ -264,7 +264,7 @@ class WeeklyReportPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
             color: isTop ? AppColors.mint : AppColors.line,
@@ -324,7 +324,7 @@ class WeeklyReportPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('💡', style: TextStyle(fontSize: 16)),
+              Icon(Icons.tips_and_updates_rounded, size: 16, color: AppColors.coral),
               SizedBox(width: 6),
               Text('AI健康建议',
                   style: TextStyle(

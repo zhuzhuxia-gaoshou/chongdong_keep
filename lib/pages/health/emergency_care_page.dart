@@ -68,7 +68,7 @@ class _EmergencyCarePageState extends State<EmergencyCarePage> {
     final contact = pet?.emergencyContact;
 
     return Scaffold(
-      appBar: AppBar(title: Text('🚨 紧急就医${pet == null ? '' : ' · ${pet.name}'}')),
+      appBar: AppBar(title: Text('紧急就医${pet == null ? '' : ' · ${pet.name}'}')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -103,7 +103,7 @@ class _EmergencyCarePageState extends State<EmergencyCarePage> {
                     ElevatedButton.icon(
                       onPressed: () => _dial(_phoneFromContact(contact)!),
                       icon: const Icon(Icons.phone, size: 16),
-                      label: Text('📞 拨打紧急联系人（$contact）',
+                      label: Text('拨打紧急联系人（$contact）',
                           style: const TextStyle(fontSize: 12)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -122,10 +122,10 @@ class _EmergencyCarePageState extends State<EmergencyCarePage> {
             const Text('等待就医时可以这样做',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),
-            _tipItem('🛏️ 让宝贝安静平躺，避免剧烈移动和按压'),
-            _tipItem('🌡️ 注意保暖，但也别捂得太严实'),
-            _tipItem('🚫 不要自行喂药喂食（可能加重病情）'),
-            _tipItem('📞 提前打电话给医院确认急诊与位置，减少等待'),
+            _tipItem(Icons.bed_rounded, '让宝贝安静平躺，避免剧烈移动和按压'),
+            _tipItem(Icons.thermostat_rounded, '注意保暖，但也别捂得太严实'),
+            _tipItem(Icons.block_rounded, '不要自行喂药喂食（可能加重病情）'),
+            _tipItem(Icons.call_rounded, '提前打电话给医院确认急诊与位置，减少等待'),
             const SizedBox(height: 16),
             if (_lat != null && _lng != null)
               NearbyHospitalsSection(wgsLat: _lat!, wgsLng: _lng!)
@@ -152,13 +152,13 @@ class _EmergencyCarePageState extends State<EmergencyCarePage> {
     );
   }
 
-  Widget _tipItem(String text) {
+  Widget _tipItem(IconData icon, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('•', style: TextStyle(fontWeight: FontWeight.w800)),
+          Icon(icon, size: 14, color: AppColors.coral),
           const SizedBox(width: 8),
           Expanded(
               child: Text(text,

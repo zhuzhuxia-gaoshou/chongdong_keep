@@ -41,6 +41,9 @@ class AppColors {
   static const Color card = Color(0xFFFFFFFF);
   static const Color line = Color(0xFFECEAE5);
 
+  /// 强调面（绿色/珊瑚渐变）之上的文字与图标
+  static const Color onAccent = Color(0xFFFFFFFF);
+
   /// 英雄渐变：五处页头共用的品牌渐变配方
   static const LinearGradient heroGradient = LinearGradient(
     colors: [mint, mintBright],

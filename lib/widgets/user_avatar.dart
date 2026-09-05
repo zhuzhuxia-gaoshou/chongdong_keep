@@ -1,13 +1,12 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'local_image.dart';
 
 /// 统一用户头像：兼容三种取值来源——
-/// 空 → emoji 兜底；http(s) URL → CachedNetworkImage；否则视为本地路径 Image.file。
-/// 任一加载失败都优雅回落到 emoji 圆形底，杜绝 FileImage(httpUrl) 崩溃。
+/// 空 → emoji 兜底；http(s) URL → CachedNetworkImage；否则视为本地路径
+/// （移动端 Image.file / Web 端 blob 地址）。任一加载失败都优雅回落到 emoji 圆形底。
 class UserAvatar extends StatelessWidget {
   const UserAvatar({
     super.key,
@@ -36,11 +35,10 @@ class UserAvatar extends StatelessWidget {
                 child: Text(fallbackEmoji),
               ),
             )
-          : Image.file(
-              File(u),
+          : buildLocalImage(
+              u,
               width: radius * 2,
               height: radius * 2,
-              fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Center(
                 child: Text(fallbackEmoji),
               ),

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +7,7 @@ import '../../services/map_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 import '../../widgets/app_bottom_sheet.dart';
+import '../../widgets/local_image.dart';
 import '../share/share_card_page.dart';
 
 /// 运动记录列表页
@@ -56,7 +55,7 @@ class RecordHistoryPage extends StatelessWidget {
               context.read<AppState>().setIndex(1); // 切到运动 tab
               Navigator.pop(context);
             },
-            child: const Text('🐾 去遛一次'),
+            child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.pets_rounded, size: 16), SizedBox(width: 6), Text('去遛一次')]),
           ),
         ],
       ),
@@ -112,7 +111,7 @@ class RecordHistoryPage extends StatelessWidget {
                 color: AppColors.mintLight,
                 borderRadius: BorderRadius.circular(AppDimens.rFull),
               ),
-              child: const Text('🎯 已打卡',
+              child: const Text('已打卡',
                   style: TextStyle(
                       fontSize: AppDimens.fsCaption,
                       fontWeight: FontWeight.w700,
@@ -263,11 +262,10 @@ class RecordHistoryPage extends StatelessWidget {
           if (r.startPhotoPath != null) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(AppDimens.rMd),
-              child: Image.file(
-                File(r.startPhotoPath!),
+              child: buildLocalImage(
+                r.startPhotoPath!,
                 height: 160,
                 width: double.infinity,
-                fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   height: 160,
                   color: AppColors.sand,
@@ -294,13 +292,13 @@ class RecordHistoryPage extends StatelessWidget {
               _detailStat(MapService.formatDistance(r.distance), '距离'),
               _detailStat('${r.steps}', '步数'),
               _detailStat('${r.route.length}', '轨迹点'),
-              _detailStat(r.canCheckIn ? '✅' : '—', '打卡'),
+              _detailStat(r.canCheckIn ? '达标' : '—', '打卡'),
             ],
           ),
           if (r.locationName != null && r.locationName!.isNotEmpty) ...[
             const SizedBox(height: AppDimens.sp12),
             Text(
-              '📍 ${r.locationName}',
+              '${r.locationName}',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(

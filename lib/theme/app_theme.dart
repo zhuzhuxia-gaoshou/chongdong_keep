@@ -35,7 +35,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.mint,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onAccent,
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           shape: RoundedRectangleBorder(
@@ -43,7 +43,8 @@ class AppTheme {
           ),
           textStyle: const TextStyle(
             fontSize: 15,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
           ),
         ),
       ),
@@ -135,6 +136,14 @@ class AppTheme {
                 ? AppColors.mintLight
                 : AppColors.sand),
       ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.card,
+        modalBackgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(color: AppColors.line, thickness: 1),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.mint,
         linearTrackColor: AppColors.sand,

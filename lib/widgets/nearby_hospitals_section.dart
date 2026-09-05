@@ -65,7 +65,7 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
                       widget.wgsLat, widget.wgsLng);
                 });
               },
-              child: const Text('🔄 重新定位搜索',
+              child: const Text('重新定位搜索',
                   style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -78,7 +78,7 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return _statusCard('🔍 正在查找附近的宠物医院…');
+              return _statusCard('正在查找附近的宠物医院…');
             }
             final list = snap.data;
             if (list == null) {
@@ -107,7 +107,7 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.line),
       ),
@@ -125,7 +125,7 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.line),
       ),
@@ -137,7 +137,7 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
               color: AppColors.mintLight,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Text('🏥', style: TextStyle(fontSize: 20)),
+            child: Icon(Icons.local_hospital_rounded, size: 20, color: AppColors.mint),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -159,7 +159,7 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
                 ],
                 if (dist.isNotEmpty) ...[
                   const SizedBox(height: 2),
-                  Text('📍 距离约 $dist',
+                  Text('距离约 $dist',
                       style: const TextStyle(
                           fontSize: 11,
                           color: AppColors.mint,

@@ -51,7 +51,7 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
         children: [
           Row(
             children: [
-              const Text('👨‍👩‍👧', style: TextStyle(fontSize: 28)),
+              const Icon(Icons.groups_rounded, size: 30, color: AppColors.onAccent),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text('可乐的家',
@@ -128,7 +128,7 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.line),
       ),

@@ -84,7 +84,7 @@ class _HomePageState extends State<HomePage> {
   void _showLocationPicker() {
     AppBottomSheet.show<void>(
       context,
-      title: '🌤️ 选择天气位置',
+      title: '选择天气位置',
       builder: (ctx) => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,7 +263,8 @@ class _HomePageState extends State<HomePage> {
               border: Border.all(color: AppColors.line),
             ),
             child: const Center(
-              child: Text('🔔', style: TextStyle(fontSize: AppDimens.fsSub)),
+              child: Icon(Icons.notifications_none_rounded,
+                  size: 20, color: AppColors.textSoft),
             ),
           ),
         ],
@@ -368,7 +369,7 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.circular(AppDimens.rSm),
                   ),
                   child: Text(
-                    '💡 ${weather.walkAdvice}',
+                    weather.walkAdvice,
                     style: const TextStyle(
                       fontSize: AppDimens.fsCaption,
                       fontWeight: FontWeight.w600,
@@ -391,9 +392,12 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: Row(
                     children: [
+                      const Icon(Icons.warning_amber_rounded,
+                          size: 14, color: AppColors.coral),
+                      const SizedBox(width: AppDimens.sp4),
                       Flexible(
                         child: Text(
-                          '⚠️ ${weather!.warning!.title}',
+                          weather!.warning!.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -516,9 +520,9 @@ class _HomePageState extends State<HomePage> {
             children: [
               Expanded(
                 child: _buildGoalChip(
-                  '🎯基础',
+                  '基础目标',
                   '$goalMinutes分',
-                  progress >= 1 ? '✅已达成' : '进行中',
+                  progress >= 1 ? '已达成' : '进行中',
                   AppColors.mintLight,
                   AppColors.mint,
                 ),
@@ -526,7 +530,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: AppDimens.sp8),
               Expanded(
                 child: _buildGoalChip(
-                  '💡建议',
+                  '建议目标',
                   '${(goalMinutes * 0.8).toInt()}分',
                   '今天忙',
                   AppColors.sky,
@@ -536,7 +540,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: AppDimens.sp8),
               Expanded(
                 child: _buildGoalChip(
-                  '🏆挑战',
+                  '挑战目标',
                   '${(goalMinutes * 1.2).toInt()}分',
                   '冲榜',
                   AppColors.coralLight,
@@ -661,8 +665,10 @@ class _HomePageState extends State<HomePage> {
               shape: BoxShape.circle,
               color: AppColors.card,
             ),
-            child:
-                const Center(child: Text('🏅', style: TextStyle(fontSize: 22))),
+            child: const Center(
+              child: Icon(Icons.local_fire_department_rounded,
+                  size: 24, color: AppColors.coral),
+            ),
           ),
         ],
       ),
@@ -672,9 +678,10 @@ class _HomePageState extends State<HomePage> {
   Widget _buildStartButton(BuildContext context, Pet pet) {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
+      child: ElevatedButton.icon(
         onPressed: () => context.read<AppState>().setIndex(1),
-        child: Text('🐾 开始遛${pet.name}'),
+        icon: const Icon(Icons.pets_rounded, size: 18),
+        label: Text('开始遛${pet.name}'),
       ),
     );
   }
@@ -684,7 +691,8 @@ class _HomePageState extends State<HomePage> {
       children: [
         Expanded(
           child: _QuickAction(
-            label: '🐈 陪猫玩',
+            label: '陪猫玩',
+            icon: Icons.sports_esports_rounded,
             color: AppColors.sand,
             borderColor: AppColors.line,
             onTap: () => Navigator.push(
@@ -696,7 +704,8 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(width: AppDimens.sp8),
         Expanded(
           child: _QuickAction(
-            label: '📅 打卡日历',
+            label: '打卡日历',
+            icon: Icons.calendar_month_rounded,
             color: AppColors.coralLight,
             borderColor: AppColors.coralLine,
             foregroundColor: AppColors.coral,
@@ -734,12 +743,13 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(height: AppDimens.sp24),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AddPetPage()),
             ),
-            child: const Text('➕ 添加宠物'),
+            icon: const Icon(Icons.add_rounded, size: 18),
+            label: const Text('添加宠物'),
           ),
         ],
       ),
@@ -750,6 +760,7 @@ class _HomePageState extends State<HomePage> {
 class _QuickAction extends StatelessWidget {
   const _QuickAction({
     required this.label,
+    required this.icon,
     required this.color,
     required this.borderColor,
     required this.onTap,
@@ -757,6 +768,7 @@ class _QuickAction extends StatelessWidget {
   });
 
   final String label;
+  final IconData icon;
   final Color color;
   final Color borderColor;
   final Color foregroundColor;
@@ -773,13 +785,20 @@ class _QuickAction extends StatelessWidget {
           padding: const EdgeInsets.all(AppDimens.sp12),
           decoration: AppDimens.cardBox(color: color, borderColor: borderColor),
           child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: AppDimens.fsFoot,
-                fontWeight: FontWeight.w700,
-                color: foregroundColor,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 17, color: foregroundColor),
+                const SizedBox(width: AppDimens.sp8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: AppDimens.fsFoot,
+                    fontWeight: FontWeight.w700,
+                    color: foregroundColor,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
