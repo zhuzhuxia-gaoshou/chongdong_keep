@@ -666,7 +666,9 @@ class _WalkPageState extends State<WalkPage> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final pets = state.pets;
+    // GPS 遛狗仅针对狗狗；猫咪走首页「陪猫玩」手动记录
+    final pets =
+        state.pets.where((p) => p.species == PetSpecies.dog).toList();
 
     // 启动恢复检查：等宠物列表就绪后触发一次（进程被杀场景，PRD 4.2.3）
     if (!_recoveryChecked && !_isWalking && pets.isNotEmpty) {
@@ -679,10 +681,33 @@ class _WalkPageState extends State<WalkPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('运动')),
       body: pets.isEmpty
-          ? _buildNoPet()
+          ? (state.pets.isEmpty
+              ? _buildNoPet()
+              : _buildNoDog())
           : _isWalking
               ? _buildWalkingView(state)
               : _buildReadyView(pets, state),
+    );
+  }
+
+  /// 只养猫的提示：遛狗功能面向狗狗，猫咪引导去「陪猫玩」
+  Widget _buildNoDog() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('🐈', style: TextStyle(fontSize: 48)),
+          const SizedBox(height: 12),
+          Text('GPS 遛狗面向狗狗',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.text)),
+          const SizedBox(height: 6),
+          Text('猫咪的运动去首页「陪猫玩」记录哦',
+              style: TextStyle(color: AppColors.textSoft)),
+        ],
+      ),
     );
   }
 

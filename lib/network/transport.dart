@@ -106,7 +106,8 @@ class HttpTransport implements Transport {
         ..fields.addAll(fields)
         ..headers.addAll(headers ?? const {})
         ..files.add(
-          http.MultipartFile.fromBytes(fileField, bytes, filename: filename),
+          http.MultipartFile.fromBytes(fileField, bytes,
+              filename: filename, contentType: _contentTypeFor(filename)),
         );
       final streamed = await _client.send(req).timeout(timeout);
       final resp = await http.Response.fromStream(streamed).timeout(timeout);
@@ -116,6 +117,20 @@ class HttpTransport implements Transport {
     } on http.ClientException {
       throw ApiException(-1, '网络连接失败');
     }
+  }
+
+  /// 从文件名推断 MIME——multer 按 part 的 Content-Type 判类型，
+  /// 不显式设置时是 application/octet-stream，会被服务端 40006 拒绝
+  static http.MediaType _contentTypeFor(String filename) {
+    const map = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'webp': 'image/webp',
+    };
+    final ext =
+        filename.contains('.') ? filename.split('.').last.toLowerCase() : '';
+    return http.MediaType.parse(map[ext] ?? 'application/octet-stream');
   }
 
   Map<String, dynamic>? _decode(http.Response resp) {

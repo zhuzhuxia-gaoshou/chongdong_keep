@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../theme/app_colors.dart';
 import '../../models/exercise_record.dart';
@@ -15,6 +16,8 @@ class ShareCardPage extends StatefulWidget {
 class _ShareCardPageState extends State<ShareCardPage> {
   int _selectedTemplate = 0;
   bool _showLocation = false;
+  bool _saving = false;
+  final ScreenshotController _screenshotController = ScreenshotController();
 
   final List<Map<String, dynamic>> _templates = [
     {'name': '可爱风', 'color': AppColors.mint, 'icon': '🐾'},
@@ -35,7 +38,10 @@ class _ShareCardPageState extends State<ShareCardPage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildCardPreview(),
+                  Screenshot(
+                    controller: _screenshotController,
+                    child: _buildCardPreview(),
+                  ),
                   const SizedBox(height: 20),
                   const Text('选择模板',
                       style:
@@ -107,7 +113,11 @@ class _ShareCardPageState extends State<ShareCardPage> {
             child: Center(
               child: CustomPaint(
                 size: const Size(200, 80),
-                painter: _CardRoutePainter(Colors.white70),
+                // 真实轨迹绘制（无轨迹时回退装饰曲线）
+                painter: _CardRoutePainter(
+                  widget.record.route,
+                  Colors.white70,
+                ),
               ),
             ),
           ),
@@ -219,6 +229,32 @@ class _ShareCardPageState extends State<ShareCardPage> {
     );
   }
 
+  /// 截图卡片 → 系统分享面板（用户可保存到相册或发给好友）
+  Future<void> _captureAndShare() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      final bytes = await _screenshotController.capture();
+      if (bytes == null) throw StateError('capture null');
+      await Share.shareXFiles(
+        [
+          XFile.fromData(bytes,
+              mimeType: 'image/png', name: 'chongdong_card.png'),
+        ],
+        text:
+            '我在宠动Keep完成了${widget.record.duration.inMinutes}分钟的运动，一起来关注宠物健康吧！',
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('生成失败，再试一次哦')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
   Widget _buildBottomBar() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -230,11 +266,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
         children: [
           Expanded(
             child: OutlinedButton(
-              onPressed: () async {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('卡片已保存到相册')),
-                );
-              },
+              onPressed: _saving ? null : _captureAndShare,
               child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.save_alt_rounded, size: 15), SizedBox(width: 4), Text('保存相册')]),
             ),
           ),
@@ -256,29 +288,72 @@ class _ShareCardPageState extends State<ShareCardPage> {
 }
 
 class _CardRoutePainter extends CustomPainter {
+  final List<GeoPoint> route;
   final Color color;
 
-  _CardRoutePainter(this.color);
+  _CardRoutePainter(this.route, this.color);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 2
+      ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
 
-    final path = Path()
-      ..moveTo(10, size.height * 0.8)
-      ..quadraticBezierTo(size.width * 0.3, size.height * 0.3, size.width * 0.5,
-          size.height * 0.6)
-      ..quadraticBezierTo(size.width * 0.7, size.height * 0.9,
-          size.width * 0.85, size.height * 0.2)
-      ..lineTo(size.width - 10, size.height * 0.4);
+    // 无轨迹/单点：画装饰曲线（catPlay 等无 GPS 记录）
+    if (route.length < 2) {
+      final path = Path()
+        ..moveTo(10, size.height * 0.8)
+        ..quadraticBezierTo(size.width * 0.3, size.height * 0.3,
+            size.width * 0.5, size.height * 0.6)
+        ..quadraticBezierTo(size.width * 0.7, size.height * 0.9,
+            size.width * 0.85, size.height * 0.2)
+        ..lineTo(size.width - 10, size.height * 0.4);
+      canvas.drawPath(path, paint);
+      return;
+    }
 
+    // 真实轨迹：按经纬度包围盒缩放进卡片区域
+    double minLat = route.first.latitude, maxLat = route.first.latitude;
+    double minLng = route.first.longitude, maxLng = route.first.longitude;
+    for (final p in route) {
+      minLat = p.latitude < minLat ? p.latitude : minLat;
+      maxLat = p.latitude > maxLat ? p.latitude : maxLat;
+      minLng = p.longitude < minLng ? p.longitude : minLng;
+      maxLng = p.longitude > maxLng ? p.longitude : maxLng;
+    }
+    const pad = 12.0;
+    final spanLat = (maxLat - minLat).abs().clamp(1e-5, 180.0);
+    final spanLng = (maxLng - minLng).abs().clamp(1e-5, 180.0);
+    final scale = (size.width - pad * 2) / spanLng <
+            (size.height - pad * 2) / spanLat
+        ? (size.width - pad * 2) / spanLng
+        : (size.height - pad * 2) / spanLat;
+    final offX = (size.width - spanLng * scale) / 2;
+    final offY = (size.height - spanLat * scale) / 2;
+
+    Offset toCanvas(GeoPoint p) => Offset(
+          offX + (p.longitude - minLng) * scale,
+          offY + (maxLat - p.latitude) * scale,
+        );
+
+    final path = Path()..moveTo(toCanvas(route.first).dx, toCanvas(route.first).dy);
+    for (var i = 1; i < route.length; i++) {
+      final o = toCanvas(route[i]);
+      path.lineTo(o.dx, o.dy);
+    }
     canvas.drawPath(path, paint);
+
+    // 起点/终点标记
+    final start = toCanvas(route.first);
+    final end = toCanvas(route.last);
+    canvas.drawCircle(start, 4, Paint()..color = Colors.white);
+    canvas.drawCircle(end, 5, Paint()..color = Colors.white);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _CardRoutePainter oldDelegate) =>
+      oldDelegate.route.length != route.length;
 }

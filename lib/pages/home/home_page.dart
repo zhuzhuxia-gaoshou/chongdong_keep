@@ -254,17 +254,22 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          Container(
-            width: AppDimens.sp40,
-            height: AppDimens.sp40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.card,
-              border: Border.all(color: AppColors.line),
+          GestureDetector(
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('消息中心即将开放，敬请期待')),
             ),
-            child: const Center(
-              child: Icon(Icons.notifications_none_rounded,
-                  size: 20, color: AppColors.textSoft),
+            child: Container(
+              width: AppDimens.sp40,
+              height: AppDimens.sp40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.card,
+                border: Border.all(color: AppColors.line),
+              ),
+              child: const Center(
+                child: Icon(Icons.notifications_none_rounded,
+                    size: 20, color: AppColors.textSoft),
+              ),
             ),
           ),
         ],
