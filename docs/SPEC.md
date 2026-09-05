@@ -158,7 +158,7 @@ test/                      # 80 用例（网络/Mock/DTO/恢复/退避/坐标）
 id / userId(隶属) / name / species(dog/cat) / breed / gender(male/female) / ageYears / birthDate(为准) / weight(kg) / avatarUrl? / allergies[] / chronicConditions[] / isNeutered / isVaccinated / emergencyContact? —— 单用户上限 20 只（超限 40003）。
 
 ### exercise_records
-id / clientRecordId(幂等键) / petId / userId / type(walkDog/catPlay) / startTime / endTime(带时区) / duration(**秒**) / distance(**公里**,两位小数) / steps / route(GeoPoint[]，存储自定但出入网 JSON 不变；≥5000 点前端抽稀) / locationName? / startPhotoUrl?(本地模型叫 startPhotoPath，API 层换名) / isCompleted / isManual —— 软删除宠物后记录保留。
+id / clientRecordId(幂等键) / petId / userId / type(walkDog/catPlay) / catPlayType?(仅 catPlay：featherWand/laserPointer/yarnBall/electricMouse/bouncyBall/boxAdventure，非法值 40000) / startTime / endTime(带时区) / duration(**秒**) / distance(**公里**,两位小数) / steps / route(GeoPoint[]，存储自定但出入网 JSON 不变；≥5000 点前端抽稀) / locationName? / startPhotoUrl?(本地模型叫 startPhotoPath，API 层换名) / isCompleted / isManual —— 软删除宠物后记录保留。
 
 ### 派生逻辑归后端
 打卡判定、周报/月报聚合、排行榜分数、徽章解锁——**全部服务端计算下发**，前端只渲染（防客户端造假）。
