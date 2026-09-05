@@ -28,6 +28,8 @@ class RecordDto {
         'clientRecordId': r.clientRecordId,
         'petId': r.petId,
         'type': exerciseTypeToWire(r.type),
+        'catPlayType':
+            r.type == ExerciseType.catPlay ? r.catPlayType : null,
         'startTime': formatIsoWithOffset(r.startTime),
         'endTime': formatIsoWithOffset(r.endTime),
         'duration': r.duration.inSeconds,
@@ -50,6 +52,7 @@ class RecordDto {
       petId: '${j['petId'] ?? ''}',
       userId: '${j['userId'] ?? ''}',
       type: exerciseTypeFromWire('${j['type'] ?? 'walkDog'}'),
+      catPlayType: j['catPlayType'] as String?,
       startTime: start,
       endTime: end.isAfter(start) ? end : start,
       duration: Duration(

@@ -87,7 +87,7 @@ class _CatPlayPageState extends State<CatPlayPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(type.emoji, style: const TextStyle(fontSize: 28)),
-                            Text(type.name, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isActive ? AppColors.mint : AppColors.text)),
+                            Text(type.label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isActive ? AppColors.mint : AppColors.text)),
                           ],
                         ),
                       ),
@@ -159,6 +159,7 @@ class _CatPlayPageState extends State<CatPlayPage> {
         petId: catId,
         userId: state.user?.id ?? '',
         type: ExerciseType.catPlay,
+        catPlayType: _playType.name, // 玩法落库（契约 ⑭ catPlayType）
         startTime: now.subtract(Duration(minutes: _duration)),
         endTime: now,
         duration: Duration(minutes: _duration),

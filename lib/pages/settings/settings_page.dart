@@ -6,9 +6,11 @@ import '../../network/api_exception.dart';
 import '../../services/api_config.dart';
 import '../../services/app_services.dart';
 import '../../services/app_state.dart';
+import '../../services/reminder_service.dart';
 import '../../services/storage_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../utils/app_platform.dart';
 import '../../widgets/ui_kit.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -24,6 +26,8 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _publicRanking = true;
   bool _showDistance = true;
   bool _shareLocation = false;
+  int _reminderHour = 20;
+  int _reminderMinute = 0;
   bool _settingsLoaded = false;
 
   @override
@@ -32,7 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadSettings();
   }
 
-  /// 开关持久化：进入页面恢复上次的选择
+  /// 开关持久化：进入页面恢复上次的选择；提醒开着则顺带确保通知已调度。
   Future<void> _loadSettings() async {
     final s = await StorageService.loadAppSettings();
     if (!mounted) return;
@@ -42,8 +46,13 @@ class _SettingsPageState extends State<SettingsPage> {
       _publicRanking = (s['publicRanking'] as bool?) ?? true;
       _showDistance = (s['showDistance'] as bool?) ?? true;
       _shareLocation = (s['shareLocation'] as bool?) ?? false;
+      _reminderHour = (s['reminderHour'] as int?) ?? 20;
+      _reminderMinute = (s['reminderMinute'] as int?) ?? 0;
       _settingsLoaded = true;
     });
+    if (_pushEnabled && AppPlatform.isMobile) {
+      await _scheduleReminderQuietly();
+    }
   }
 
   void _update(String key, bool value) {
@@ -69,6 +78,57 @@ class _SettingsPageState extends State<SettingsPage> {
       'shareLocation': _shareLocation,
     });
     if (key == 'publicRanking') _syncPublicRank(value);
+    if (key == 'pushEnabled') _applyReminder(value);
+  }
+
+  /// 运动提醒开关：请求通知权限 → 调度每日本地通知；权限被拒则回退开关。
+  Future<void> _applyReminder(bool enabled) async {
+    if (!AppPlatform.isMobile) return;
+    try {
+      if (!enabled) {
+        await ReminderService.instance.cancelDaily();
+        return;
+      }
+      final granted = await ReminderService.instance.ensurePermission();
+      if (!mounted) return;
+      if (!granted) {
+        _update('pushEnabled', false);
+        _toast('没有通知权限，请在系统设置里允许宠动Keep发送通知');
+        return;
+      }
+      await _scheduleReminderQuietly();
+    } catch (_) {
+      // 通知服务异常（模拟器缺 Google 服务等）不阻塞设置页
+    }
+  }
+
+  Future<void> _scheduleReminderQuietly() async {
+    try {
+      await ReminderService.instance
+          .scheduleDaily(hour: _reminderHour, minute: _reminderMinute);
+    } catch (_) {
+      // 调度失败静默：下次进入设置页会再尝试
+    }
+  }
+
+  /// 提醒时间可调：选择后持久化并立即重排今日通知。
+  Future<void> _pickReminderTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: _reminderHour, minute: _reminderMinute),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _reminderHour = picked.hour;
+      _reminderMinute = picked.minute;
+    });
+    final s = Map<String, Object?>.from(await StorageService.loadAppSettings());
+    s['reminderHour'] = _reminderHour;
+    s['reminderMinute'] = _reminderMinute;
+    await StorageService.saveAppSettings(s);
+    if (_pushEnabled && AppPlatform.isMobile) {
+      await _scheduleReminderQuietly();
+    }
   }
 
   /// 公开排行榜参与开关同步到服务端（Live 模式）：后端据此把本用户从榜单剔除。
@@ -110,8 +170,9 @@ class _SettingsPageState extends State<SettingsPage> {
               leading: const Icon(Icons.alarm,
                   size: AppDimens.sp20, color: AppColors.textSoft),
               title: '提醒时间',
-              subtitle: '晚上 8:00（通知服务接入后可调）',
-              onTap: () => _toast('本地通知提醒将在通知服务接入后开放'),
+              subtitle:
+                  '每天 ${_reminderHour.toString().padLeft(2, '0')}:${_reminderMinute.toString().padLeft(2, '0')}',
+              onTap: _pickReminderTime,
             ),
           ]),
           const SizedBox(height: AppDimens.sp16),

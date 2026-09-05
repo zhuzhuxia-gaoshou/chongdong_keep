@@ -13,7 +13,8 @@ import '../../widgets/ui_kit.dart';
 import '../../widgets/user_avatar.dart';
 import '../badge/badges_page.dart';
 import '../calendar/checkin_calendar_page.dart';
-import '../family/family_group_page.dart';
+// 家庭照护组页面暂无入口（假数据，待 P2 真做时恢复）：
+// import '../family/family_group_page.dart';
 import '../health/health_safety_page.dart';
 import '../pet/add_pet_page.dart';
 import '../pet/pet_detail_page.dart';
@@ -116,15 +117,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         MaterialPageRoute(builder: (_) => const BadgesPage()))),
               ]),
               const SizedBox(height: AppDimens.sp12),
+              // 家庭照护组入口已摘除：后端无此模块（P2 规划中），
+              // 页面曾是假成员/假邀请，待真做时再恢复入口（见 PROGRESS 盘点 A）
               SectionCard(title: '家庭与健康', children: [
-                _menuTile(
-                    Icons.groups_rounded,
-                    '家庭照护组',
-                    '和家人一起照护宝贝',
-                    () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const FamilyGroupPage()))),
                 _menuTile(
                     Icons.health_and_safety_rounded,
                     '健康安全',
