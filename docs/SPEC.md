@@ -152,6 +152,7 @@ test/                      # 80 用例（网络/Mock/DTO/恢复/退避/坐标）
 | totalExerciseCount | int | 服务端统计，**不接受客户端上报** |
 | streakDays | int | 连续打卡，服务端计算 |
 | signCardCount | int | 补签卡，初始 3 |
+| isPublicRank | bool | 隐私：是否参与公开排行榜，默认 true（设置页开关经 ⑦ 同步） |
 
 ### pets
 id / userId(隶属) / name / species(dog/cat) / breed / gender(male/female) / ageYears / birthDate(为准) / weight(kg) / avatarUrl? / allergies[] / chronicConditions[] / isNeutered / isVaccinated / emergencyContact? —— 单用户上限 20 只（超限 40003）。
@@ -225,7 +226,7 @@ id / clientRecordId(幂等键) / petId / userId / type(walkDog/catPlay) / startT
 
 ### 4.4 用户 / 宠物 / 上传接口
 
-**⑥⑦ /users/me**：GET → UserDTO；PATCH `{nickname?, avatarUrl?}` 至少一项，nickname 去空格后 1-12 字否则 40002。
+**⑥⑦ /users/me**：GET → UserDTO；PATCH `{nickname?, avatarUrl?, isPublicRank?}` 至少一项，nickname 去空格后 1-12 字否则 40002。`isPublicRank=false` 后服务端在排行榜构建与读取双侧剔除该用户（构建缓存 ≤5 分钟内由读取侧兜底过滤，名次重排），前端"我的排名"区同步显示隐私提示。
 
 **⑧ GET /pets**：分页可省（默认一页 100），创建时间正序（前端「第一只为默认宠物」依赖此序）。
 
@@ -233,11 +234,11 @@ id / clientRecordId(幂等键) / petId / userId / type(walkDog/catPlay) / startT
 
 **⑩⑪⑫ 详情/PATCH/DELETE**：PATCH 字段均可选，回更新后 PetDTO；非本人宠物 40301；DELETE 软删，有关联记录也允许（历史保留），响应 `data:{}`。
 
-**⑬ POST /upload**（multipart/form-data）：字段 `file`（jpg/png/webp）+ `businessType`（avatar≤2MB / walkPhoto≤1MB）→ `{url, fileSize}`。url 必须公网可直接访问（HTTPS）。错误 40006 类型不支持 / 40007 超限。存储介质自定，前端只认 URL。
+**⑬ POST /upload**（multipart/form-data）：字段 `file`（jpg/png/webp）+ `businessType`（avatar≤2MB / walkPhoto≤1MB）→ `{url, fileSize}`。url 必须公网可直接访问（HTTPS）。错误 40006 类型不支持 / 40007 超限。存储介质自定，前端只认 URL。**已接真（2026-09-05）**：前端头像与出发照片均先传 ⑬；出发照片在 Live 上报 ⑭ 前上传，失败静默降级只发 null（不阻塞记录），重试凭 clientRecordId 缓存免重复上传。
 
 ### 4.5 运动记录接口（核心）
 
-**⑭ POST /exercise-records** — 请求 = ExerciseRecordDTO 去 id/userId/createdAt，**clientRecordId 必填**。route 上限 5000 点（超出前端抽稀）。
+**⑭ POST /exercise-records** — 请求 = ExerciseRecordDTO 去 id/userId/createdAt，**clientRecordId 必填**。route 上限 5000 点（超出前端抽稀）。`startPhotoUrl` 为 ⑬ 返回的图床地址；本地路径绝不上网。
 - **幂等**：同 clientRecordId 二次提交不重复入库，返回已有记录 + `duplicated:true`
 - 校验：endTime>startTime（否则 40001）；duration 与起止差偏差>30% 采信客户端但打审计标记；route=[] 仅 catPlay 或 isManual 合法；宠物归属失败 40301
 
