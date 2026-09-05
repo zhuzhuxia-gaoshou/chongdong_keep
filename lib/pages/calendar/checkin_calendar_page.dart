@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../network/api_exception.dart';
 import '../../theme/app_colors.dart';
 import '../../models/user.dart' show CheckInRecord;
+import '../../services/app_services.dart';
 import '../../services/app_state.dart';
 
 /// 打卡日历：M3 起 Live 模式读服务端 ⑰（跨设备一致），
 /// Mock 或服务端不可达时回退本地算法（[AppState.getMonthlyCheckIns] 同规则）。
+/// 补签（⑲）：点击过去未打卡的日期，消耗补签卡恢复连续天数。
 class CheckInCalendarPage extends StatefulWidget {
   const CheckInCalendarPage({super.key});
 
@@ -37,6 +40,53 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
           DateTime(_currentMonth.year, _currentMonth.month + delta, 1);
     });
     _load();
+  }
+
+  /// 补签（契约 ⑲）：确认后消耗补签卡，恢复该日打卡与连续天数
+  Future<void> _makeUpFor(DateTime date, List<CheckInRecord> checkIns) async {
+    final state = context.read<AppState>();
+    final messenger = ScaffoldMessenger.of(context);
+    final signCards = state.user?.signCardCount ?? 0;
+    if (signCards <= 0) {
+      messenger.showSnackBar(
+          const SnackBar(content: Text('补签卡不足（每月 3 张），分享 APP 可以获得哦')));
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('🎫 使用补签卡'),
+        content: Text(
+            '为 ${date.month} 月 ${date.day} 日补签？\n将消耗 1 张补签卡（剩余 $signCards 张），'
+            '并恢复当天的连续打卡天数。'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('取消')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('确认补签'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      final remaining = await AppServices.instance.records.makeUpCheckin(date);
+      if (!mounted) return;
+      final user = state.user;
+      if (user != null) {
+        await state.updateUser(user.copyWith(signCardCount: remaining));
+      }
+      messenger.showSnackBar(SnackBar(
+          content: Text('补签成功！剩余补签卡 $remaining 张')));
+      _load();
+    } on ApiException {
+      // 具体原因（卡不足/已打卡）由服务端给出，静默失败页面自动刷新
+      messenger.showSnackBar(const SnackBar(
+          content: Text('补签没有成功，刷新后再试试哦')));
+      _load();
+    }
   }
 
   @override
@@ -125,26 +175,43 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                         date.month == today.month &&
                         date.day == today.day;
 
-                    return Container(
-                      margin: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color:
-                            isChecked ? AppColors.mintLight : AppColors.card,
-                        border: Border.all(
-                          color: isToday
-                              ? AppColors.mint
-                              : (isChecked ? AppColors.mint : AppColors.line),
-                          width: isToday ? 2 : 1,
+                    return GestureDetector(
+                      onTap: (!isChecked && date.isBefore(today))
+                          ? () => _makeUpFor(date, checkIns)
+                          : null,
+                      child: Container(
+                        margin: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color:
+                              isChecked ? AppColors.mintLight : AppColors.card,
+                          border: Border.all(
+                            color: isToday
+                                ? AppColors.mint
+                                : (isChecked ? AppColors.mint : AppColors.line),
+                            width: isToday ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$day',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: isChecked ? AppColors.mint : AppColors.text,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$day',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isChecked
+                                      ? AppColors.mint
+                                      : AppColors.text,
+                                ),
+                              ),
+                              if (!isChecked &&
+                                  date.isBefore(today) &&
+                                  signCards > 0)
+                                const Text('🎫',
+                                    style: TextStyle(fontSize: 9)),
+                            ],
                           ),
                         ),
                       ),
@@ -172,13 +239,15 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                                   fontSize: 12,
                                   color: AppColors.coral,
                                   fontWeight: FontWeight.w700)),
-                          Text('使用补签卡恢复连续天数',
+                          Text('点击日历上带 🎫 的日期即可补签',
                               style: TextStyle(
                                   fontSize: 10, color: AppColors.textSoft)),
                         ],
                       ),
                       ElevatedButton(
-                        onPressed: signCards > 0 ? () {} : null,
+                        onPressed: signCards > 0
+                            ? () => _toast('点击日历上带 🎫 的过去日期即可补签')
+                            : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.coral,
                           padding: const EdgeInsets.symmetric(
@@ -196,6 +265,10 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
         },
       ),
     );
+  }
+
+  void _toast(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   Widget _statCard(String value, String label) {

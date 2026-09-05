@@ -2,7 +2,9 @@ import '../network/api_client.dart';
 import '../network/token_store.dart';
 import '../network/transport.dart';
 import '../repositories/auth_repository.dart';
+import '../repositories/badge_repository.dart';
 import '../repositories/pet_repository.dart';
+import '../repositories/ranking_repository.dart';
 import '../repositories/record_repository.dart';
 import '../repositories/user_repository.dart';
 import 'api_config.dart';
@@ -20,6 +22,8 @@ class AppServices {
     required this.users,
     required this.pets,
     required this.records,
+    required this.ranking,
+    required this.badges,
   });
 
   static AppServices? _instance;
@@ -48,6 +52,8 @@ class AppServices {
       users: UserRepository(api),
       pets: PetRepository(api),
       records: RecordRepository(api),
+      ranking: RankingRepository(api),
+      badges: BadgeRepository(api),
     );
   }
 
@@ -61,4 +67,6 @@ class AppServices {
   final UserRepository users;
   final PetRepository pets;
   final RecordRepository records;
+  final RankingRepository ranking;
+  final BadgeRepository badges;
 }

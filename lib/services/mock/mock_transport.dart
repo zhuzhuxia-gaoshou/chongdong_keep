@@ -232,6 +232,18 @@ class MockTransport implements Transport {
         if (path == '/api/v1/checkins/calendar' && method == 'GET') {
           return _calendar(query, headers);
         }
+        if (path == '/api/v1/checkins/today' && method == 'GET') {
+          return _todayStatus(headers);
+        }
+        if (path == '/api/v1/checkins/makeup' && method == 'POST') {
+          return _makeup(body, headers);
+        }
+        if (path == '/api/v1/ranking' && method == 'GET') {
+          return _ranking(query, headers);
+        }
+        if (path == '/api/v1/badges' && method == 'GET') {
+          return _badges(headers);
+        }
         throw ApiException(kCodeServerErrorBase, 'Mock 未实现该接口: $path');
     }
   }
@@ -710,6 +722,219 @@ class MockTransport implements Transport {
     final local = d.isUtc ? d.toLocal() : d;
     return DateTime(local.year, local.month, local.day);
   }
+
+  // ---- 打卡日历（契约 ⑰；判定同 §4.7：完成且≥300秒，不限类型）----
+
+  /// 补签日（Mock 内存态）：userId -> 已补签日期集合
+  final Map<String, Set<String>> _makeupDays = {};
+
+  /// 用户单条记录是否达标（isCompleted && duration≥300 秒）
+  bool _rowQualifies(Map<String, dynamic> row) {
+    if ((row['isCompleted'] as bool? ?? false) != true) return false;
+    return (_asInt(row['duration']) ?? 0) >= 300;
+  }
+
+  /// 某日期（yyyy-MM-dd）是否已打卡：自然达标 或 已补签
+  bool _checkedOn(String userId, String date) {
+    if ((_makeupDays[userId] ?? const {}).contains(date)) return true;
+    for (final row in _recordsByUser[userId] ?? const []) {
+      if (!_rowQualifies(row)) continue;
+      final d = _dateOnlyOf(_isoDate(row['startTime']));
+      if (d != null && _dateKey(d) == date) return true;
+    }
+    return false;
+  }
+
+  static String _dateKey(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
+
+  /// 连续打卡天数（从今天或昨天起往回数）
+  int _mockStreak(String userId) {
+    final dates = <String>{};
+    for (final row in _recordsByUser[userId] ?? const []) {
+      if (!_rowQualifies(row)) continue;
+      final d = _dateOnlyOf(_isoDate(row['startTime']));
+      if (d != null) dates.add(_dateKey(d));
+    }
+    if (dates.isEmpty) return 0;
+    var cursor = DateTime(now().year, now().month, now().day);
+    var key = _dateKey(cursor);
+    if (!dates.contains(key)) {
+      cursor = cursor.subtract(const Duration(days: 1));
+      key = _dateKey(cursor);
+    }
+    var streak = 0;
+    while (dates.contains(key)) {
+      streak++;
+      cursor = cursor.subtract(const Duration(days: 1));
+      key = _dateKey(cursor);
+    }
+    return streak;
+  }
+
+  // ⑱ GET /checkins/today
+  Map<String, dynamic> _todayStatus(Map<String, String>? headers) {
+    final userId = _userIdFromAuth(headers);
+    if (userId == null) {
+      return {'code': kCodeAccessExpired, 'message': '登录已过期'};
+    }
+    final todayKey = _dateKey(now());
+    int minutes = 0;
+    var checked = false;
+    for (final row in _recordsByUser[userId] ?? const []) {
+      final d = _dateOnlyOf(_isoDate(row['startTime']));
+      if (d == null || _dateKey(d) != todayKey) continue;
+      minutes += ((_asInt(row['duration']) ?? 0) / 60).round();
+      if (_rowQualifies(row)) checked = true;
+    }
+    if ((_makeupDays[userId] ?? const {}).contains(todayKey)) {
+      checked = true;
+    }
+    return {
+      'code': 0,
+      'data': {'isChecked': checked, 'todayMinutes': minutes},
+    };
+  }
+
+  // ⑲ POST /checkins/makeup
+  Map<String, dynamic> _makeup(
+      Object? body, Map<String, String>? headers) {
+    final userId = _userIdFromAuth(headers);
+    if (userId == null) {
+      return {'code': kCodeAccessExpired, 'message': '登录已过期'};
+    }
+    final map = (body as Map?) ?? const {};
+    final date = (map['date'] as String?) ?? '';
+    final today = _dateKey(now());
+    if (date.isEmpty || date.compareTo(today) >= 0) {
+      return {'code': kCodeParamInvalid, 'message': '只能补签过去的日期'};
+    }
+    if (_checkedOn(userId, date)) {
+      return {'code': kCodeNoNeedMakeup, 'message': '该日无需补签'};
+    }
+    final user = _usersByPhone.values
+        .firstWhere((u) => u['id'] == userId, orElse: () => {});
+    final cards = _asInt(user['signCardCount']) ?? 0;
+    if (cards <= 0) {
+      return {'code': kCodeMakeupCardInsufficient, 'message': '补签卡不足'};
+    }
+    user['signCardCount'] = cards - 1;
+    (_makeupDays[userId] ??= {}).add(date);
+    return {
+      'code': 0,
+      'data': {
+        'date': date,
+        'isChecked': true,
+        'signCardCount': cards - 1,
+      },
+    };
+  }
+
+  // ㉒ GET /ranking
+  Map<String, dynamic> _ranking(
+      Map<String, String>? query, Map<String, String>? headers) {
+    final meId = _userIdFromAuth(headers);
+    if (meId == null) {
+      return {'code': kCodeAccessExpired, 'message': '登录已过期'};
+    }
+    final type = query?['type'] ?? 'weekly';
+    final since = type == 'monthly'
+        ? DateTime(now().year, now().month, 1) // 自然月
+        : now().subtract(const Duration(days: 6)); // 滚动近 7 天
+    final agg = <String, int>{};
+    _recordsByUser.forEach((uid, rows) {
+      for (final row in rows) {
+        final iso = row['startTime'] as String?;
+        if (iso == null) continue;
+        final start = DateTime.tryParse(iso);
+        if (start == null || start.isBefore(since)) continue;
+        agg[uid] = (agg[uid] ?? 0) + ((_asInt(row['duration']) ?? 0) / 60).round();
+      }
+    });
+    final entries = agg.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final list = <Map<String, dynamic>>[];
+    String? nicknameOf(String uid) {
+      for (final u in _usersByPhone.values) {
+        if (u['id'] == uid) return u['nickname'] as String?;
+      }
+      return '匿名铲屎官';
+    }
+
+    for (var i = 0; i < entries.length && list.length < 50; i++) {
+      final uid = entries[i].key;
+      list.add({
+        'rank': i + 1,
+        'userId': uid,
+        'nickname': nicknameOf(uid),
+        'avatarUrl': null,
+        'value': entries[i].value,
+        'isMe': uid == meId,
+      });
+    }
+    final myMinutes = agg[meId] ?? 0;
+    final myRank =
+        myMinutes <= 0 ? 0 : entries.indexWhere((e) => e.key == meId) + 1;
+    return {
+      'code': 0,
+      'data': {
+        'type': type,
+        'metric': 'minutes',
+        'updatedAt': _isoDate(now()),
+        'list': list,
+        'me': {
+          'rank': myRank,
+          'userId': meId,
+          'nickname': nicknameOf(meId),
+          'avatarUrl': null,
+          'value': myMinutes,
+          'isMe': true,
+        },
+      },
+    };
+  }
+
+  // ㉓ GET /badges（规则与真实服务端对齐的简化版）
+  Map<String, dynamic> _badges(Map<String, String>? headers) {
+    final userId = _userIdFromAuth(headers);
+    if (userId == null) {
+      return {'code': kCodeAccessExpired, 'message': '登录已过期'};
+    }
+    final rows = _recordsByUser[userId] ?? const [];
+    final completed = rows.where(_rowQualifies).toList();
+    final totalKm =
+        completed.fold<double>(0, (s, r) => s + ((_asDouble(r['distance']) ?? 0)));
+    final streak = _mockStreak(userId);
+    final rules = <(String, String, String, String, bool)>{
+      ('first_move', '初次出发', '🐾', '完成第一次运动', completed.isNotEmpty),
+      ('streak_7', '七日坚持', '🔥', '连续打卡 7 天', streak >= 7),
+      ('streak_30', '月度之星', '🏆', '连续打卡 30 天', streak >= 30),
+      ('km_50', '五十公里', '🚀', '累计运动 50 公里', totalKm >= 50),
+      ('count_25', '运动达人', '⚡', '累计完成 25 次运动', completed.length >= 25),
+    };
+    var unlocked = 0;
+    final list = rules.map((r) {
+      final (id, name, emoji, description, ok) = r;
+      if (ok) unlocked++;
+      return {
+        'id': id,
+        'name': name,
+        'emoji': emoji,
+        'description': description,
+        'isUnlocked': ok,
+        'unlockedAt': ok ? _isoDate(now()) : null,
+      };
+    }).toList();
+    return {
+      'code': 0,
+      'data': {'list': list, 'unlockedCount': unlocked},
+    };
+  }
+
+  static double? _asDouble(Object? v) =>
+      v is num ? v.toDouble() : (v is String ? double.tryParse(v) : null);
 
   // ---- 打卡日历（契约 ⑰；判定同 §4.7：完成且≥300秒，不限类型）----
 

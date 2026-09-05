@@ -1,46 +1,129 @@
 import 'package:flutter/material.dart';
+import '../../models/dto/badge_dto.dart';
+import '../../network/api_exception.dart';
+import '../../services/app_services.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimens.dart';
 
-class BadgesPage extends StatelessWidget {
+/// 徽章成就：服务端真实解锁状态（契约 ㉓，GET 时惰性评估解锁事件）。
+class BadgesPage extends StatefulWidget {
   const BadgesPage({super.key});
+
+  @override
+  State<BadgesPage> createState() => _BadgesPageState();
+}
+
+class _BadgesPageState extends State<BadgesPage> {
+  late Future<BadgeResult> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = AppServices.instance.badges.fetchBadges();
+  }
+
+  void _refetch() {
+    setState(() {
+      _future = AppServices.instance.badges.fetchBadges();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('徽章成就')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildProgressHeader(),
-            const SizedBox(height: 20),
-            _buildCategoryTab('打卡成就', Icons.calendar_month_rounded, [
-              _buildBadge('连续7天', '🔥', true, null),
-              _buildBadge('连续30天', '🏆', true, null),
-              _buildBadge('连续100天', '💎', false, '还差73天'),
-              _buildBadge('连续365天', '👑', false, '还差338天'),
-            ]),
-            const SizedBox(height: 20),
-            _buildCategoryTab('运动成就', Icons.directions_run, [
-              _buildBadge('首次打卡', '🎉', true, null),
-              _buildBadge('运动100公里', '🚀', true, null),
-              _buildBadge('运动500公里', '🌍', false, '还差462公里'),
-              _buildBadge('单日10公里', '⚡', false, '尚未解锁'),
-            ]),
-            const SizedBox(height: 20),
-            _buildCategoryTab('猫咪专属', Icons.pets, [
-              _buildBadge('首次陪玩', '🎮', true, null),
-              _buildBadge('陪猫100次', '🐱', false, '还差92次'),
-              _buildBadge('猫粮专家', '🥣', false, '尚未解锁'),
-            ]),
-          ],
-        ),
+      body: FutureBuilder<BadgeResult>(
+        future: _future,
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(
+                child: CircularProgressIndicator(color: AppColors.mint));
+          }
+          if (snap.hasError) {
+            final msg = snap.error is ApiException
+                ? (snap.error as ApiException).friendlyMessage
+                : '加载失败，请重试';
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.wifi_off_rounded,
+                      size: 40, color: AppColors.textMute),
+                  const SizedBox(height: AppDimens.sp12),
+                  Text(msg, style: const TextStyle(color: AppColors.textSoft)),
+                  const SizedBox(height: AppDimens.sp12),
+                  OutlinedButton(onPressed: _refetch, child: const Text('重试')),
+                ],
+              ),
+            );
+          }
+          final result = snap.data!;
+          final total = result.list.length;
+          final locked = total - result.unlockedCount;
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildProgressHeader(result.unlockedCount, total),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const Icon(Icons.emoji_events_rounded,
+                        size: 18, color: AppColors.mint),
+                    const SizedBox(width: 8),
+                    const Text('我的徽章墙',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w800)),
+                    const Spacer(),
+                    Text('已解锁 ${result.unlockedCount} / $total',
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textSoft)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: 0.8,
+                  children: [
+                    for (final b in result.list)
+                      _buildBadge(
+                        b.name,
+                        b.emoji,
+                        b.isUnlocked,
+                        b.isUnlocked ? null : b.description,
+                      ),
+                  ],
+                ),
+                if (total == 0) ...[
+                  const SizedBox(height: 20),
+                  const Center(
+                    child: Text('🐾 徽章体系准备中，先去运动打卡吧',
+                        style: TextStyle(color: AppColors.textSoft)),
+                  ),
+                ],
+                if (locked > 0) ...[
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Text('还有 $locked 枚徽章等待解锁，继续加油！',
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textSoft)),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildProgressHeader() {
+  Widget _buildProgressHeader(int unlocked, int total) {
+    final progress = total <= 0 ? 0.0 : unlocked / total;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -51,18 +134,21 @@ class BadgesPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('已解锁 6 / 16 个徽章',
-                        style: TextStyle(fontSize: 14, color: Colors.white)),
-                    SizedBox(height: 6),
-                    Text('继续加油！',
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white)),
+                    Text('已解锁 $unlocked / $total 个徽章',
+                        style: const TextStyle(
+                            fontSize: 14, color: AppColors.onAccent)),
+                    const SizedBox(height: 6),
+                    Text(
+                      unlocked == total ? '全部解锁，太厉害了！' : '继续加油！',
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.onAccent),
+                    ),
                   ],
                 ),
               ),
@@ -72,17 +158,18 @@ class BadgesPage extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text('🏅', style: TextStyle(fontSize: 28)),
+                child: const Icon(Icons.emoji_events_rounded,
+                    size: 30, color: AppColors.onAccent),
               ),
             ],
           ),
           const SizedBox(height: 14),
           ClipRRect(
             borderRadius: BorderRadius.circular(999),
-            child: const LinearProgressIndicator(
-              value: 6 / 16,
+            child: LinearProgressIndicator(
+              value: progress,
               backgroundColor: Colors.white30,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
               minHeight: 8,
             ),
           ),
@@ -90,9 +177,10 @@ class BadgesPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildHeaderStat('6', '已解锁'),
-              _buildHeaderStat('10', '进行中'),
-              _buildHeaderStat('6', '未解锁'),
+              _buildHeaderStat('$unlocked', '已解锁'),
+              _buildHeaderStat('$total', '全部徽章'),
+              _buildHeaderStat(
+                  total <= 0 ? '0' : '${(progress * 100).round()}%', '完成度'),
             ],
           ),
         ],
@@ -107,7 +195,7 @@ class BadgesPage extends StatelessWidget {
             style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: Colors.white)),
+                color: AppColors.onAccent)),
         const SizedBox(height: 2),
         Text(label,
             style: const TextStyle(fontSize: 11, color: Colors.white70)),
@@ -115,35 +203,8 @@ class BadgesPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryTab(String title, IconData icon, List<Widget> badges) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 18, color: AppColors.mint),
-            const SizedBox(width: 8),
-            Text(title,
-                style:
-                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 4,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 14,
-          childAspectRatio: 0.85,
-          children: badges,
-        ),
-      ],
-    );
-  }
-
   Widget _buildBadge(
-      String name, String emoji, bool isUnlocked, String? progress) {
+      String name, String emoji, bool isUnlocked, String? note) {
     return Column(
       children: [
         Container(
@@ -188,11 +249,14 @@ class BadgesPage extends StatelessWidget {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        if (progress != null)
+        if (note != null && note.isNotEmpty)
           Text(
-            progress,
-            style: const TextStyle(fontSize: 9, color: AppColors.coral),
+            isUnlocked ? '已解锁' : note,
+            style: TextStyle(
+                fontSize: 9, color: isUnlocked ? AppColors.mint : AppColors.coral),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
       ],
     );
