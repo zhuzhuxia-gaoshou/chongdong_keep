@@ -63,17 +63,18 @@ class WeatherService {
         final humidity = int.tryParse(now['humidity'] ?? '50') ?? 50;
         final windScale = int.tryParse(now['windScale'] ?? '2') ?? 2;
 
-        // 用腾讯地图逆地址解析获取城市名
+        // 用和风 GeoAPI 查城市名（腾讯逆地理在浏览器端会被 CORS 拦截）
         String cityName = '当前位置';
         try {
-          final mapRes = await http.get(Uri.parse(
-            'https://apis.map.qq.com/ws/geocoder/v1/?location=$lat,$lon&key=${ApiConfig.tencentMapKey}&output=json',
+          final geoRes = await http.get(Uri.parse(
+            '${ApiConfig.qweatherHost}/geo/v2/city/lookup?location=$lon,$lat&key=${ApiConfig.qweatherKey}&number=1',
           ));
-          if (mapRes.statusCode == 200) {
-            final mapData = json.decode(mapRes.body);
-            if (mapData['status'] == 0 && mapData['result'] != null) {
-              final addr = mapData['result']['address_component'];
-              cityName = addr['city'] ?? addr['district'] ?? '当前位置';
+          if (geoRes.statusCode == 200) {
+            final geoData = json.decode(geoRes.body);
+            if (geoData['code'] == '200' &&
+                (geoData['location'] as List?)?.isNotEmpty == true) {
+              cityName =
+                  geoData['location'][0]['name'] as String? ?? cityName;
             }
           }
         } catch (_) {}

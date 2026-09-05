@@ -417,12 +417,15 @@ class _ProfilePageState extends State<ProfilePage> {
                   .patchMe(nickname: nickname, avatarUrl: avatarUrl);
               // ignore: use_build_context_synchronously
               if (!ctx.mounted) return;
-              // Mock 模式的假 CDN 图无法加载：本会话用本地预览路径展示头像
+              // Mock 模式的假 CDN 图无法加载：
+              // 换了头像 → 本会话用本地预览路径；只改昵称 → 沿用当前显示的头像
               var localEcho = echo;
-              if (ApiConfig.isMock &&
-                  pickedFile != null &&
-                  avatarUrl != null) {
-                localEcho = echo.copyWith(avatarUrl: pickedFile!.path);
+              if (ApiConfig.isMock) {
+                final currentAvatar = ctx.read<AppState>().user?.avatarUrl;
+                final displayAvatar = pickedFile != null
+                    ? pickedFile!.path
+                    : currentAvatar ?? echo.avatarUrl;
+                localEcho = echo.copyWith(avatarUrl: displayAvatar);
               }
               await ctx.read<AppState>().patchProfile(localEcho);
               // ignore: use_build_context_synchronously
