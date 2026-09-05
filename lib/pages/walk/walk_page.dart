@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimens.dart';
 import '../../services/app_state.dart';
 import '../../services/map_service.dart';
 import '../../services/storage_service.dart';
@@ -711,78 +712,149 @@ class _WalkPageState extends State<WalkPage> {
     );
   }
 
+  /// 出发准备页（2026-09 重设计）：大头像卡片，一眼分清是哪只狗；
+  /// 列表占满剩余空间，按钮文案随选中数量变化。
   Widget _buildReadyView(List<Pet> pets, AppState state) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('🗺️', style: TextStyle(fontSize: 64)),
-            const SizedBox(height: 16),
-            Text('准备好遛狗了吗？',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 8),
-            Text('选择要一起运动的宠物，点击开始',
-                style: TextStyle(fontSize: 13, color: AppColors.textSoft)),
-            const SizedBox(height: 24),
-            Wrap(
-              spacing: 8,
-              children: pets.map((pet) {
-                final isSelected = _selectedPets.contains(pet.id);
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedPets.remove(pet.id);
-                      } else {
-                        _selectedPets.add(pet.id);
-                      }
-                    });
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.mintLight : AppColors.card,
-                      border: Border.all(
-                          color: isSelected ? AppColors.mint : AppColors.line,
-                          width: isSelected ? 2 : 1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(pet.speciesEmoji,
-                            style: const TextStyle(fontSize: 16)),
-                        const SizedBox(width: 6),
-                        Text(pet.name,
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: isSelected
-                                    ? AppColors.mint
-                                    : AppColors.text)),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
+    final count = _selectedPets.length;
+    final singleName = count == 1
+        ? pets
+            .where((p) => p.id == _selectedPets.first)
+            .firstOrNull
+            ?.name ??
+            ''
+        : '';
+    final buttonLabel = count == 0
+        ? '选择狗狗后开始'
+        : count == 1
+            ? '开始遛$singleName'
+            : '带$count只宝贝出发';
+    return SafeArea(
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          const Text('🗺️', style: TextStyle(fontSize: 44)),
+          const SizedBox(height: 8),
+          const Text('准备好出发了吗？',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 4),
+          const Text('点选一起运动的狗狗，可多选',
+              style: TextStyle(fontSize: 13, color: AppColors.textSoft)),
+          const SizedBox(height: 12),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [for (final pet in pets) _dogCard(pet)],
             ),
-            const SizedBox(height: 32),
-            SizedBox(
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _selectedPets.isEmpty ? null : _toggleWalk,
-                child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.pets_rounded, size: 16), SizedBox(width: 6), Text('开始遛狗')]),
+                onPressed: count == 0 ? null : _toggleWalk,
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(Icons.pets_rounded, size: 16),
+                  const SizedBox(width: 6),
+                  Text(buttonLabel),
+                ]),
               ),
             ),
-            const SizedBox(height: 12),
-            Text('GPS将自动记录路线、距离和步数',
+          ),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: Text('GPS将自动记录路线、距离和步数',
                 style: TextStyle(fontSize: 11, color: AppColors.textMute)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dogCard(Pet pet) {
+    final isSelected = _selectedPets.contains(pet.id);
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (isSelected) {
+            _selectedPets.remove(pet.id);
+          } else {
+            _selectedPets.add(pet.id);
+          }
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.mintLight : AppColors.card,
+          borderRadius: BorderRadius.circular(AppDimens.rLg),
+          border: Border.all(
+              color: isSelected ? AppColors.mint : AppColors.line,
+              width: isSelected ? 2 : 1),
+        ),
+        child: Row(
+          children: [
+            _petAvatar(pet, selected: isSelected),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(pet.name,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 2),
+                  Text('${pet.breed} · ${pet.speciesEmoji}',
+                      style: const TextStyle(
+                          fontSize: 12, color: AppColors.textSoft)),
+                ],
+              ),
+            ),
+            Icon(
+              isSelected
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked,
+              size: 24,
+              color: isSelected ? AppColors.mint : AppColors.textMute,
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  /// 宠物头像：优先服务端头像 URL；未设置/加载失败 → 名字首字圆标
+  ///（此前清一色物种 emoji，用户分不清是哪只）。
+  Widget _petAvatar(Pet pet, {bool selected = false}) {
+    final initial =
+        pet.name.isNotEmpty ? pet.name.substring(0, 1) : '🐾';
+    final url = pet.avatarUrl;
+    return Container(
+      width: 54,
+      height: 54,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.mintLight,
+        border: Border.all(
+            color: selected ? AppColors.mint : AppColors.line,
+            width: selected ? 2 : 1),
+      ),
+      child: (url != null && url.isNotEmpty)
+          ? Image.network(url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Center(
+                  child: Text(initial,
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.mint))))
+          : Center(
+              child: Text(initial,
+                  style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.mint))),
     );
   }
 
