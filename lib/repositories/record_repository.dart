@@ -65,6 +65,26 @@ class RecordRepository {
     }).toList();
   }
 
+  /// ⑱ 今日打卡状态（服务端判定）
+  Future<({bool isChecked, int todayMinutes})> fetchTodayStatus() async {
+    final data =
+        unwrapEnvelope(await _client.get('/api/v1/checkins/today'));
+    return (
+      isChecked: data['isChecked'] as bool? ?? false,
+      todayMinutes: (data['todayMinutes'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  /// ⑲ 补签：服务端扣补签卡并写 makeup_checkins，返回新的剩余卡数。
+  /// 错误：40305 卡不足 / 40004 该日已打卡或无需补签 / 40001 日期非法。
+  Future<int> makeUpCheckin(DateTime date) async {
+    final data = unwrapEnvelope(
+        await _client.post('/api/v1/checkins/makeup', body: {
+      'date': _dateOnly(date),
+    }));
+    return (data['signCardCount'] as num?)?.toInt() ?? 0;
+  }
+
   static String _dateOnly(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}'
       '-${d.day.toString().padLeft(2, '0')}';

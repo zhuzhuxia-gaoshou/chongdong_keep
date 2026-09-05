@@ -15,6 +15,8 @@ const int kCodeNotOwner = 40301; // 非本人资源（契约 §4.4/§4.6）
 const int kCodeNotFoundBase = 40400; // 不存在分段起点
 const int kCodePetNotFound = 40401; // 宠物不存在或已删除
 const int kCodeTooFrequentBase = 42900; // 限流分段起点
+const int kCodeNoNeedMakeup = 40004; // 该日无需补签
+const int kCodeMakeupCardInsufficient = 40305; // 补签卡不足
 const int kCodeServerErrorBase = 50000; // 服务端异常分段起点
 
 /// 宽松整数解析：服务端可能把数值字段下发成字符串（联调实测
