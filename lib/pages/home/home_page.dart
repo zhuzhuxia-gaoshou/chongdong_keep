@@ -496,17 +496,32 @@ class _HomePageState extends State<HomePage> {
               Container(
                 width: 48,
                 height: 48,
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.mintLight,
                   border: Border.all(color: AppColors.mint, width: 2),
                 ),
-                child: Center(
-                  child: Text(
-                    pet.speciesEmoji,
-                    style: const TextStyle(fontSize: AppDimens.sp24),
-                  ),
-                ),
+                child: pet.avatarUrl != null
+                    ? Image.network(
+                        pet.avatarUrl!,
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Center(
+                          child: Text(
+                            pet.speciesEmoji,
+                            style:
+                                const TextStyle(fontSize: AppDimens.sp24),
+                          ),
+                        ),
+                      )
+                    : Center(
+                        child: Text(
+                          pet.speciesEmoji,
+                          style: const TextStyle(fontSize: AppDimens.sp24),
+                        ),
+                      ),
               ),
               const SizedBox(width: AppDimens.sp12),
               Expanded(
