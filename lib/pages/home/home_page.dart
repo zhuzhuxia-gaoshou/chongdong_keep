@@ -15,6 +15,7 @@ import '../../widgets/user_avatar.dart';
 import '../calendar/checkin_calendar_page.dart';
 import '../cat/cat_play_page.dart';
 import '../pet/add_pet_page.dart';
+import '../report/weekly_report_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -190,7 +191,7 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(height: AppDimens.sp12),
                       _buildStreakCard(state),
                       const SizedBox(height: AppDimens.sp12),
-                      _buildStartButton(context, pet),
+                      _buildExerciseEntries(context, pet),
                       const SizedBox(height: AppDimens.sp8),
                       _buildQuickActions(context),
                       const SizedBox(height: 80),
@@ -766,13 +767,79 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildStartButton(BuildContext context, Pet pet) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () => context.read<AppState>().setIndex(1),
-        icon: const Icon(Icons.pets_rounded, size: 18),
-        label: Text('开始遛${pet.name}'),
+  /// 两个平等的运动入口（2026-09 用户指定：遛狗与陪猫玩同级，猫不显示"开始遛"）：
+  /// - 当前是狗 →「开始遛{name}」/「陪猫玩」
+  /// - 当前是猫 →「开始遛狗」/「陪{name}玩」
+  Widget _buildExerciseEntries(BuildContext context, Pet pet) {
+    final isDog = pet.species == PetSpecies.dog;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: _exerciseEntry(
+            context,
+            icon: Icons.pets_rounded,
+            title: isDog ? '开始遛${pet.name}' : '开始遛狗',
+            subtitle: 'GPS 轨迹记录',
+            onTap: () => context.read<AppState>().setIndex(1),
+          ),
+        ),
+        const SizedBox(width: AppDimens.sp8),
+        Expanded(
+          child: _exerciseEntry(
+            context,
+            icon: Icons.sports_esports_rounded,
+            title: isDog ? '陪猫玩' : '陪${pet.name}玩',
+            subtitle: '互动打卡',
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const CatPlayPage())),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _exerciseEntry(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimens.rLg),
+        child: Container(
+          padding: const EdgeInsets.all(AppDimens.sp12),
+          decoration: AppDimens.cardBox(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.mintLight,
+                ),
+                child: Center(
+                    child: Icon(icon, size: 20, color: AppColors.mint)),
+              ),
+              const SizedBox(height: AppDimens.sp8),
+              Text(title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 2),
+              Text(subtitle,
+                  style: const TextStyle(
+                      fontSize: 11, color: AppColors.textSoft)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -780,19 +847,6 @@ class _HomePageState extends State<HomePage> {
   Widget _buildQuickActions(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: _QuickAction(
-            label: '陪猫玩',
-            icon: Icons.sports_esports_rounded,
-            color: AppColors.sand,
-            borderColor: AppColors.line,
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CatPlayPage()),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppDimens.sp8),
         Expanded(
           child: _QuickAction(
             label: '打卡日历',
@@ -803,6 +857,19 @@ class _HomePageState extends State<HomePage> {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const CheckInCalendarPage()),
+            ),
+          ),
+        ),
+        const SizedBox(width: AppDimens.sp8),
+        Expanded(
+          child: _QuickAction(
+            label: '运动周报',
+            icon: Icons.auto_graph_rounded,
+            color: AppColors.sky,
+            borderColor: AppColors.line,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const WeeklyReportPage()),
             ),
           ),
         ),

@@ -69,9 +69,26 @@ class _ShareCardPageState extends State<ShareCardPage> {
   // ---- 卡片数据 ----
 
   String get _typeLabel => widget.record.typeDisplayName;
+  bool get _isCatPlay => widget.record.type == ExerciseType.catPlay;
+  bool get _hasRoute => widget.record.route.length >= 2;
   String get _minutes => '${widget.record.duration.inMinutes}';
   String get _km => widget.record.distance.toStringAsFixed(1);
   String get _steps => '${widget.record.steps}';
+
+  /// 猫玩玩法图标/名称（无玩法记录给默认值）
+  String get _playEmoji {
+    for (final t in CatPlayType.values) {
+      if (t.name == widget.record.catPlayType) return t.emoji;
+    }
+    return '🧶';
+  }
+
+  String get _playLabel {
+    for (final t in CatPlayType.values) {
+      if (t.name == widget.record.catPlayType) return t.label;
+    }
+    return '互动陪玩';
+  }
   String get _dateLabel {
     final d = widget.record.startTime;
     return '${d.year}.${d.month.toString().padLeft(2, '0')}.${d.day.toString().padLeft(2, '0')}';
@@ -280,7 +297,11 @@ class _ShareCardPageState extends State<ShareCardPage> {
             Row(children: [
               Expanded(child: _dataCell(_steps, '步数')),
               const SizedBox(width: 10),
-              Expanded(child: _dataCell('${widget.record.route.length}', '轨迹点')),
+              Expanded(
+                child: _isCatPlay
+                    ? _dataCell(_playLabel, '玩法')
+                    : _dataCell('${widget.record.route.length}', '轨迹点'),
+              ),
             ]),
             const SizedBox(height: 12),
             const Center(
@@ -487,23 +508,69 @@ class _ShareCardPageState extends State<ShareCardPage> {
     );
   }
 
-  /// 地图区：真机 + 有轨迹 → 腾讯静态图（GCJ-02 描线）；
-  /// 加载失败（含配额耗尽）/Web 端 → 手绘轨迹回退。
+  /// 猫玩内容区：陪猫玩没有轨迹，用玩法主题替代地图（2026-09 用户指定）
+  Widget _playBlock(
+      {required double height, BorderRadius? radius, BoxBorder? border}) {
+    return Container(
+      height: height,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: radius,
+        border: border,
+      ),
+      alignment: Alignment.center,
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text(_playEmoji, style: const TextStyle(fontSize: 40)),
+        const SizedBox(height: 6),
+        Text(_playLabel,
+            style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: Colors.white)),
+        const SizedBox(height: 2),
+        Text('一起玩了$_minutes分钟',
+            style: const TextStyle(fontSize: 10, color: Colors.white70)),
+      ]),
+    );
+  }
+
+  /// 地图/内容区统一入口：猫玩 → 玩法主题块；
+  /// 遛狗 → 真机腾讯静态图（GCJ-02 描线），失败回退真实轨迹手绘；
+  /// 遛狗但无轨迹 → 诚实占位（不画假曲线，2026-09 用户反馈"路线很假"）。
   Widget _mapFrame(
       {required double height,
       BorderRadius? radius,
       BoxBorder? border}) {
-    final fallback = CustomPaint(
-      size: Size(double.infinity, height),
-      painter: _CardRoutePainter(widget.record.route, Colors.white70),
-    );
-    Widget child = (!AppPlatform.isWeb && _mapUrl.isNotEmpty)
-        ? Image.network(_mapUrl,
-            height: height,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => fallback)
-        : fallback;
+    if (_isCatPlay) {
+      return _playBlock(height: height, radius: radius, border: border);
+    }
+    Widget content;
+    if (_hasRoute) {
+      final fallback = CustomPaint(
+        size: Size(double.infinity, height),
+        painter: _CardRoutePainter(widget.record.route, Colors.white),
+      );
+      content = (!AppPlatform.isWeb && _mapUrl.isNotEmpty)
+          ? Image.network(_mapUrl,
+              height: height,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => fallback)
+          : fallback;
+    } else {
+      content = Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('🐾', style: TextStyle(fontSize: 34)),
+          const SizedBox(height: 6),
+          Text('本次未记录到轨迹路线',
+              style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.white.withValues(alpha: 0.75))),
+        ],
+      );
+    }
     return Container(
       height: height,
       width: double.infinity,
@@ -513,7 +580,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
         color: Colors.white24,
       ),
       clipBehavior: Clip.antiAlias,
-      child: child,
+      child: content,
     );
   }
 
@@ -645,29 +712,25 @@ class _CardRoutePainter extends CustomPainter {
   final List<GeoPoint> route;
   final Color color;
 
+  /// 仅用于真实轨迹（≥2 点）的回退绘制：双层描边 + 起终点标记。
+  /// 无轨迹时调用方显示占位，不画装饰曲线（避免"假路线"观感）。
   _CardRoutePainter(this.route, this.color);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2.5
+    if (route.length < 2) return;
+    final under = Paint()
+      ..color = Colors.white.withValues(alpha: 0.35)
+      ..strokeWidth = 7
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-
-    // 无轨迹/单点：画装饰曲线（catPlay 等无 GPS 记录）
-    if (route.length < 2) {
-      final path = Path()
-        ..moveTo(10, size.height * 0.8)
-        ..quadraticBezierTo(size.width * 0.3, size.height * 0.3,
-            size.width * 0.5, size.height * 0.6)
-        ..quadraticBezierTo(size.width * 0.7, size.height * 0.9,
-            size.width * 0.85, size.height * 0.2)
-        ..lineTo(size.width - 10, size.height * 0.4);
-      canvas.drawPath(path, paint);
-      return;
-    }
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
 
     // 真实轨迹：按经纬度包围盒缩放进卡片区域
     double minLat = route.first.latitude, maxLat = route.first.latitude;
@@ -678,7 +741,7 @@ class _CardRoutePainter extends CustomPainter {
       minLng = p.longitude < minLng ? p.longitude : minLng;
       maxLng = p.longitude > maxLng ? p.longitude : maxLng;
     }
-    const pad = 12.0;
+    const pad = 14.0;
     final spanLat = (maxLat - minLat).abs().clamp(1e-5, 180.0);
     final spanLng = (maxLng - minLng).abs().clamp(1e-5, 180.0);
     final scale = (size.width - pad * 2) / spanLng <
@@ -698,13 +761,18 @@ class _CardRoutePainter extends CustomPainter {
       final o = toCanvas(route[i]);
       path.lineTo(o.dx, o.dy);
     }
+    // 双层：宽半透明晕 + 实线，观感更接近地图描线
+    canvas.drawPath(path, under);
     canvas.drawPath(path, paint);
 
-    // 起点/终点标记
+    // 起点（白心）/终点（实心）标记
     final start = toCanvas(route.first);
     final end = toCanvas(route.last);
-    canvas.drawCircle(start, 4, Paint()..color = Colors.white);
-    canvas.drawCircle(end, 5, Paint()..color = Colors.white);
+    canvas.drawCircle(start, 5, Paint()..color = Colors.white);
+    canvas.drawCircle(start, 3, Paint()..color = color);
+    canvas.drawCircle(end, 5.5, Paint()..color = color);
+    canvas.drawCircle(
+        end, 5.5, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 2);
   }
 
   @override
