@@ -1,3 +1,5 @@
+import 'package:image_picker/image_picker.dart';
+
 import '../models/dto/record_dto.dart';
 import '../models/dto/wire_enums.dart';
 import '../models/exercise_record.dart';
@@ -15,14 +17,47 @@ class RecordRepository {
 
   final ApiClient _client;
 
+  static const int _walkPhotoMaxBytes = 1 * 1024 * 1024; // 契约 ⑬ walkPhoto 上限
+
   /// 上报一条记录，返回服务端权威回包（含服务端 id / 回显 clientRecordId）。
   ///
+  /// [startPhotoUrl]：图床 URL（由调用方先经 [uploadWalkPhoto] 拿到）。
   /// 注意：本地 startPhotoPath（设备文件路径）不在 DTO 往返中，
   /// 调用方负责用 [ExerciseRecord.copyWith] 把它贴回结果。
-  Future<ExerciseRecord> createRecord(ExerciseRecord local) async {
-    final data = unwrapEnvelope(await _client
-        .post('/api/v1/exercise-records', body: RecordDto.toWire(local)));
+  Future<ExerciseRecord> createRecord(ExerciseRecord local,
+      {String? startPhotoUrl}) async {
+    final data = unwrapEnvelope(await _client.post('/api/v1/exercise-records',
+        body: RecordDto.toWire(local, startPhotoUrl: startPhotoUrl)));
     return RecordDto.fromWire(data);
+  }
+
+  /// 出发照片上传（契约 §4.5 ⑬，businessType=walkPhoto，服务端上限 1MB）。
+  /// 文件读取失败或格式不符抛 ApiException；调用方对照片失败应静默降级，
+  /// 不阻塞运动记录上报。
+  Future<String> uploadWalkPhoto(String path) async {
+    final xfile = XFile(path);
+    var ext = path.contains('.') ? path.split('.').last.toLowerCase() : '';
+    const allowed = {'jpg', 'jpeg', 'png', 'webp'};
+    if (!allowed.contains(ext)) {
+      // 无扩展名/临时地址（如 web 的 blob:）按 mimeType 兜底推断
+      ext = switch (xfile.mimeType) {
+        'image/jpeg' || 'image/jpg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        _ => '',
+      };
+    }
+    if (!allowed.contains(ext)) {
+      throw ApiException(kCodeUploadType, '仅支持 JPG/PNG/WebP 图片');
+    }
+    final bytes = await xfile.readAsBytes();
+    if (bytes.length > _walkPhotoMaxBytes) {
+      throw ApiException(kCodeUploadSize, '照片大小超出 1MB 限制');
+    }
+    final data = unwrapEnvelope(await _client.upload('/api/v1/upload',
+        bytes: bytes, filename: 'walk_photo.$ext',
+        fields: {'businessType': 'walkPhoto'}));
+    return data['url'] as String;
   }
 
   /// 分页查询（startTime 倒序）；日期闭区间按东八区，仅传日期部分。

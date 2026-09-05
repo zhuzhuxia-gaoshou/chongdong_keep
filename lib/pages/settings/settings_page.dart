@@ -68,6 +68,20 @@ class _SettingsPageState extends State<SettingsPage> {
       'showDistance': _showDistance,
       'shareLocation': _shareLocation,
     });
+    if (key == 'publicRanking') _syncPublicRank(value);
+  }
+
+  /// 公开排行榜参与开关同步到服务端（Live 模式）：后端据此把本用户从榜单剔除。
+  /// 本机设置仍是「我的排名区」显示口径，同步失败不阻塞本地生效。
+  Future<void> _syncPublicRank(bool value) async {
+    if (ApiConfig.isMock) return;
+    try {
+      await AppServices.instance.users.patchMe(isPublicRank: value);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('排行榜设置同步服务器失败：${e.friendlyMessage}')));
+    }
   }
 
   @override
@@ -102,8 +116,8 @@ class _SettingsPageState extends State<SettingsPage> {
           ]),
           const SizedBox(height: AppDimens.sp16),
           SectionCard(title: '隐私设置', children: [
-            _switchTile(Icons.route, '轨迹可见', '好友可查看运动路线', _locationVisible,
-                (v) => _update('locationVisible', v)),
+            _switchTile(Icons.route, '轨迹可见', '好友功能上线后生效：好友可查看运动路线',
+                _locationVisible, (v) => _update('locationVisible', v)),
             _switchTile(Icons.leaderboard_outlined, '公开排行榜', '参与好友排行榜排名',
                 _publicRanking, (v) => _update('publicRanking', v)),
             _switchTile(Icons.straighten, '显示距离', '分享卡片显示运动距离', _showDistance,

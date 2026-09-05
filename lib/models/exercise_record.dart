@@ -14,6 +14,10 @@ class ExerciseRecord {
   final List<GeoPoint> route;
   final String? locationName;
   final String? startPhotoPath;
+
+  /// 出发照片的图床 URL（⑬ 服务端归档）。本机记录以 [startPhotoPath] 展示，
+  /// 重装/换设备后本地路径丢失时回退此 URL。
+  final String? startPhotoUrl;
   final bool isCompleted;
   final bool isManual;
 
@@ -34,6 +38,7 @@ class ExerciseRecord {
     this.route = const [],
     this.locationName,
     this.startPhotoPath,
+    this.startPhotoUrl,
     this.isCompleted = true,
     this.isManual = false,
     this.clientRecordId,
@@ -46,7 +51,8 @@ class ExerciseRecord {
   /// （遛狗与猫玩均可，与既有 canCheckIn / 猫玩页文案一致）。服务端同规则。
   bool get countsAsCheckIn => isCompleted && duration.inSeconds >= 300;
 
-  ExerciseRecord copyWith({String? startPhotoPath}) => ExerciseRecord(
+  ExerciseRecord copyWith({String? startPhotoPath, String? startPhotoUrl}) =>
+      ExerciseRecord(
         id: id,
         petId: petId,
         userId: userId,
@@ -59,6 +65,7 @@ class ExerciseRecord {
         route: route,
         locationName: locationName,
         startPhotoPath: startPhotoPath ?? this.startPhotoPath,
+        startPhotoUrl: startPhotoUrl ?? this.startPhotoUrl,
         isCompleted: isCompleted,
         isManual: isManual,
         clientRecordId: clientRecordId,
@@ -78,6 +85,7 @@ class ExerciseRecord {
     'route': route.map((e) => e.toJson()).toList(),
     'locationName': locationName,
     'startPhotoPath': startPhotoPath,
+    'startPhotoUrl': startPhotoUrl,
     'isCompleted': isCompleted,
     'isManual': isManual,
   };
@@ -95,6 +103,7 @@ class ExerciseRecord {
     route: (json['route'] as List<dynamic>?)?.map((e) => GeoPoint.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     locationName: json['locationName'] as String?,
     startPhotoPath: json['startPhotoPath'] as String?,
+    startPhotoUrl: json['startPhotoUrl'] as String?,
     isCompleted: json['isCompleted'] as bool? ?? true,
     isManual: json['isManual'] as bool? ?? false,
     clientRecordId: json['clientRecordId'] as String?,

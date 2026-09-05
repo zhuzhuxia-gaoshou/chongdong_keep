@@ -25,10 +25,12 @@ class UserRepository {
       UserDto.fromWire(unwrapEnvelope(await _client.get('/api/v1/users/me')));
 
   /// 只提交出现的字段；以服务端回包为准。
-  Future<AppUser> patchMe({String? nickname, String? avatarUrl}) async {
+  Future<AppUser> patchMe(
+      {String? nickname, String? avatarUrl, bool? isPublicRank}) async {
     final body = <String, dynamic>{};
     if (nickname != null) body['nickname'] = nickname.trim();
     if (avatarUrl != null) body['avatarUrl'] = avatarUrl;
+    if (isPublicRank != null) body['isPublicRank'] = isPublicRank;
     if (body.isEmpty) throw ApiException(kCodeParamInvalid, '没有可更新的字段');
     return UserDto.fromWire(
         unwrapEnvelope(await _client.patch('/api/v1/users/me', body: body)));

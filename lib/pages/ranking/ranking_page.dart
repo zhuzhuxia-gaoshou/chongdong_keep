@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/dto/ranking_dto.dart';
 import '../../network/api_exception.dart';
 import '../../services/app_services.dart';
+import '../../services/storage_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 
@@ -18,6 +19,7 @@ class _RankingPageState extends State<RankingPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late Future<RankingResult> _future;
+  bool _rankOptedOut = false;
 
   @override
   void initState() {
@@ -27,6 +29,14 @@ class _RankingPageState extends State<RankingPage>
       if (!_tabController.indexIsChanging) _refetch();
     });
     _future = AppServices.instance.ranking.fetchRanking(type: 'weekly');
+    _loadPrivacy();
+  }
+
+  /// 隐私设置（设置页）：关闭「公开排行榜」时，我的排名区显示隐私提示。
+  Future<void> _loadPrivacy() async {
+    final s = await StorageService.loadAppSettings();
+    if (!mounted) return;
+    setState(() => _rankOptedOut = (s['publicRanking'] as bool?) == false);
   }
 
   void _refetch() {
@@ -267,6 +277,18 @@ class _RankingPageState extends State<RankingPage>
       );
     }
     final period = result.type == 'monthly' ? '本月' : '本周';
+    if (_rankOptedOut) {
+      // 与服务端口径一致：关闭公开排行榜后不参与排名，后端榜单同样剔除
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: AppColors.line)),
+          color: AppColors.card,
+        ),
+        child: const Text('已开启隐私保护，不参与排行榜（可在设置中开启）',
+            style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+      );
+    }
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: const BoxDecoration(
