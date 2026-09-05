@@ -703,7 +703,12 @@ class MockTransport implements Transport {
 
   static DateTime? _dateOnlyOf(String? iso) {
     final d = DateTime.tryParse(iso ?? '');
-    return d == null ? null : DateTime(d.year, d.month, d.day);
+    if (d == null) return null;
+    // ⚠️ DateTime.parse 对带时区偏移的字符串（如 +08:00）返回的是 UTC 时刻，
+    // 直接取 .day 会让东八区凌晨~上午的记录落到"前一天"（打卡日按东八区切分，
+    // 契约 §一）。先转回本地时区再取日期分量。
+    final local = d.isUtc ? d.toLocal() : d;
+    return DateTime(local.year, local.month, local.day);
   }
 
   // ---- 打卡日历（契约 ⑰；判定同 §4.7：完成且≥300秒，不限类型）----
