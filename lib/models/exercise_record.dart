@@ -6,6 +6,9 @@ class ExerciseRecord {
   final String petId;
   final String userId;
   final ExerciseType type;
+
+  /// 猫玩玩法（仅 type=catPlay 有值，存枚举名如 'featherWand'，契约 ⑭）。
+  final String? catPlayType;
   final DateTime startTime;
   final DateTime endTime;
   final Duration duration;
@@ -30,6 +33,7 @@ class ExerciseRecord {
     required this.petId,
     required this.userId,
     required this.type,
+    this.catPlayType,
     required this.startTime,
     required this.endTime,
     required this.duration,
@@ -77,6 +81,7 @@ class ExerciseRecord {
     'petId': petId,
     'userId': userId,
     'type': type.index,
+    'catPlayType': catPlayType,
     'startTime': startTime.toIso8601String(),
     'endTime': endTime.toIso8601String(),
     'duration': duration.inSeconds,
@@ -95,6 +100,7 @@ class ExerciseRecord {
     petId: json['petId'] as String,
     userId: json['userId'] as String,
     type: ExerciseType.values[json['type'] as int? ?? 0],
+    catPlayType: json['catPlayType'] as String?,
     startTime: DateTime.parse(json['startTime'] as String),
     endTime: DateTime.parse(json['endTime'] as String),
     duration: Duration(seconds: json['duration'] as int? ?? 0),
@@ -164,7 +170,9 @@ extension CatPlayTypeExt on CatPlayType {
     CatPlayType.boxAdventure => '📦',
   };
 
-  String get name => switch (this) {
+  /// 中文名。注意别用 `.name`——枚举自带的 name（如 featherWand）会遮蔽
+  /// 同名扩展 getter，中文名一律走 [label]。
+  String get label => switch (this) {
     CatPlayType.featherWand => '逗猫棒',
     CatPlayType.laserPointer => '激光笔',
     CatPlayType.yarnBall => '毛线球',
