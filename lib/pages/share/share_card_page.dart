@@ -126,8 +126,8 @@ class _ShareCardPageState extends State<ShareCardPage> {
             (widget.record.locationName?.isEmpty ?? true)
                 ? ''
                 : (_showLocation
-                    ? '📍 ${widget.record.locationName!}'
-                    : '📍 位置已隐藏'),
+                    ? widget.record.locationName!
+                    : '位置已隐藏'),
             style: const TextStyle(fontSize: 11, color: Colors.white70),
           ),
           const SizedBox(height: 8),
@@ -235,7 +235,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
                   const SnackBar(content: Text('卡片已保存到相册')),
                 );
               },
-              child: const Text('💾 保存相册'),
+              child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.save_alt_rounded, size: 15), SizedBox(width: 4), Text('保存相册')]),
             ),
           ),
           const SizedBox(width: 10),
@@ -246,7 +246,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
                     '我在宠动Keep完成了${widget.record.duration.inMinutes}分钟的运动，一起来关注宠物健康吧！');
               },
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.mint),
-              child: const Text('📤 分享'),
+              child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.ios_share_rounded, size: 15), SizedBox(width: 4), Text('分享')]),
             ),
           ),
         ],

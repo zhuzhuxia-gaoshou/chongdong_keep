@@ -145,7 +145,7 @@ class _AddPetPageState extends State<AddPetPage> {
       if (!mounted) return;
       Navigator.pop(context);
       messenger.showSnackBar(
-          SnackBar(content: Text(_isEditing ? '档案已更新 🎉' : '宠物添加成功 🐾')));
+          SnackBar(content: Text(_isEditing ? '档案已更新' : '宠物添加成功')));
     } on ApiException catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
       if (mounted) setState(() => _saving = false);
@@ -159,7 +159,7 @@ class _AddPetPageState extends State<AddPetPage> {
     if (!breeds.contains(_breed)) breeds.insert(0, _breed);
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? '编辑档案 ✏️' : '添加宠物 🐾')),
+      appBar: AppBar(title: Text(_isEditing ? '编辑档案' : '添加宠物')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimens.sp16),
         child: Column(
@@ -179,7 +179,7 @@ class _AddPetPageState extends State<AddPetPage> {
                       style: BorderStyle.solid),
                 ),
                 child: const Center(
-                    child: Text('📷', style: TextStyle(fontSize: 32))),
+                    child: Icon(Icons.add_a_photo_rounded, size: 30, color: AppColors.textSoft)),
               ),
             ),
             const SizedBox(height: AppDimens.sp20),
@@ -276,7 +276,7 @@ class _AddPetPageState extends State<AddPetPage> {
                         height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(Icons.check, size: AppDimens.sp16),
-                label: Text(_saving ? '保存中…' : '✅ 保存宠物档案'),
+                label: Text(_saving ? '保存中…' : '保存宠物档案'),
               ),
             ),
           ],

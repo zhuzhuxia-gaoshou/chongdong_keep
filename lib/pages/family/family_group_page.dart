@@ -51,7 +51,7 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
         children: [
           Row(
             children: [
-              const Text('👨‍👩‍👧', style: TextStyle(fontSize: 28)),
+              const Icon(Icons.groups_rounded, size: 30, color: AppColors.onAccent),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text('可乐的家',

@@ -128,7 +128,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
       ),
       child: Row(
         children: [
-          const Text('🚨', style: TextStyle(fontSize: 28)),
+          const Icon(Icons.emergency_rounded, size: 30, color: AppColors.onAccent),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -154,7 +154,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text('📞 就医协助',
+                        child: const Text('就医协助',
                             style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -171,7 +171,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
                           color: Colors.white.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text('📍 附近医院',
+                        child: const Text('附近医院',
                             style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -287,7 +287,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
             ],
           ),
           const SizedBox(height: 12),
-          Text('💡 ${symptom['advice']}',
+          Text(symptom['advice'] as String,
               style: const TextStyle(
                   fontSize: 14, fontWeight: FontWeight.w600, height: 1.5)),
           const SizedBox(height: 12),
@@ -306,7 +306,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
                   style: ElevatedButton.styleFrom(
                       backgroundColor:
                           level == 'high' ? AppColors.coral : AppColors.mint),
-                  child: Text(level == 'high' ? '🚨 立即就医' : '就医协助'),
+                  child: Text(level == 'high' ? '立即就医' : '就医协助'),
                 ),
               ),
             ],
