@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
@@ -177,6 +178,54 @@ class MapService {
       return '';
     }
     return 'https://apis.map.qq.com/ws/staticmap/v2/?center=$lat,$lng&zoom=$zoom&size=$width*$height&key=${ApiConfig.tencentMapKey}';
+  }
+
+  /// 分享卡轨迹静态图：真实地图底 + 轨迹描线（比手绘曲线美观，用户 2026-09 指定）。
+  /// [route] 为 WGS-84 轨迹，内部转 GCJ-02（仅显示侧，契约 §一）；
+  /// 抽稀至 ~30 点控制 URL 长度，自动估算 center/zoom 包住轨迹。
+  /// [pathColor] 为 RRGGBB 十六进制（不带 0x 前缀）。
+  /// 无 Key / 轨迹不足 / 配额耗尽由调用方按图片加载失败回退手绘，无需前置判断。
+  static String buildRouteStaticMapUrl(
+    List<GeoPoint> route, {
+    int width = 640,
+    int height = 360,
+    String pathColor = '2FA97C',
+  }) {
+    if (!ApiConfig.hasTencentMap || route.length < 2) return '';
+    final pts = <(double, double)>[];
+    double minLat = route.first.latitude, maxLat = minLat;
+    double minLng = route.first.longitude, maxLng = minLng;
+    for (final p in route) {
+      final (gLat, gLng) = wgs84ToGcj02(p.latitude, p.longitude);
+      pts.add((gLat, gLng));
+      if (gLat < minLat) minLat = gLat;
+      if (gLat > maxLat) maxLat = gLat;
+      if (gLng < minLng) minLng = gLng;
+      if (gLng > maxLng) maxLng = gLng;
+    }
+    // 等距抽稀 ≤30 点，首末点必留
+    final step = pts.length <= 30 ? 1 : (pts.length / 30).ceil();
+    final sampled = <(double, double)>[];
+    for (var i = 0; i < pts.length; i += step) {
+      sampled.add(pts[i]);
+    }
+    if (sampled.last != pts.last) sampled.add(pts.last);
+
+    final centerLat = (minLat + maxLat) / 2;
+    final centerLng = (minLng + maxLng) / 2;
+    final span = max((maxLng - minLng).abs(), (maxLat - minLat).abs());
+    // 经度 360°/(256*2^z) 度每像素；留 30% 边距反推 zoom，限 10-17
+    var zoom = 15;
+    if (span > 0.0001) {
+      zoom = (log(360 * width * 0.7 / (256 * span)) / ln2).floor().clamp(10, 17);
+    }
+    final loc =
+        sampled.map((p) => '${p.$1.toStringAsFixed(6)},${p.$2.toStringAsFixed(6)}').join(';');
+    return 'https://apis.map.qq.com/ws/staticmap/v2/'
+        '?center=${centerLat.toStringAsFixed(6)},${centerLng.toStringAsFixed(6)}'
+        '&zoom=$zoom&size=$width*$height&scale=2'
+        '&path=weight:6,color:0x$pathColor,loc:$loc'
+        '&key=${ApiConfig.tencentMapKey}';
   }
 
   /// 搜索附近宠物医院（腾讯 WebService 地点搜索，PRD 4.5.2）。

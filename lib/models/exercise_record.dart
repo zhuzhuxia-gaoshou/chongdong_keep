@@ -160,8 +160,7 @@ enum CatPlayType {
   boxAdventure, // 纸箱探险
 }
 
-extension CatPlayTypeExt on CatPlayType {
-  String get emoji => switch (this) {
+extension CatPlayTypeExt on CatPlayType {  String get emoji => switch (this) {
     CatPlayType.featherWand => '🪶',
     CatPlayType.laserPointer => '🔴',
     CatPlayType.yarnBall => '🧶',
@@ -180,4 +179,17 @@ extension CatPlayTypeExt on CatPlayType {
     CatPlayType.bouncyBall => '弹力球',
     CatPlayType.boxAdventure => '纸箱探险',
   };
+}
+
+extension ExerciseRecordDisplay on ExerciseRecord {
+  /// 运动类型显示名：猫玩记录附带玩法（如「陪猫玩 · 逗猫棒」），
+  /// 猫玩玩法落库见契约 ⑭ catPlayType。列表/详情/分享卡统一走这里。
+  String get typeDisplayName {
+    if (type != ExerciseType.catPlay) return '遛狗';
+    if (catPlayType == null) return '陪猫玩';
+    for (final t in CatPlayType.values) {
+      if (t.name == catPlayType) return '陪猫玩 · ${t.label}';
+    }
+    return '陪猫玩';
+  }
 }

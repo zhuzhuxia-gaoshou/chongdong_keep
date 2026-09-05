@@ -467,7 +467,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
     final isToday = r.startTime.year == now.year &&
         r.startTime.month == now.month &&
         r.startTime.day == now.day;
-    final typeName = r.type == ExerciseType.walkDog ? '遛狗' : '陪猫玩';
+    final typeName = r.typeDisplayName;
     return Container(
       padding: const EdgeInsets.all(AppDimens.sp12),
       decoration: BoxDecoration(
