@@ -270,6 +270,15 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// 清除本机缓存的运动记录（隐私数据管理）。
+  /// Mock 模式即全量删除；Live 模式仅清本机缓存，云端数据需后端
+  /// 删除接口支持（契约暂无 delete-all，同步会把云端记录拉回）。
+  Future<void> clearLocalRecords() async {
+    _records = [];
+    await StorageService.saveRecords(_records);
+    notifyListeners();
+  }
+
   int getTodayExerciseMinutes(String petId) {
     final today = DateTime.now();
     int total = 0;
