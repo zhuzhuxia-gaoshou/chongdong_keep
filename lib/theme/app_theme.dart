@@ -11,13 +11,11 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: AppColors.cream,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: const ColorScheme.light(
         primary: AppColors.mint,
-        onPrimary: Color(0xFF08110C),
         secondary: AppColors.skyDeep,
         error: AppColors.coral,
         surface: AppColors.card,
-        onSurface: AppColors.text,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.cream,
@@ -37,8 +35,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.mint,
-          // 荧光绿上用近黑字（Nike/Spotify 式高对比，比白字更高级）
-          foregroundColor: const Color(0xFF08110C),
+          foregroundColor: AppColors.onAccent,
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           shape: RoundedRectangleBorder(
@@ -47,7 +44,7 @@ class AppTheme {
           textStyle: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w800,
-            letterSpacing: 0.5,
+            letterSpacing: 1.2,
           ),
         ),
       ),
@@ -67,7 +64,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.sand,
+        fillColor: AppColors.cream,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.line),
@@ -133,7 +130,7 @@ class AppTheme {
         thumbColor: WidgetStateProperty.resolveWith((states) => states
                 .contains(WidgetState.selected)
             ? AppColors.mint
-            : const Color(0xFF3A453F)),
+            : const Color(0xFFE0E0E0)),
         trackColor: WidgetStateProperty.resolveWith((states) =>
             states.contains(WidgetState.selected)
                 ? AppColors.mintLight
