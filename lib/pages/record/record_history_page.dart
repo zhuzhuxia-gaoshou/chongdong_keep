@@ -251,6 +251,47 @@ class RecordHistoryPage extends StatelessWidget {
 
   // ---- 详情弹窗 ----
 
+  /// 出发照片：优先本地路径（本机产生的记录），丢失时回退服务端图床 URL
+  /// （重装/换设备场景，⑬）。都没有则显示占位。
+  Widget _startPhoto(ExerciseRecord r) {
+    final local = r.startPhotoPath;
+    final remote = r.startPhotoUrl;
+    Widget child;
+    if (local != null && local.isNotEmpty) {
+      child = buildLocalImage(
+        local,
+        height: 160,
+        width: double.infinity,
+        errorBuilder: (_, __, ___) => _remoteOrLost(remote),
+      );
+    } else {
+      child = _remoteOrLost(remote);
+    }
+    return SizedBox(height: 160, width: double.infinity, child: child);
+  }
+
+  Widget _remoteOrLost(String? remote) {
+    if (remote == null || remote.isEmpty) return _photoLost();
+    return Image.network(
+      remote,
+      height: 160,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _photoLost(),
+    );
+  }
+
+  Widget _photoLost() {
+    return Container(
+      height: 160,
+      width: double.infinity,
+      color: AppColors.sand,
+      alignment: Alignment.center,
+      child: const Text('📷 出发照片已丢失',
+          style: TextStyle(fontSize: AppDimens.fsFoot, color: AppColors.textMute)),
+    );
+  }
+
   void _showRecordDetail(BuildContext context, ExerciseRecord r, String petName,
       String typeName, String emoji) {
     AppBottomSheet.show<void>(
@@ -259,23 +300,10 @@ class RecordHistoryPage extends StatelessWidget {
       builder: (ctx) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (r.startPhotoPath != null) ...[
+          if (r.startPhotoPath != null || r.startPhotoUrl != null) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(AppDimens.rMd),
-              child: buildLocalImage(
-                r.startPhotoPath!,
-                height: 160,
-                width: double.infinity,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 160,
-                  color: AppColors.sand,
-                  alignment: Alignment.center,
-                  child: const Text('📷 出发照片已丢失',
-                      style: TextStyle(
-                          fontSize: AppDimens.fsFoot,
-                          color: AppColors.textMute)),
-                ),
-              ),
+              child: _startPhoto(r),
             ),
             const SizedBox(height: AppDimens.sp16),
           ],

@@ -118,6 +118,7 @@ class AppState extends ChangeNotifier {
     _retryTimer = null;
     _pendingUploads.clear();
     _pendingFailures.clear();
+    _uploadedPhotoUrls.clear();
     notifyListeners();
     // 尽力清理：token 与持久化数据，天气定位一并清除（可接受，见开发计划 §八）
     StorageService.clearAll();
@@ -182,6 +183,9 @@ class AppState extends ChangeNotifier {
   // ---- 会话内上传重试队列（弱网兜底，幂等键保证重复提交安全）----
   final Map<String, ExerciseRecord> _pendingUploads = {};
   final Map<String, int> _pendingFailures = {};
+
+  /// 已上传成功的出发照片（clientRecordId → 图床 URL）：重试时免重复上传。
+  final Map<String, String> _uploadedPhotoUrls = {};
   Timer? _retryTimer;
 
   /// 待补传条数（供界面/调试观察弱网积压）
@@ -193,7 +197,14 @@ class AppState extends ChangeNotifier {
     final crid = record.clientRecordId;
     if (crid == null) return;
     try {
-      final echo = await AppServices.instance.records.createRecord(record);
+      // 出发照片接真（⑬）：Live 模式先传图床拿 URL；照片失败不阻塞记录上报
+      var photoUrl = _uploadedPhotoUrls[crid];
+      if (photoUrl == null && ApiConfig.isLive) {
+        photoUrl = await _uploadStartPhotoQuietly(record);
+        if (photoUrl != null) _uploadedPhotoUrls[crid] = photoUrl;
+      }
+      final echo = await AppServices.instance.records
+          .createRecord(record, startPhotoUrl: photoUrl);
       if (!_isLoggedIn) return; // 登出竞态守卫：不再写入已清空的本地态
       final merged =
           echo.copyWith(startPhotoPath: record.startPhotoPath);
@@ -232,6 +243,20 @@ class AppState extends ChangeNotifier {
 
   /// 供 App 前台恢复（resumed）等时机立即触发补传
   Future<void> retryPendingUploadsNow() => _retryPendingUploads();
+
+  /// 本地出发照片上传（⑬ walkPhoto）。任何失败都静默返回 null：
+  /// 照片缺失只影响远端归档，不应阻塞运动记录本身。
+  Future<String?> _uploadStartPhotoQuietly(ExerciseRecord record) async {
+    final p = record.startPhotoPath;
+    if (p == null || p.isEmpty || p.startsWith('http')) return null;
+    try {
+      return await AppServices.instance.records.uploadWalkPhoto(p);
+    } on ApiException {
+      return null; // 类型/大小/服务端拒绝
+    } catch (_) {
+      return null; // 文件读取失败（web 会话失效、路径不可达等）
+    }
+  }
 
   bool _recordsSyncing = false;
 

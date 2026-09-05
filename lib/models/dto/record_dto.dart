@@ -6,7 +6,8 @@ import 'wire_enums.dart';
 ///
 /// - 时间出入网统一走 [formatIsoWithOffset]（带时区偏移，契约强约束）；
 /// - `startPhotoPath`（本地文件路径）在 API 层换名 `startPhotoUrl`，
-///   本地路径**绝不上网**（⑬ 图床未就绪前一律发 null）；
+///   本地路径**绝不上网**；Live 上报前由调用方先传图床（⑬），
+///   把拿到的 URL 经 [toWire] 的 `startPhotoUrl` 覆盖参数带上；
 /// - 上报前抽稀：route 上限 5000 点，超出等距采样、末点必留；
 /// - 解析方向全程宽容（缺字段给默认值），服务端字段增减不至于崩 UI。
 class RecordDto {
@@ -19,7 +20,11 @@ class RecordDto {
   static const int listRouteThinFactor = 50;
 
   /// 上报体：ExerciseRecordDTO 去掉 id/userId/createdAt（服务端生成）。
-  static Map<String, dynamic> toWire(ExerciseRecord r) => {
+  /// [startPhotoUrl]：图床 URL 覆盖（Live 上报前已传图床）；不传则维持
+  /// 「本地路径不发网」的旧行为（http 开头才上报）。
+  static Map<String, dynamic> toWire(ExerciseRecord r,
+          {String? startPhotoUrl}) =>
+      {
         'clientRecordId': r.clientRecordId,
         'petId': r.petId,
         'type': exerciseTypeToWire(r.type),
@@ -29,7 +34,7 @@ class RecordDto {
         'distance': r.distance,
         'steps': r.steps,
         'locationName': r.locationName,
-        'startPhotoUrl': _urlOrNull(r.startPhotoPath),
+        'startPhotoUrl': startPhotoUrl ?? _urlOrNull(r.startPhotoPath),
         'isCompleted': r.isCompleted,
         'isManual': r.isManual,
         'route': thinRoute(r.route).map(_pointToWire).toList(),
@@ -53,8 +58,9 @@ class RecordDto {
       steps: _asInt(j['steps']) ?? 0,
       route: _pointsFromWire(j['route']),
       locationName: j['locationName'] as String?,
-      // startPhotoUrl 是 CDN 地址，而本地模型的 startPhotoPath 全程按
-      // Image.file 消费——刻意不映射；图床（⑬）接入后再加远程图展示字段。
+      // startPhotoUrl 是图床地址，本地模型的 startPhotoPath 全程按本地文件
+      // 消费——不互相回填；展示侧本地优先、远端兜底（历史详情页）。
+      startPhotoUrl: _urlOrNull(j['startPhotoUrl']),
       isCompleted: j['isCompleted'] as bool? ?? true,
       isManual: j['isManual'] as bool? ?? false,
     );
