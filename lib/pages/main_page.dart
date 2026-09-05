@@ -16,11 +16,11 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final tabs = [
-      (emoji: '🏠', label: '首页'),
-      (emoji: '🗺️', label: '运动'),
-      (emoji: '🛒', label: '商城'),
-      (emoji: '💬', label: '消息'),
-      (emoji: '👤', label: '我的'),
+      (icon: Icons.home_outlined, activeIcon: Icons.home, label: '首页'),
+      (icon: Icons.map_outlined, activeIcon: Icons.map, label: '运动'),
+      (icon: Icons.storefront_outlined, activeIcon: Icons.storefront, label: '商城'),
+      (icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: '消息'),
+      (icon: Icons.person_outline, activeIcon: Icons.person, label: '我的'),
     ];
     final pages = [
       const HomePage(),
@@ -52,7 +52,8 @@ class MainPage extends StatelessWidget {
                 for (int i = 0; i < tabs.length; i++)
                   Expanded(
                     child: _TabItem(
-                      emoji: tabs[i].emoji,
+                      icon: tabs[i].icon,
+                      activeIcon: tabs[i].activeIcon,
                       label: tabs[i].label,
                       selected: state.currentIndex == i,
                       onTap: () => state.setIndex(i),
@@ -69,13 +70,15 @@ class MainPage extends StatelessWidget {
 
 /// 底部导航项：按压缩放 + 选中胶囊底色/弹跳动效 + 触感反馈
 class _TabItem extends StatefulWidget {
-  final String emoji;
+  final IconData icon;
+  final IconData activeIcon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
 
   const _TabItem({
-    required this.emoji,
+    required this.icon,
+    required this.activeIcon,
     required this.label,
     required this.selected,
     required this.onTap,
@@ -104,37 +107,52 @@ class _TabItemState extends State<_TabItem> {
         scale: _pressed ? 0.85 : 1.0,
         duration: const Duration(milliseconds: 110),
         curve: Curves.easeOut,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.symmetric(horizontal: AppDimens.sp4),
-          padding: EdgeInsets.symmetric(
-              horizontal: selected ? AppDimens.sp12 : AppDimens.sp8,
-              vertical: 6),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.mintLight : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppDimens.rFull),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedScale(
-                scale: selected ? 1.18 : 1.0,
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutBack,
-                child: Text(widget.emoji, style: const TextStyle(fontSize: 21)),
-              ),
-              const SizedBox(height: 3),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 220),
-                style: TextStyle(
-                  fontSize: selected ? AppDimens.fsCaption + 1 : AppDimens.fsCaption,
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  color: selected ? AppColors.mint : AppColors.textMute,
+        child: Semantics(
+          label: widget.label,
+          button: true,
+          selected: selected,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            margin: const EdgeInsets.symmetric(horizontal: AppDimens.sp4),
+            padding: EdgeInsets.symmetric(
+                horizontal: selected ? AppDimens.sp12 : AppDimens.sp8,
+                vertical: 6),
+            decoration: BoxDecoration(
+              color: selected ? AppColors.mintLight : Colors.transparent,
+              borderRadius: BorderRadius.circular(AppDimens.rFull),
+              border: selected
+                  ? Border.all(color: AppColors.mintLine, width: 1)
+                  : null,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  switchInCurve: Curves.easeOutBack,
+                  transitionBuilder: (child, anim) =>
+                      ScaleTransition(scale: anim, child: child),
+                  child: Icon(
+                    selected ? widget.activeIcon : widget.icon,
+                    key: ValueKey(selected),
+                    size: 22,
+                    color: selected ? AppColors.mint : AppColors.textMute,
+                  ),
                 ),
-                child: Text(widget.label),
-              ),
-            ],
+                const SizedBox(height: 3),
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 220),
+                  style: TextStyle(
+                    fontSize:
+                        selected ? AppDimens.fsCaption + 1 : AppDimens.fsCaption,
+                    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                    color: selected ? AppColors.mint : AppColors.textMute,
+                  ),
+                  child: Text(widget.label),
+                ),
+              ],
+            ),
           ),
         ),
       ),

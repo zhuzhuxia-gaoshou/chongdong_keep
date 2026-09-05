@@ -98,7 +98,7 @@ class _WalkPageState extends State<WalkPage> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card,
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         ),
@@ -448,7 +448,7 @@ class _WalkPageState extends State<WalkPage> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card,
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         ),
@@ -583,7 +583,7 @@ class _WalkPageState extends State<WalkPage> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card,
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         ),
@@ -835,8 +835,8 @@ class _WalkPageState extends State<WalkPage> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF4E0),
-                border: Border.all(color: const Color(0xFFF5C36B)),
+                color: AppColors.warning,
+                border: Border.all(color: AppColors.warningText),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -844,7 +844,7 @@ class _WalkPageState extends State<WalkPage> {
                 style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF9A6B1F)),
+                    color: AppColors.warningText),
               ),
             ),
           ],

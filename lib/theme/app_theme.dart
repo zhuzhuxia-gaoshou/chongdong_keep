@@ -11,11 +11,13 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: AppColors.cream,
-      colorScheme: const ColorScheme.light(
+      colorScheme: const ColorScheme.dark(
         primary: AppColors.mint,
+        onPrimary: Color(0xFF08110C),
         secondary: AppColors.skyDeep,
         error: AppColors.coral,
         surface: AppColors.card,
+        onSurface: AppColors.text,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.cream,
@@ -35,7 +37,8 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.mint,
-          foregroundColor: Colors.white,
+          // 荧光绿上用近黑字（Nike/Spotify 式高对比，比白字更高级）
+          foregroundColor: const Color(0xFF08110C),
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           shape: RoundedRectangleBorder(
@@ -43,7 +46,8 @@ class AppTheme {
           ),
           textStyle: const TextStyle(
             fontSize: 15,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
           ),
         ),
       ),
@@ -63,7 +67,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.cream,
+        fillColor: AppColors.sand,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.line),
@@ -129,12 +133,20 @@ class AppTheme {
         thumbColor: WidgetStateProperty.resolveWith((states) => states
                 .contains(WidgetState.selected)
             ? AppColors.mint
-            : const Color(0xFFE0E0E0)),
+            : const Color(0xFF3A453F)),
         trackColor: WidgetStateProperty.resolveWith((states) =>
             states.contains(WidgetState.selected)
                 ? AppColors.mintLight
                 : AppColors.sand),
       ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.card,
+        modalBackgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(color: AppColors.line, thickness: 1),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.mint,
         linearTrackColor: AppColors.sand,

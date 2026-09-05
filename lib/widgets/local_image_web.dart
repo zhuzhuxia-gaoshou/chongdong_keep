@@ -17,7 +17,7 @@ Widget localImageWidget(
         (_, __, ___) => Container(
               width: width,
               height: height,
-              color: const Color(0xFFEFEFEF),
+              color: const Color(0xFF1F2925),
               alignment: Alignment.center,
               child: const Icon(Icons.broken_image_outlined,
                   size: 28, color: Colors.grey),

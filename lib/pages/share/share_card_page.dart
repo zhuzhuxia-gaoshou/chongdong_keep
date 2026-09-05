@@ -224,7 +224,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: AppColors.line)),
-        color: Colors.white,
+        color: AppColors.card,
       ),
       child: Row(
         children: [

@@ -328,7 +328,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.card,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.line),
             ),
