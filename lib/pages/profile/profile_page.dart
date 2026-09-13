@@ -151,7 +151,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: const Text('退出登录'),
                 ),
               ),
-              const SizedBox(height: AppDimens.sp40),
+              const SizedBox(height: 96), // 悬浮 Dock 遮挡区
             ],
           ),
         ),

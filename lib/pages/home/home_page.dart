@@ -222,7 +222,7 @@ class _HomePageState extends State<HomePage>
                           _buildExerciseEntries(context, pet),
                           const SizedBox(height: AppDimens.sp8),
                           _buildQuickActions(context),
-                          const SizedBox(height: 80),
+                          const SizedBox(height: 96), // 悬浮 Dock 遮挡区
                         ],
                       ),
                     ),
