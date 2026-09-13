@@ -9,6 +9,8 @@ import '../../services/storage_service.dart';
 import '../../services/weather_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../widgets/app_bottom_sheet.dart';
 import '../../widgets/ui_kit.dart';
 import '../../widgets/user_avatar.dart';
@@ -40,16 +42,38 @@ const _kCities = [
   ('长沙', 28.2282, 112.9388),
 ];
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   WeatherData? _weather;
   bool _loadingWeather = false;
   String? _manualCity; // 手动选择的城市名，null = 跟随定位
   String? _selectedPetId; // 首页展示的宠物，null = 第一只
 
+  /// 页面入场：整页一次性上滑淡入（克制动效原则——只此一处）
+  late final AnimationController _entrance = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 380),
+  );
+  late final Animation<double> _entranceFade = CurvedAnimation(
+    parent: _entrance,
+    curve: Curves.easeOut,
+  );
+  late final Animation<Offset> _entranceSlide = Tween(
+    begin: const Offset(0, 0.015),
+    end: Offset.zero,
+  ).animate(CurvedAnimation(parent: _entrance, curve: Curves.easeOut));
+
   @override
   void initState() {
     super.initState();
     _loadWeather();
+    _entrance.forward();
+  }
+
+  @override
+  void dispose() {
+    _entrance.dispose();
+    super.dispose();
   }
 
   Future<void> _loadWeather() async {
@@ -181,21 +205,27 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimens.sp16,
                   ),
-                  child: Column(
-                    children: [
-                      _buildHeader(state),
-                      const SizedBox(height: AppDimens.sp12),
-                      _buildWeatherCard(),
-                      const SizedBox(height: AppDimens.sp12),
-                      _buildPetGoalCard(pet, state),
-                      const SizedBox(height: AppDimens.sp12),
-                      _buildStreakCard(state),
-                      const SizedBox(height: AppDimens.sp12),
-                      _buildExerciseEntries(context, pet),
-                      const SizedBox(height: AppDimens.sp8),
-                      _buildQuickActions(context),
-                      const SizedBox(height: 80),
-                    ],
+                  child: FadeTransition(
+                    opacity: _entranceFade,
+                    child: SlideTransition(
+                      position: _entranceSlide,
+                      child: Column(
+                        children: [
+                          _buildHeader(state),
+                          const SizedBox(height: AppDimens.sp12),
+                          _buildWeatherCard(),
+                          const SizedBox(height: AppDimens.sp12),
+                          _buildPetGoalCard(pet, state),
+                          const SizedBox(height: AppDimens.sp12),
+                          _buildStreakCard(state),
+                          const SizedBox(height: AppDimens.sp12),
+                          _buildExerciseEntries(context, pet),
+                          const SizedBox(height: AppDimens.sp8),
+                          _buildQuickActions(context),
+                          const SizedBox(height: 96), // 悬浮 Dock 遮挡区
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -252,7 +282,7 @@ class _HomePageState extends State<HomePage> {
                     state.user?.nickname ?? '铲屎官',
                     style: const TextStyle(
                       fontSize: AppDimens.fsSub,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -482,161 +512,158 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// 今日目标 Hero 卡：全 App 唯一的大胆元素（质感原则「唯一主角」）。
+  /// 薄荷渐变 + 大号细体数字 + 白色进度轨道；原三档目标 chip 移除（克制原则）。
   Widget _buildPetGoalCard(Pet pet, AppState state) {
     final todayMinutes = state.getTodayExerciseMinutes(pet.id);
     final goalMinutes = pet.recommendedExerciseMinutes;
     final progress = (todayMinutes / goalMinutes).clamp(0.0, 1.0);
+    final reached = todayMinutes >= goalMinutes;
 
     return Container(
-      padding: const EdgeInsets.all(AppDimens.sp16),
-      decoration: AppDimens.cardBox(borderColor: AppColors.line),
-      child: Column(
+      padding: const EdgeInsets.all(AppDimens.sp20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.mint, AppColors.mintDeep],
+        ),
+        borderRadius: BorderRadius.circular(AppDimens.rXl),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x332E7D5F), // mintDeep 20%：渐变卡的落地影
+            offset: Offset(0, 8),
+            blurRadius: 20,
+          ),
+        ],
+      ),
+      child: Stack(
         children: [
-          Row(
+          Positioned(
+            right: -8,
+            bottom: -22,
+            child: Text(
+              pet.speciesEmoji,
+              style: TextStyle(
+                fontSize: 96,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.mintLight,
-                  border: Border.all(color: AppColors.mint, width: 2),
-                ),
-                child: pet.avatarUrl != null
-                    ? Image.network(
-                        pet.avatarUrl!,
-                        width: 44,
-                        height: 44,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Center(
-                          child: Text(
-                            pet.speciesEmoji,
-                            style:
-                                const TextStyle(fontSize: AppDimens.sp24),
+              Row(
+                children: [
+                  _heroAvatar(pet),
+                  const SizedBox(width: AppDimens.sp12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          pet.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: AppDimens.fsSub,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.onAccent,
                           ),
                         ),
-                      )
-                    : Center(
-                        child: Text(
-                          pet.speciesEmoji,
-                          style: const TextStyle(fontSize: AppDimens.sp24),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${pet.breed} · ${pet.ageYears}岁',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: AppDimens.fsCaption,
+                            color: Colors.white.withValues(alpha: 0.72),
+                          ),
                         ),
-                      ),
-              ),
-              const SizedBox(width: AppDimens.sp12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${pet.name} · ${pet.breed} ${pet.ageYears}岁',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: AppDimens.fsSub,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      '基础目标 $goalMinutes分钟 · 体重 ${pet.weight}kg',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: AppDimens.fsCaption,
-                        color: AppColors.textSoft,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // 多宠切换入口
-              if (state.pets.length > 1)
-                GestureDetector(
-                  onTap: () => _showPetPicker(context, state),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimens.sp8, vertical: AppDimens.sp4),
-                    decoration: BoxDecoration(
-                      color: AppColors.sand,
-                      borderRadius: BorderRadius.circular(AppDimens.rFull),
-                      border: Border.all(color: AppColors.line),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.swap_horiz_rounded,
-                            size: 14, color: AppColors.textSoft),
-                        SizedBox(width: 2),
-                        Text('切换',
-                            style: TextStyle(
-                                fontSize: AppDimens.fsMicro,
-                                color: AppColors.textSoft)),
                       ],
                     ),
                   ),
-                ),
-            ],
-          ),
-          const SizedBox(height: AppDimens.sp12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '今日进度',
+                  if (state.pets.length > 1)
+                    GestureDetector(
+                      onTap: () => _showPetPicker(context, state),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppDimens.sp8, vertical: AppDimens.sp4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius:
+                              BorderRadius.circular(AppDimens.rFull),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.swap_horiz_rounded,
+                                size: 14, color: Colors.white),
+                            SizedBox(width: 2),
+                            Text('切换',
+                                style: TextStyle(
+                                    fontSize: AppDimens.fsMicro,
+                                    color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppDimens.sp24),
+              Text(
+                '今日进度 · 基础目标 $goalMinutes 分钟',
                 style: TextStyle(
                   fontSize: AppDimens.fsCaption,
-                  color: AppColors.textSoft,
+                  color: Colors.white.withValues(alpha: 0.72),
                 ),
               ),
-              Text(
-                '$todayMinutes分 / $goalMinutes分钟',
-                style: const TextStyle(
-                  fontSize: AppDimens.fsFoot,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.mint,
-                ),
+              const SizedBox(height: AppDimens.sp4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text('$todayMinutes',
+                      style: AppText.numericHero(color: Colors.white)),
+                  const SizedBox(width: AppDimens.sp8),
+                  const Text('分钟',
+                      style: TextStyle(
+                          fontSize: AppDimens.fsBody,
+                          color: Colors.white70)),
+                  const Spacer(),
+                  if (reached)
+                    const Row(
+                      children: [
+                        Icon(Icons.check_circle_rounded,
+                            size: 16, color: Colors.white),
+                        SizedBox(width: 4),
+                        Text('已达成',
+                            style: TextStyle(
+                                fontSize: AppDimens.fsFoot,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white)),
+                      ],
+                    )
+                  else
+                    Text(
+                      '${(progress * 100).round()}%',
+                      style: const TextStyle(
+                        fontSize: AppDimens.fsBodyMid,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white70,
+                      ),
+                    ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: AppDimens.sp8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimens.rFull),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: AppDimens.sp8,
-            ),
-          ),
-          const SizedBox(height: AppDimens.sp12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildGoalChip(
-                  '基础目标',
-                  '$goalMinutes分',
-                  progress >= 1 ? '已达成' : '进行中',
-                  AppColors.mintLight,
-                  AppColors.mint,
-                ),
-              ),
-              const SizedBox(width: AppDimens.sp8),
-              Expanded(
-                child: _buildGoalChip(
-                  '建议目标',
-                  '${(goalMinutes * 0.8).toInt()}分',
-                  '今天忙',
-                  AppColors.sky,
-                  AppColors.skyDeep,
-                ),
-              ),
-              const SizedBox(width: AppDimens.sp8),
-              Expanded(
-                child: _buildGoalChip(
-                  '挑战目标',
-                  '${(goalMinutes * 1.2).toInt()}分',
-                  '冲榜',
-                  AppColors.coralLight,
-                  AppColors.coral,
+              const SizedBox(height: AppDimens.sp12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppDimens.rFull),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 6,
+                  backgroundColor: Colors.white.withValues(alpha: 0.24),
+                  valueColor: const AlwaysStoppedAnimation(Colors.white),
                 ),
               ),
             ],
@@ -646,58 +673,32 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildGoalChip(
-    String label,
-    String value,
-    String hint,
-    Color background,
-    Color foreground,
-  ) {
+  /// Hero 卡头像：白圈托底，与渐变形成清透对比
+  Widget _heroAvatar(Pet pet) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimens.sp4,
-        vertical: AppDimens.sp8,
-      ),
+      width: 48,
+      height: 48,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(AppDimens.rMd),
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: 0.92),
+        border: Border.all(color: Colors.white, width: 2),
       ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: AppDimens.fsMicro,
-              fontWeight: FontWeight.w700,
-              color: foreground,
+      child: pet.avatarUrl != null
+          ? Image.network(
+              pet.avatarUrl!,
+              width: 44,
+              height: 44,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Center(
+                child: Text(pet.speciesEmoji,
+                    style: const TextStyle(fontSize: AppDimens.sp24)),
+              ),
+            )
+          : Center(
+              child: Text(pet.speciesEmoji,
+                  style: const TextStyle(fontSize: AppDimens.sp24)),
             ),
-          ),
-          const SizedBox(height: AppDimens.sp4),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: AppDimens.fsMicro,
-              fontWeight: FontWeight.w700,
-              color: foreground,
-            ),
-          ),
-          const SizedBox(height: AppDimens.sp4),
-          Text(
-            hint,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: AppDimens.fsMicro,
-              fontWeight: FontWeight.w700,
-              color: foreground,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -707,10 +708,8 @@ class _HomePageState extends State<HomePage> {
         horizontal: AppDimens.sp16,
         vertical: AppDimens.sp12,
       ),
-      decoration: AppDimens.cardBox(
-        color: AppColors.mintLight,
-        borderColor: AppColors.mintLine,
-      ),
+      // 白卡+投影（Hero 之后的次级元素，安静克制）
+      decoration: AppDimens.cardBox(),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -722,7 +721,7 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(
                   fontSize: AppDimens.fsCaption,
                   color: AppColors.textSoft,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: AppDimens.sp4),
@@ -730,14 +729,8 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  Text(
-                    '${state.user?.streakDays ?? 0}',
-                    style: const TextStyle(
-                      fontSize: AppDimens.fsStat,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.mint,
-                    ),
-                  ),
+                  Text('${state.user?.streakDays ?? 0}',
+                      style: AppText.numericSection(color: AppColors.mint)),
                   const SizedBox(width: AppDimens.sp4),
                   const Text(
                     '天',
@@ -755,7 +748,7 @@ class _HomePageState extends State<HomePage> {
             height: 42,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.card,
+              color: AppColors.coralLight,
             ),
             child: const Center(
               child: Icon(Icons.local_fire_department_rounded,
@@ -778,70 +771,68 @@ class _HomePageState extends State<HomePage> {
     return Row(
       children: [
         Expanded(
-          child: _exerciseEntry(
-            context,
-            icon: Icons.pets_rounded,
-            title: isDog ? '开始遛${pet.name}' : '开始遛狗',
-            subtitle: 'GPS 轨迹记录',
+          child: PressableScale(
             onTap: () => context.read<AppState>().setIndex(1),
+            child: _exerciseEntry(
+              icon: Icons.pets_rounded,
+              iconBg: AppColors.mintLight,
+              iconColor: AppColors.mint,
+              title: isDog ? '开始遛${pet.name}' : '开始遛狗',
+              subtitle: 'GPS 轨迹记录',
+            ),
           ),
         ),
         const SizedBox(width: AppDimens.sp8),
         Expanded(
-          child: _exerciseEntry(
-            context,
-            icon: Icons.sports_esports_rounded,
-            title: isDog ? '陪猫玩' : '陪${pet.name}玩',
-            subtitle: '互动打卡',
+          child: PressableScale(
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const CatPlayPage())),
+            child: _exerciseEntry(
+              icon: Icons.sports_esports_rounded,
+              iconBg: AppColors.coralLight,
+              iconColor: AppColors.coral,
+              title: isDog ? '陪猫玩' : '陪${pet.name}玩',
+              subtitle: '互动打卡',
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _exerciseEntry(
-    BuildContext context, {
+  Widget _exerciseEntry({
     required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
     required String title,
     required String subtitle,
-    required VoidCallback onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimens.rLg),
-        child: Container(
-          padding: const EdgeInsets.all(AppDimens.sp12),
-          decoration: AppDimens.cardBox(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.mintLight,
-                ),
-                child: Center(
-                    child: Icon(icon, size: 20, color: AppColors.mint)),
-              ),
-              const SizedBox(height: AppDimens.sp8),
-              Text(title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 2),
-              Text(subtitle,
-                  style: const TextStyle(
-                      fontSize: 11, color: AppColors.textSoft)),
-            ],
+    return Container(
+      padding: const EdgeInsets.all(AppDimens.sp12),
+      decoration: AppDimens.cardBox(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: iconBg,
+            ),
+            child: Center(child: Icon(icon, size: 20, color: iconColor)),
           ),
-        ),
+          const SizedBox(height: AppDimens.sp8),
+          Text(title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: AppDimens.fsBodyMid, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 2),
+          Text(subtitle,
+              style: const TextStyle(
+                  fontSize: 11, color: AppColors.textSoft)),
+        ],
       ),
     );
   }

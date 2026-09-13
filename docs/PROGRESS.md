@@ -90,10 +90,18 @@
 - dart:io 条件化（存储/头像/出发照片 local_image 双实现）、权限与地图 WebView 的 web 分支（Canvas 降级）
 - 顺手修掉 mock 时区炸弹（DateTime.parse +08:00 偏移返回 UTC，凌晨~上午打卡记错天）
 
-### UI 三轮精修（2026-09-05，用户审美委托）
+### UI 四轮精修（2026-09-05~06，用户审美委托）
 - 第一轮：全局换装暗色运动风（试验后按用户反馈还原浅色系）+ 底部导航 emoji→Material 双态图标
 - 第二轮：首页/我的页去 emoji 图标化（着色圆角图标底菜单×12）、ui_kit 环境投影
 - 第三轮：遛狗/记录/周报/健康/急救/分享卡/家庭组/添加宠物页功能 emoji 全部图标化
+- 第四轮（质感系统，2026-09-06 夜）：确立四原则——光影层次/字重对比/唯一主角/克制动效：
+  - 投影 token（AppDimens.shadowCard 双层影/shadowFloat），白卡默认浮起、粉彩卡保持平面
+  - 画布色 canvas（0xFFF3EFE8）比卡片深半档，替代纯 cream 背景
+  - AppText 数字展示体（numericHero 52px w300/numericSection/numericInline），数据数字禁用 w800
+  - PressableScale 按压缩放组件；波纹柔化
+  - 首页 Hero 化：今日目标卡=全 App 唯一渐变大卡（mint→mintDeep+细体大数字+白圈头像+emoji 水印），三档目标 chip 移除
+  - 底部导航改悬浮毛玻璃 Dock（extendBody+BackdropFilter+薄荷实心胶囊选中态），各页底部预留 96-104px 遮挡区
+  - 周报等级字母 60px 细体、徽章进度头降白卡、记录行数字展示体、我的页菜单 tonal 分组配色、组间距 16→20
 - 配色全程保持用户认可的浅色清爽系；内容性 emoji（症状/宠物/徽章/文案语气符）保留
 
 ### 质量现状

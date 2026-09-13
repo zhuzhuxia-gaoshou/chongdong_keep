@@ -4,6 +4,7 @@ import '../../network/api_exception.dart';
 import '../../services/app_services.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../theme/app_theme.dart';
 
 /// 徽章成就：服务端真实解锁状态（契约 ㉓，GET 时惰性评估解锁事件）。
 class BadgesPage extends StatefulWidget {
@@ -74,7 +75,7 @@ class _BadgesPageState extends State<BadgesPage> {
                     const SizedBox(width: 8),
                     const Text('我的徽章墙',
                         style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w800)),
+                            fontSize: 15, fontWeight: FontWeight.w600)),
                     const Spacer(),
                     Text('已解锁 ${result.unlockedCount} / $total',
                         style: const TextStyle(
@@ -124,82 +125,54 @@ class _BadgesPageState extends State<BadgesPage> {
 
   Widget _buildProgressHeader(int unlocked, int total) {
     final progress = total <= 0 ? 0.0 : unlocked / total;
+    // 质感原则「唯一主角」：渐变英雄留给首页，此处退为白卡+展示体数字
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: AppColors.heroGradient,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: AppDimens.cardBox(),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('已解锁 $unlocked / $total 个徽章',
-                        style: const TextStyle(
-                            fontSize: 14, color: AppColors.onAccent)),
-                    const SizedBox(height: 6),
-                    Text(
-                      unlocked == total ? '全部解锁，太厉害了！' : '继续加油！',
-                      style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.onAccent),
-                    ),
-                  ],
-                ),
-              ),
+              Text('$unlocked',
+                  style: AppText.numericSection(color: AppColors.mint)),
+              const SizedBox(width: 4),
+              Text('/ $total 个徽章',
+                  style:
+                      const TextStyle(fontSize: 13, color: AppColors.textSoft)),
+              const Spacer(),
               Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(12),
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.mintLight,
                 ),
                 child: const Icon(Icons.emoji_events_rounded,
-                    size: 30, color: AppColors.onAccent),
+                    size: 24, color: AppColors.mint),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           ClipRRect(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppDimens.rFull),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: Colors.white30,
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-              minHeight: 8,
+              minHeight: 6,
+              backgroundColor: AppColors.sand,
+              valueColor: const AlwaysStoppedAnimation(AppColors.mint),
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildHeaderStat('$unlocked', '已解锁'),
-              _buildHeaderStat('$total', '全部徽章'),
-              _buildHeaderStat(
-                  total <= 0 ? '0' : '${(progress * 100).round()}%', '完成度'),
-            ],
+          const SizedBox(height: 8),
+          Text(
+            unlocked == total ? '全部解锁，太厉害了！' : '继续加油！',
+            style: const TextStyle(
+                fontSize: AppDimens.fsCaption, color: AppColors.textSoft),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildHeaderStat(String value, String label) {
-    return Column(
-      children: [
-        Text(value,
-            style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: AppColors.onAccent)),
-        const SizedBox(height: 2),
-        Text(label,
-            style: const TextStyle(fontSize: 11, color: Colors.white70)),
-      ],
     );
   }
 

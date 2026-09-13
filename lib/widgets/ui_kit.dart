@@ -24,7 +24,7 @@ class SectionCard extends StatelessWidget {
               title!,
               style: TextStyle(
                 fontSize: AppDimens.fsFoot,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
                 color: AppColors.textSoft,
               ),
@@ -35,15 +35,9 @@ class SectionCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.card,
             borderRadius: BorderRadius.circular(AppDimens.rLg),
-            border: Border.all(color: AppColors.line),
-            boxShadow: [
-              // 极淡的环境投影：让白卡从米白底上"浮"起来（高级感关键）
-              BoxShadow(
-                color: AppColors.text.withValues(alpha: 0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            // 描边淡化半档，主深度交给双层投影（P1 质感底座）
+            border: Border.all(color: AppColors.line.withValues(alpha: 0.55)),
+            boxShadow: AppDimens.shadowCard,
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(children: children),

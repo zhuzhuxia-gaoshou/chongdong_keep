@@ -237,8 +237,9 @@ class RecordHistoryPage extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                  fontSize: AppDimens.fsBodyMid,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.3,
                   color: AppColors.mint)),
           const SizedBox(height: AppDimens.sp4),
           Text(label,

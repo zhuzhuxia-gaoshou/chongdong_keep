@@ -761,7 +761,7 @@ class _WalkPageState extends State<WalkPage> {
             ),
           ),
           const Padding(
-            padding: EdgeInsets.only(bottom: 12),
+            padding: EdgeInsets.only(bottom: 104),
             child: Text('GPS将自动记录路线、距离和步数',
                 style: TextStyle(fontSize: 11, color: AppColors.textMute)),
           ),
@@ -860,7 +860,8 @@ class _WalkPageState extends State<WalkPage> {
 
   Widget _buildWalkingView(AppState state) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      // 底部 100 = 悬浮 Dock 遮挡区（extendBody）
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       child: Column(
         children: [
           // 顶部信息条
@@ -900,8 +901,9 @@ class _WalkPageState extends State<WalkPage> {
                 Text(
                   MapService.formatDuration(_elapsed),
                   style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
                       color: Colors.white),
                 ),
               ],

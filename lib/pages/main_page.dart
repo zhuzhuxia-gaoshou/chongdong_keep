@@ -1,14 +1,20 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_dimens.dart';
 import '../services/app_state.dart';
+import '../utils/app_platform.dart';
 import 'home/home_page.dart';
 import 'walk/walk_page.dart';
 import 'mall/mall_page.dart';
 import 'profile/profile_page.dart';
 
+/// 主框架：IndexedStack 五页 + 悬浮毛玻璃 Dock（2026-09 质感升级）。
+/// extendBody 让页面内容延伸到 Dock 下方，毛玻璃才有"透"的质感；
+/// 各页面底部需预留 ~96px 的 Dock 遮挡区。
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
@@ -31,35 +37,58 @@ class MainPage extends StatelessWidget {
     ];
 
     return Scaffold(
+      extendBody: true,
       body: IndexedStack(
         index: state.currentIndex,
         children: pages,
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.card,
-          border: Border(top: BorderSide(color: AppColors.line, width: 1)),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(AppDimens.rXl),
-            topRight: Radius.circular(AppDimens.rXl),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            AppDimens.sp16, 0, AppDimens.sp16, AppDimens.sp12),
+        // 影画在 ClipRRect 外层，否则会被裁掉
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppDimens.rXxl),
+            boxShadow: AppDimens.shadowFloat,
           ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-            child: Row(
-              children: [
-                for (int i = 0; i < tabs.length; i++)
-                  Expanded(
-                    child: _TabItem(
-                      icon: tabs[i].icon,
-                      activeIcon: tabs[i].activeIcon,
-                      label: tabs[i].label,
-                      selected: state.currentIndex == i,
-                      onTap: () => state.setIndex(i),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppDimens.rXxl),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppPlatform.isWeb
+                      ? AppColors.card.withValues(alpha: 0.92)
+                      : Colors.white.withValues(alpha: 0.78),
+                  borderRadius: BorderRadius.circular(AppDimens.rXxl),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.55),
+                    width: 1,
+                  ),
+                ),
+                child: SafeArea(
+                  top: false,
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: AppDimens.sp8, horizontal: AppDimens.sp4),
+                    child: Row(
+                      children: [
+                        for (int i = 0; i < tabs.length; i++)
+                          Expanded(
+                            child: _DockItem(
+                              icon: tabs[i].icon,
+                              activeIcon: tabs[i].activeIcon,
+                              label: tabs[i].label,
+                              selected: state.currentIndex == i,
+                              onTap: () => state.setIndex(i),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-              ],
+                ),
+              ),
             ),
           ),
         ),
@@ -68,15 +97,15 @@ class MainPage extends StatelessWidget {
   }
 }
 
-/// 底部导航项：按压缩放 + 选中胶囊底色/弹跳动效 + 触感反馈
-class _TabItem extends StatefulWidget {
+/// Dock 导航项：薄荷实心胶囊选中态（白字白图标）+ 按压缩放 + 触感反馈
+class _DockItem extends StatefulWidget {
   final IconData icon;
   final IconData activeIcon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
 
-  const _TabItem({
+  const _DockItem({
     required this.icon,
     required this.activeIcon,
     required this.label,
@@ -85,10 +114,10 @@ class _TabItem extends StatefulWidget {
   });
 
   @override
-  State<_TabItem> createState() => _TabItemState();
+  State<_DockItem> createState() => _DockItemState();
 }
 
-class _TabItemState extends State<_TabItem> {
+class _DockItemState extends State<_DockItem> {
   bool _pressed = false;
 
   @override
@@ -104,54 +133,53 @@ class _TabItemState extends State<_TabItem> {
         widget.onTap();
       },
       child: AnimatedScale(
-        scale: _pressed ? 0.85 : 1.0,
+        scale: _pressed ? 0.88 : 1.0,
         duration: const Duration(milliseconds: 110),
         curve: Curves.easeOut,
         child: Semantics(
           label: widget.label,
           button: true,
           selected: selected,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            margin: const EdgeInsets.symmetric(horizontal: AppDimens.sp4),
-            padding: EdgeInsets.symmetric(
-                horizontal: selected ? AppDimens.sp12 : AppDimens.sp8,
-                vertical: 6),
-            decoration: BoxDecoration(
-              color: selected ? AppColors.mintLight : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppDimens.rFull),
-              border: selected
-                  ? Border.all(color: AppColors.mintLine, width: 1)
-                  : null,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
-                  switchInCurve: Curves.easeOutBack,
-                  transitionBuilder: (child, anim) =>
-                      ScaleTransition(scale: anim, child: child),
-                  child: Icon(
-                    selected ? widget.activeIcon : widget.icon,
-                    key: ValueKey(selected),
-                    size: 22,
-                    color: selected ? AppColors.mint : AppColors.textMute,
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              padding: EdgeInsets.symmetric(
+                horizontal: selected ? AppDimens.sp16 : AppDimens.sp8,
+                vertical: AppDimens.sp8,
+              ),
+              decoration: BoxDecoration(
+                color: selected ? AppColors.mint : Colors.transparent,
+                borderRadius: BorderRadius.circular(AppDimens.rFull),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    switchInCurve: Curves.easeOutBack,
+                    transitionBuilder: (child, anim) =>
+                        ScaleTransition(scale: anim, child: child),
+                    child: Icon(
+                      selected ? widget.activeIcon : widget.icon,
+                      key: ValueKey(selected),
+                      size: 21,
+                      color: selected ? Colors.white : AppColors.textMute,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 3),
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 220),
-                  style: TextStyle(
-                    fontSize:
-                        selected ? AppDimens.fsCaption + 1 : AppDimens.fsCaption,
-                    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                    color: selected ? AppColors.mint : AppColors.textMute,
+                  const SizedBox(height: 2),
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 220),
+                    style: TextStyle(
+                      fontSize: AppDimens.fsMicro + 1,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      color: selected ? Colors.white : AppColors.textMute,
+                    ),
+                    child: Text(widget.label),
                   ),
-                  child: Text(widget.label),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
