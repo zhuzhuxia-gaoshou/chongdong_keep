@@ -11,6 +11,8 @@ class AppColors {
   static const Color mintLight = Color(0xFFE8F5EF);
   /// 渐变头图的终止绿（与 [mint] 组成品牌英雄渐变）
   static const Color mintBright = Color(0xFF6BC89D);
+  /// 薄荷深端：Hero 渐变的收尾色（mint → mintDeep，营造沉稳收束）
+  static const Color mintDeep = Color(0xFF2E7D5F);
   /// 薄荷淡描边（mintLight 填充的卡片边框伴侣色）
   static const Color mintLine = Color(0xFFD0E9DC);
 
@@ -35,6 +37,8 @@ class AppColors {
   // 中性色
   static const Color cream = Color(0xFFFBF9F5);
   static const Color sand = Color(0xFFF5F1EA);
+  /// 页面画布：比 cream 深半档，让白色卡片自然浮起（高级感的光影基础）
+  static const Color canvas = Color(0xFFF3EFE8);
   static const Color text = Color(0xFF2E3A3B);
   static const Color textSoft = Color(0xFF7A8688);
   static const Color textMute = Color(0xFFA8B0B2);

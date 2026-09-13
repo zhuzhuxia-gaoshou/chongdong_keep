@@ -10,7 +10,8 @@ class AppTheme {
   static ThemeData get light {
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: AppColors.cream,
+      // 画布比卡片深半档（AppColors.canvas），白卡凭投影自然浮起
+      scaffoldBackgroundColor: AppColors.canvas,
       colorScheme: const ColorScheme.light(
         primary: AppColors.mint,
         secondary: AppColors.skyDeep,
@@ -18,11 +19,15 @@ class AppTheme {
         surface: AppColors.card,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.cream,
+        backgroundColor: AppColors.canvas,
         elevation: 0,
         centerTitle: true,
         foregroundColor: AppColors.text,
       ),
+      // 波纹柔化：极淡薄荷水纹，按压主反馈交给 PressableScale 缩放
+      splashFactory: InkRipple.splashFactory,
+      splashColor: AppColors.mint.withValues(alpha: 0.08),
+      highlightColor: AppColors.mint.withValues(alpha: 0.04),
       cardTheme: CardThemeData(
         color: AppColors.card,
         elevation: 0,
@@ -172,10 +177,10 @@ class AppTheme {
         linearTrackColor: AppColors.sand,
       ),
       textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.text),
-        headlineMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.text),
-        titleLarge: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.text),
-        titleMedium: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.text),
+        headlineLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.text),
+        headlineMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.text),
+        titleLarge: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.text),
+        titleMedium: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text),
         bodyLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.text),
         bodyMedium: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.text),
         bodySmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textSoft),
@@ -184,4 +189,38 @@ class AppTheme {
       ),
     );
   }
+}
+
+/// 数字展示体（2026-09 字重交响）：
+/// 高级感核心=「大号细体数字 + 紧字距」，与全局 w500/w600 正文形成大小对比。
+/// 原则：数据数字永远走这里，禁止再用 w800 粗体堆数字。
+class AppText {
+  AppText._();
+
+  /// Hero 级：首页今日目标的大数字（浅底用 text 色，深底用 white）
+  static TextStyle numericHero({Color color = AppColors.text}) => TextStyle(
+        fontSize: 52,
+        fontWeight: FontWeight.w300,
+        letterSpacing: -1.5,
+        height: 1.0,
+        color: color,
+      );
+
+  /// 区块级：周报完成率、连胜天数等（28-32px 观感）
+  static TextStyle numericSection({Color color = AppColors.text}) => TextStyle(
+        fontSize: 30,
+        fontWeight: FontWeight.w400,
+        letterSpacing: -0.8,
+        height: 1.05,
+        color: color,
+      );
+
+  /// 行内级：列表行的距离/时长（16-18px 观感）
+  static TextStyle numericInline({Color color = AppColors.text}) => TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w500,
+        letterSpacing: -0.3,
+        height: 1.1,
+        color: color,
+      );
 }

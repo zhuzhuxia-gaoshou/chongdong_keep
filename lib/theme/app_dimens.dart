@@ -18,6 +18,7 @@ class AppDimens {
   static const double rMd = 12;
   static const double rLg = 16;
   static const double rXl = 20;
+  static const double rXxl = 28; // 悬浮 Dock / 大面积容器
   static const double rFull = 999;
 
   // ---- 间距（严格 4 级制）----
@@ -42,14 +43,51 @@ class AppDimens {
   static const double fsHeadline = 18; // 区块大字
   static const double fsStat = 20; // 统计数值
 
-  /// 共享表面配方：填充色 + 可选描边 + 统一大圆角。
-  /// 白卡：cardBox()；粉彩卡：cardBox(color: AppColors.sky, borderColor: AppColors.skyLine)。
-  static BoxDecoration cardBox({Color color = AppColors.card, Color? borderColor}) {
+  /// 共享表面配方：填充色 + 可选描边 + 统一大圆角 + 分层投影。
+  ///
+  /// 投影规则（2026-09 质感升级）：白色卡片且未显式描边时默认携带
+  /// [shadowCard]（接触影+环境影双层），浮起于画布之上；
+  /// 粉彩 tonal 卡（sky/coral 等）与描边卡保持平面，避免脏影。
+  static BoxDecoration cardBox({
+    Color color = AppColors.card,
+    Color? borderColor,
+    List<BoxShadow>? shadow,
+  }) {
+    final effectiveShadow = shadow ??
+        (color == AppColors.card && borderColor == null ? shadowCard : null);
     return BoxDecoration(
       color: color,
       borderRadius: BorderRadius.circular(rLg),
       border:
           borderColor == null ? null : Border.all(color: borderColor),
+      boxShadow: effectiveShadow,
     );
   }
+
+  // ---- 投影刻度（2026-09 质感底座）----
+  // 以 text 色相为影基色，双层结构：一层紧贴接触影定边缘、一层大范围环境影造深度。
+  static const List<BoxShadow> shadowCard = [
+    BoxShadow(
+      color: Color(0x0A2E3A3B), // 4% text
+      offset: Offset(0, 1),
+      blurRadius: 2,
+    ),
+    BoxShadow(
+      color: Color(0x102E3A3B), // 6% text
+      offset: Offset(0, 6),
+      blurRadius: 16,
+    ),
+  ];
+
+  /// 悬浮元素（Dock/浮层）：更收拢、更高一档
+  static const List<BoxShadow> shadowFloat = [
+    BoxShadow(
+      color: Color(0x1A2E3A3B), // 10% text
+      offset: Offset(0, 8),
+      blurRadius: 24,
+    ),
+  ];
+
+  /// 显式无影
+  static const List<BoxShadow> shadowNone = [];
 }
