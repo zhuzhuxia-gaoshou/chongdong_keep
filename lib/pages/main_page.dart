@@ -137,46 +137,47 @@ class _DockItemState extends State<_DockItem> {
           label: widget.label,
           button: true,
           selected: selected,
-          child: Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 240),
-              curve: Curves.easeOutCubic,
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              padding: EdgeInsets.symmetric(
-                horizontal: selected ? AppDimens.sp16 : AppDimens.sp8,
-                vertical: AppDimens.sp8,
-              ),
-              decoration: BoxDecoration(
-                color: selected ? AppColors.mint : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppDimens.rFull),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    switchInCurve: Curves.easeOutBack,
-                    transitionBuilder: (child, anim) =>
-                        ScaleTransition(scale: anim, child: child),
-                    child: Icon(
-                      selected ? widget.activeIcon : widget.icon,
-                      key: ValueKey(selected),
-                      size: 21,
-                      color: selected ? Colors.white : AppColors.textMute,
-                    ),
+          // 勿在松高度约束下包 Center：它会撑满全部可用高度，把 Dock 底
+          // 拉成整屏、白底盖住页面内容、可点区扩到全屏（2026-09-13 整页
+          // 空白事故根因，用户一句"按钮上下太大"点破）。
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            padding: EdgeInsets.symmetric(
+              horizontal: selected ? AppDimens.sp16 : AppDimens.sp8,
+              vertical: AppDimens.sp8,
+            ),
+            decoration: BoxDecoration(
+              color: selected ? AppColors.mint : Colors.transparent,
+              borderRadius: BorderRadius.circular(AppDimens.rFull),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  switchInCurve: Curves.easeOutBack,
+                  transitionBuilder: (child, anim) =>
+                      ScaleTransition(scale: anim, child: child),
+                  child: Icon(
+                    selected ? widget.activeIcon : widget.icon,
+                    key: ValueKey(selected),
+                    size: 21,
+                    color: selected ? Colors.white : AppColors.textMute,
                   ),
-                  const SizedBox(height: 2),
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 220),
-                    style: TextStyle(
-                      fontSize: AppDimens.fsMicro + 1,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                      color: selected ? Colors.white : AppColors.textMute,
-                    ),
-                    child: Text(widget.label),
+                ),
+                const SizedBox(height: 2),
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 220),
+                  style: TextStyle(
+                    fontSize: AppDimens.fsMicro + 1,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    color: selected ? Colors.white : AppColors.textMute,
                   ),
-                ],
-              ),
+                  child: Text(widget.label),
+                ),
+              ],
             ),
           ),
         ),
