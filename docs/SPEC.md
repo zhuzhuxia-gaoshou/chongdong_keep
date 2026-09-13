@@ -234,7 +234,7 @@ id / clientRecordId(幂等键) / petId / userId / type(walkDog/catPlay) / catPla
 
 **⑩⑪⑫ 详情/PATCH/DELETE**：PATCH 字段均可选，回更新后 PetDTO；非本人宠物 40301；DELETE 软删，有关联记录也允许（历史保留），响应 `data:{}`。
 
-**⑬ POST /upload**（multipart/form-data）：字段 `file`（jpg/png/webp）+ `businessType`（avatar≤2MB / walkPhoto≤1MB）→ `{url, fileSize}`。url 必须公网可直接访问（HTTPS）。错误 40006 类型不支持 / 40007 超限。存储介质自定，前端只认 URL。**已接真（2026-09-05）**：前端头像与出发照片均先传 ⑬；出发照片在 Live 上报 ⑭ 前上传，失败静默降级只发 null（不阻塞记录），重试凭 clientRecordId 缓存免重复上传。
+**⑬ POST /upload**（multipart/form-data）：字段 `file`（jpg/png/webp）+ `businessType`（avatar≤2MB / walkPhoto≤1MB）→ `{url, fileSize}`。url 必须公网可直接访问（HTTPS）。错误 40006 类型不支持 / 40007 超限。存储介质自定，前端只认 URL。**已接真（2026-09-13）**：前端头像与出发照片均先传 ⑬；出发照片在 Live 上报 ⑭ 前上传，失败静默降级只发 null（不阻塞记录），重试凭 clientRecordId 缓存免重复上传。
 
 ### 4.5 运动记录接口（核心）
 
