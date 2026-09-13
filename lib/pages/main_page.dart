@@ -1,12 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_dimens.dart';
 import '../services/app_state.dart';
-import '../utils/app_platform.dart';
 import 'home/home_page.dart';
 import 'walk/walk_page.dart';
 import 'mall/mall_page.dart';
