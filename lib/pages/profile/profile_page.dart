@@ -75,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     () => Navigator.push(context,
                         MaterialPageRoute(builder: (_) => const AddPetPage()))),
               ]),
-              const SizedBox(height: AppDimens.sp12),
+              const SizedBox(height: AppDimens.sp20),
               SectionCard(title: '运动与打卡', children: [
                 _menuTile(
                     Icons.calendar_month_rounded,
@@ -84,7 +84,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const CheckInCalendarPage()))),
+                            builder: (_) => const CheckInCalendarPage())),
+                    iconBg: AppColors.sky,
+                    iconFg: AppColors.skyDeep),
                 _menuTile(
                     Icons.list_alt_rounded,
                     '运动记录',
@@ -92,7 +94,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const RecordHistoryPage()))),
+                            builder: (_) => const RecordHistoryPage())),
+                    iconBg: AppColors.sky,
+                    iconFg: AppColors.skyDeep),
                 _menuTile(
                     Icons.emoji_events_rounded,
                     '排行榜',
@@ -100,7 +104,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const RankingPage()))),
+                            builder: (_) => const RankingPage())),
+                    iconBg: AppColors.sky,
+                    iconFg: AppColors.skyDeep),
                 _menuTile(
                     Icons.bar_chart_rounded,
                     '周报月报',
@@ -108,15 +114,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const WeeklyReportPage()))),
+                            builder: (_) => const WeeklyReportPage())),
+                    iconBg: AppColors.sky,
+                    iconFg: AppColors.skyDeep),
                 _menuTile(
                     Icons.workspace_premium_rounded,
                     '徽章成就',
                     '解锁你的专属荣誉',
                     () => Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const BadgesPage()))),
+                        MaterialPageRoute(builder: (_) => const BadgesPage())),
+                    iconBg: AppColors.sky,
+                    iconFg: AppColors.skyDeep),
               ]),
-              const SizedBox(height: AppDimens.sp12),
+              const SizedBox(height: AppDimens.sp20),
               // 家庭照护组入口已摘除：后端无此模块（P2 规划中），
               // 页面曾是假成员/假邀请，待真做时再恢复入口（见 PROGRESS 盘点 A）
               SectionCard(title: '家庭与健康', children: [
@@ -127,9 +137,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const HealthSafetyPage()))),
+                            builder: (_) => const HealthSafetyPage())),
+                    iconBg: AppColors.coralLight,
+                    iconFg: AppColors.coral),
               ]),
-              const SizedBox(height: AppDimens.sp12),
+              const SizedBox(height: AppDimens.sp20),
               SectionCard(title: '设置', children: [
                 _menuTile(
                     Icons.lock_outline_rounded,
@@ -160,14 +172,14 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   /// 着色圆角图标底：菜单行统一的高级感前导件
-  Widget _menuIcon(IconData icon) => Container(
+  Widget _menuIcon(IconData icon, {Color? bg, Color? fg}) => Container(
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: AppColors.mintLight,
+          color: bg ?? AppColors.mintLight,
           borderRadius: BorderRadius.circular(AppDimens.rSm),
         ),
-        child: Icon(icon, size: 20, color: AppColors.mint),
+        child: Icon(icon, size: 20, color: fg ?? AppColors.mint),
       );
 
   /// 菜单行快捷构造：着色图标底 + 标题 + 副标题 + 统一右箭头。
@@ -175,10 +187,12 @@ class _ProfilePageState extends State<ProfilePage> {
     IconData icon,
     String title,
     String? subtitle,
-    VoidCallback? onTap,
-  ) {
+    VoidCallback? onTap, {
+    Color? iconBg,
+    Color? iconFg,
+  }) {
     return MenuTile(
-      leading: _menuIcon(icon),
+      leading: _menuIcon(icon, bg: iconBg, fg: iconFg),
       title: title,
       subtitle: subtitle,
       onTap: onTap,

@@ -175,7 +175,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: _pickReminderTime,
             ),
           ]),
-          const SizedBox(height: AppDimens.sp16),
+          const SizedBox(height: AppDimens.sp20),
           SectionCard(title: '隐私设置', children: [
             _switchTile(Icons.route, '轨迹可见', '好友功能上线后生效：好友可查看运动路线',
                 _locationVisible, (v) => _update('locationVisible', v)),
@@ -186,7 +186,7 @@ class _SettingsPageState extends State<SettingsPage> {
             _switchTile(Icons.location_on_outlined, '分享位置', '分享卡片显示具体位置',
                 _shareLocation, (v) => _update('shareLocation', v)),
           ]),
-          const SizedBox(height: AppDimens.sp16),
+          const SizedBox(height: AppDimens.sp20),
           SectionCard(title: '数据管理', children: [
             _navTile('导出数据', '运动记录与宠物档案摘要（文本分享）', Icons.download,
                 onTap: _exportData),
@@ -195,7 +195,7 @@ class _SettingsPageState extends State<SettingsPage> {
             _navTile('删除宠物档案', '删除全部宠物（同步服务端，不可恢复）', Icons.pets,
                 isDanger: true, onTap: _confirmClearPets),
           ]),
-          const SizedBox(height: AppDimens.sp16),
+          const SizedBox(height: AppDimens.sp20),
           SectionCard(title: '账号', children: [
             _navTile('修改手机号',
                 '当前: ${context.watch<AppState>().user?.phone ?? '未登录'}', Icons.phone,
@@ -203,7 +203,7 @@ class _SettingsPageState extends State<SettingsPage> {
             _navTile('注销账号', '删除所有数据和账号', Icons.person_off, isDanger: true,
                 onTap: () => _toast('账号注销需要后端服务支持，即将开放')),
           ]),
-          const SizedBox(height: AppDimens.sp16),
+          const SizedBox(height: AppDimens.sp20),
           SectionCard(title: '开发环境', children: [_buildEnvTile()]),
           const SizedBox(height: AppDimens.sp24),
           Center(
