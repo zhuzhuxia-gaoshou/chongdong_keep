@@ -42,38 +42,20 @@ const _kCities = [
   ('长沙', 28.2282, 112.9388),
 ];
 
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> {
   WeatherData? _weather;
   bool _loadingWeather = false;
   String? _manualCity; // 手动选择的城市名，null = 跟随定位
   String? _selectedPetId; // 首页展示的宠物，null = 第一只
 
-  /// 页面入场：整页一次性上滑淡入（克制动效原则——只此一处）
-  late final AnimationController _entrance = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 380),
-  );
-  late final Animation<double> _entranceFade = CurvedAnimation(
-    parent: _entrance,
-    curve: Curves.easeOut,
-  );
-  late final Animation<Offset> _entranceSlide = Tween(
-    begin: const Offset(0, 0.015),
-    end: Offset.zero,
-  ).animate(CurvedAnimation(parent: _entrance, curve: Curves.easeOut));
+  // 注意：此处曾有「整页上滑淡入」入场动效，真机上动画未推进导致
+  // FadeTransition 停在透明度 0、整页空白（2026-09-13 事故），已移除。
+  // 教训：内容可见性绝不允许依赖动画推进；透明度类装饰动效一律不做。
 
   @override
   void initState() {
     super.initState();
     _loadWeather();
-    _entrance.forward();
-  }
-
-  @override
-  void dispose() {
-    _entrance.dispose();
-    super.dispose();
   }
 
   Future<void> _loadWeather() async {
@@ -205,27 +187,21 @@ class _HomePageState extends State<HomePage>
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimens.sp16,
                   ),
-                  child: FadeTransition(
-                    opacity: _entranceFade,
-                    child: SlideTransition(
-                      position: _entranceSlide,
-                      child: Column(
-                        children: [
-                          _buildHeader(state),
-                          const SizedBox(height: AppDimens.sp12),
-                          _buildWeatherCard(),
-                          const SizedBox(height: AppDimens.sp12),
-                          _buildPetGoalCard(pet, state),
-                          const SizedBox(height: AppDimens.sp12),
-                          _buildStreakCard(state),
-                          const SizedBox(height: AppDimens.sp12),
-                          _buildExerciseEntries(context, pet),
-                          const SizedBox(height: AppDimens.sp8),
-                          _buildQuickActions(context),
-                          const SizedBox(height: 96), // 悬浮 Dock 遮挡区
-                        ],
-                      ),
-                    ),
+                  child: Column(
+                    children: [
+                      _buildHeader(state),
+                      const SizedBox(height: AppDimens.sp12),
+                      _buildWeatherCard(),
+                      const SizedBox(height: AppDimens.sp12),
+                      _buildPetGoalCard(pet, state),
+                      const SizedBox(height: AppDimens.sp12),
+                      _buildStreakCard(state),
+                      const SizedBox(height: AppDimens.sp12),
+                      _buildExerciseEntries(context, pet),
+                      const SizedBox(height: AppDimens.sp8),
+                      _buildQuickActions(context),
+                      const SizedBox(height: 96), // 悬浮 Dock 遮挡区
+                    ],
                   ),
                 ),
               ),
