@@ -1,12 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_dimens.dart';
 import '../services/app_state.dart';
-import '../utils/app_platform.dart';
 import 'home/home_page.dart';
 import 'walk/walk_page.dart';
 import 'mall/mall_page.dart';
@@ -37,7 +34,9 @@ class MainPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      extendBody: true,
+      // 2026-09-13 事故排查：曾用 extendBody 让内容穿到 Dock 下方配合毛玻璃，
+      // 真机出现「Dock 可见、页面内容整页空白」。两变量（BackdropFilter+extendBody）
+      // 均已移除，Dock 走标准 bottomNavigationBar 渲染路径，悬浮造型保留。
       body: IndexedStack(
         index: state.currentIndex,
         children: pages,
@@ -53,39 +52,37 @@ class MainPage extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppDimens.rXxl),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppPlatform.isWeb
-                      ? AppColors.card.withValues(alpha: 0.92)
-                      : Colors.white.withValues(alpha: 0.78),
-                  borderRadius: BorderRadius.circular(AppDimens.rXxl),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.55),
-                    width: 1,
-                  ),
+            // 2026-09-13 事故：此处曾用 BackdropFilter 毛玻璃，部分机型 GPU
+            // 对 saveLayer 合成异常会连带丢掉整个 body 图层（Dock 可见/页面空白）。
+            // 改为近实心底，悬浮造型保留、渲染路径回归普通 Container。
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppDimens.rXxl),
+                border: Border.all(
+                  color: AppColors.line.withValues(alpha: 0.6),
+                  width: 1,
                 ),
-                child: SafeArea(
-                  top: false,
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: AppDimens.sp8, horizontal: AppDimens.sp4),
-                    child: Row(
-                      children: [
-                        for (int i = 0; i < tabs.length; i++)
-                          Expanded(
-                            child: _DockItem(
-                              icon: tabs[i].icon,
-                              activeIcon: tabs[i].activeIcon,
-                              label: tabs[i].label,
-                              selected: state.currentIndex == i,
-                              onTap: () => state.setIndex(i),
-                            ),
+              ),
+              child: SafeArea(
+                top: false,
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppDimens.sp8, horizontal: AppDimens.sp4),
+                  child: Row(
+                    children: [
+                      for (int i = 0; i < tabs.length; i++)
+                        Expanded(
+                          child: _DockItem(
+                            icon: tabs[i].icon,
+                            activeIcon: tabs[i].activeIcon,
+                            label: tabs[i].label,
+                            selected: state.currentIndex == i,
+                            onTap: () => state.setIndex(i),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
                 ),
               ),
