@@ -90,7 +90,7 @@ class WeeklyReportPage extends StatelessWidget {
                   Text(petNames,
                       style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.onAccent)),
                 ],
               ),
@@ -114,9 +114,10 @@ class WeeklyReportPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(s.grade,
-                  style: const TextStyle(
-                      fontSize: 56,
-                      fontWeight: FontWeight.w900,
+                  style: TextStyle(
+                      fontSize: 60,
+                      fontWeight: FontWeight.w300,
+                      letterSpacing: -1,
                       color: AppColors.onAccent)),
               const SizedBox(width: 12),
               Column(
@@ -128,7 +129,7 @@ class WeeklyReportPage extends StatelessWidget {
                   Text(s.gradeLabel,
                       style: const TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.onAccent)),
                 ],
               ),
@@ -161,7 +162,7 @@ class WeeklyReportPage extends StatelessWidget {
         Text(value,
             style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: AppColors.onAccent)),
         const SizedBox(height: 2),
         Text(label,
@@ -203,7 +204,7 @@ class WeeklyReportPage extends StatelessWidget {
           const SizedBox(height: 6),
           Text(value,
               style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
           Text(label,
               style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
@@ -231,7 +232,7 @@ class WeeklyReportPage extends StatelessWidget {
           Row(
             children: [
               const Text('每日运动时长',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -319,7 +320,7 @@ class WeeklyReportPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('宠物本周表现',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
         const SizedBox(height: 10),
         if (rows.isEmpty)
           Container(
@@ -379,7 +380,7 @@ class WeeklyReportPage extends StatelessWidget {
                     Text('$mins分钟',
                         style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                             color: mins > 0
                                 ? AppColors.mint
                                 : AppColors.textMute)),
@@ -424,7 +425,7 @@ class WeeklyReportPage extends StatelessWidget {
               Text('本周小结',
                   style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.coral)),
             ],
           ),
@@ -455,7 +456,7 @@ class WeeklyReportPage extends StatelessWidget {
                 Text('分享本周报告',
                     style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.mint)),
                 SizedBox(height: 4),
                 Text('把这份坚持分享给朋友吧',

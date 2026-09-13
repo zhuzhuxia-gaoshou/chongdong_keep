@@ -901,8 +901,9 @@ class _WalkPageState extends State<WalkPage> {
                 Text(
                   MapService.formatDuration(_elapsed),
                   style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
                       color: Colors.white),
                 ),
               ],
