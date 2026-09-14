@@ -6,6 +6,9 @@ import '../../services/app_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 
+/// 登录页（2026-09-15 品牌时刻重做）：
+/// 渐变 logo 浮起 + 品牌渐变标题 + 表单白卡 + 全格间距。
+/// 红线自查：无 stretch / 无松约束 Center 包整页 / 无透明度入场动效。
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -93,111 +96,152 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final codeReady = _countdown == 0 && !_sendingCode;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppDimens.sp16),
+          padding: const EdgeInsets.symmetric(horizontal: AppDimens.sp24),
           child: Column(
             children: [
-              const SizedBox(height: 60),
-              // Logo
+              const SizedBox(height: AppDimens.sp60),
+              // 品牌图章：渐变圆 + 柔和薄荷辉光，浮起于画布
               Container(
-                width: 80,
-                height: 80,
+                width: 104,
+                height: 104,
                 decoration: BoxDecoration(
-                  color: AppColors.mintLight,
-                  borderRadius: BorderRadius.circular(AppDimens.rXl),
+                  shape: BoxShape.circle,
+                  gradient: AppColors.heroGradient,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.mint.withValues(alpha: 0.35),
+                      offset: const Offset(0, 10),
+                      blurRadius: 28,
+                    ),
+                  ],
                 ),
-                child: const Center(
-                  child: Text('🐾', style: TextStyle(fontSize: 40)),
-                ),
+                alignment: Alignment.center,
+                child: const Text('🐾', style: TextStyle(fontSize: 48)),
               ),
-              const SizedBox(height: 16),
-              Text(
+              const SizedBox(height: AppDimens.sp20),
+              // 品牌名：字重交响——品牌词允许重字重，紧字距
+              const Text(
                 '宠动Keep',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.mint,
+                  letterSpacing: -0.5,
+                  color: AppColors.text,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                '和宝贝一起动起来',
-                style: TextStyle(fontSize: 13, color: AppColors.textSoft),
-              ),
-              const SizedBox(height: 40),
-              // 手机号
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: AppDimens.sp8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('手机号', style: TextStyle(fontSize: AppDimens.fsFoot, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    maxLength: 11,
-                    decoration: const InputDecoration(
-                      hintText: '请输入手机号',
-                      counterText: '',
+                  Container(
+                    width: 20,
+                    height: 2,
+                    decoration: BoxDecoration(
+                      color: AppColors.mint.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(AppDimens.rFull),
+                    ),
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: AppDimens.sp8),
+                    child: Text(
+                      '和宝贝一起动起来',
+                      style: TextStyle(
+                        fontSize: AppDimens.fsBodyMid,
+                        letterSpacing: 2,
+                        color: AppColors.textSoft,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 20,
+                    height: 2,
+                    decoration: BoxDecoration(
+                      color: AppColors.mint.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(AppDimens.rFull),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppDimens.sp16),
-              // 验证码
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('验证码', style: TextStyle(fontSize: AppDimens.fsFoot, color: AppColors.textSoft, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _codeController,
-                          keyboardType: TextInputType.number,
-                          maxLength: 6,
-                          decoration: const InputDecoration(
-                            hintText: '请输入验证码',
-                            counterText: '',
-                          ),
-                        ),
+              const SizedBox(height: AppDimens.sp40),
+              // 表单白卡：两张输入聚拢成一张浮起面板
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppDimens.sp16),
+                decoration: AppDimens.cardBox(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _fieldLabel('手机号'),
+                    const SizedBox(height: AppDimens.sp8),
+                    TextField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      maxLength: 11,
+                      decoration: const InputDecoration(
+                        hintText: '请输入手机号',
+                        counterText: '',
                       ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap:
-                            (_countdown == 0 && !_sendingCode) ? _sendCode : null,
-                        child: Container(
-                          height: 48, // 与主题输入框精确等高
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(horizontal: AppDimens.sp12),
-                          decoration: BoxDecoration(
-                            color: (_countdown == 0 && !_sendingCode)
-                                ? AppColors.mintLight
-                                : AppColors.sand,
-                            borderRadius: BorderRadius.circular(AppDimens.rMd),
-                          ),
-                          child: Text(
-                            _sendingCode
-                                ? '发送中…'
-                                : (_countdown == 0 ? '获取验证码' : '${_countdown}s'),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: (_countdown == 0 && !_sendingCode)
-                                  ? AppColors.mint
-                                  : AppColors.textMute,
+                    ),
+                    const SizedBox(height: AppDimens.sp16),
+                    _fieldLabel('验证码'),
+                    const SizedBox(height: AppDimens.sp8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _codeController,
+                            keyboardType: TextInputType.number,
+                            maxLength: 6,
+                            decoration: const InputDecoration(
+                              hintText: '请输入验证码',
+                              counterText: '',
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: AppDimens.sp8),
+                        // 压缩感反馈交给配色态变化（克制原则：不加动效）
+                        GestureDetector(
+                          onTap: codeReady ? _sendCode : null,
+                          child: Container(
+                            height: 48, // 与主题输入框精确等高
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: AppDimens.sp12),
+                            decoration: BoxDecoration(
+                              color: codeReady
+                                  ? AppColors.mint
+                                  : AppColors.sand,
+                              borderRadius:
+                                  BorderRadius.circular(AppDimens.rMd),
+                            ),
+                            child: Text(
+                              _sendingCode
+                                  ? '发送中…'
+                                  : (_countdown == 0
+                                      ? '获取验证码'
+                                      : '${_countdown}s'),
+                              style: TextStyle(
+                                fontSize: AppDimens.fsFoot,
+                                fontWeight: FontWeight.w700,
+                                color: codeReady
+                                    ? AppColors.onAccent
+                                    : AppColors.textMute,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 24),
-              // 登录按钮
+              const SizedBox(height: AppDimens.sp24),
+              // 登录主按钮
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -212,7 +256,7 @@ class _LoginPageState extends State<LoginPage> {
                   label: Text(_busy ? '登录中…' : '登录 / 注册'),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimens.sp16),
               // 协议
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -228,12 +272,17 @@ class _LoginPageState extends State<LoginPage> {
                         height: 18,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: _agreed ? AppColors.mint : AppColors.textMute, width: 1.5),
+                          border: Border.all(
+                              color: _agreed
+                                  ? AppColors.mint
+                                  : AppColors.textMute,
+                              width: 1.5),
                           color: _agreed ? AppColors.mint : Colors.transparent,
                         ),
                         child: _agreed
-                          ? const Icon(Icons.check, size: 13, color: Colors.white)
-                          : null,
+                            ? const Icon(Icons.check,
+                                size: 13, color: Colors.white)
+                            : null,
                       ),
                     ),
                   ),
@@ -243,21 +292,27 @@ class _LoginPageState extends State<LoginPage> {
                       softWrap: true,
                       TextSpan(
                         text: '登录即同意',
-                        style: TextStyle(fontSize: 11, color: AppColors.textSoft),
+                        style: TextStyle(
+                            fontSize: AppDimens.fsCaption,
+                            color: AppColors.textSoft),
                         children: [
-                          TextSpan(text: '《用户协议》', style: TextStyle(color: AppColors.mint)),
-                          TextSpan(text: '和', style: TextStyle(color: AppColors.textSoft)),
-                          TextSpan(text: '《隐私政策》', style: TextStyle(color: AppColors.mint)),
+                          TextSpan(text: '《用户协议》',
+                              style: const TextStyle(color: AppColors.mint)),
+                          TextSpan(text: '和',
+                              style: TextStyle(color: AppColors.textSoft)),
+                          TextSpan(text: '《隐私政策》',
+                              style: const TextStyle(color: AppColors.mint)),
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimens.sp12),
               Text(
                 '微信登录将在二期上线',
-                style: TextStyle(fontSize: 10, color: AppColors.textMute),
+                style: TextStyle(
+                    fontSize: AppDimens.fsMicro, color: AppColors.textMute),
               ),
             ],
           ),
@@ -265,4 +320,13 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  Widget _fieldLabel(String text) => Text(
+        text,
+        style: const TextStyle(
+          fontSize: AppDimens.fsFoot,
+          color: AppColors.textSoft,
+          fontWeight: FontWeight.w600,
+        ),
+      );
 }
