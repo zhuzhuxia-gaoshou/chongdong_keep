@@ -8,6 +8,8 @@ import '../../services/app_state.dart';
 import '../../services/map_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/pressable_scale.dart';
 import '../record/record_history_page.dart';
 import 'add_pet_page.dart';
 
@@ -81,7 +83,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           for (final p in pets)
             Padding(
               padding: const EdgeInsets.only(right: AppDimens.sp8),
-              child: GestureDetector(
+              child: PressableScale(
                 onTap: () => setState(() => _selectedId = p.id),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -188,13 +190,15 @@ class _PetDetailPageState extends State<PetDetailPage> {
   Widget _buildBasicInfo(Pet pet) {
     return Container(
       padding: const EdgeInsets.all(AppDimens.sp16),
-      decoration: AppDimens.cardBox(borderColor: AppColors.line),
+      decoration: AppDimens.cardBox(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('基本信息',
               style: TextStyle(
-                  fontSize: AppDimens.fsBodyMid, fontWeight: FontWeight.w800)),
+                  fontSize: AppDimens.fsBodyMid,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.3)),
           const SizedBox(height: AppDimens.sp12),
           Row(
             children: [
@@ -241,13 +245,15 @@ class _PetDetailPageState extends State<PetDetailPage> {
   Widget _buildHealthInfo(Pet pet) {
     return Container(
       padding: const EdgeInsets.all(AppDimens.sp16),
-      decoration: AppDimens.cardBox(borderColor: AppColors.line),
+      decoration: AppDimens.cardBox(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('健康备忘',
               style: TextStyle(
-                  fontSize: AppDimens.fsBodyMid, fontWeight: FontWeight.w800)),
+                  fontSize: AppDimens.fsBodyMid,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.3)),
           const SizedBox(height: AppDimens.sp12),
           _buildTagList('过敏', pet.allergies, AppColors.coral),
           const SizedBox(height: AppDimens.sp12),
@@ -426,7 +432,9 @@ class _PetDetailPageState extends State<PetDetailPage> {
       children: [
         const Text('近期运动',
             style: TextStyle(
-                fontSize: AppDimens.fsBodyMid, fontWeight: FontWeight.w800)),
+                fontSize: AppDimens.fsBodyMid,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.3)),
         const SizedBox(height: AppDimens.sp12),
         if (top.isEmpty)
           Container(
@@ -470,13 +478,9 @@ class _PetDetailPageState extends State<PetDetailPage> {
     final typeName = r.typeDisplayName;
     return Container(
       padding: const EdgeInsets.all(AppDimens.sp12),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(AppDimens.rMd),
-        border: Border.all(
-            color: isToday ? AppColors.mint : AppColors.line,
-            width: isToday ? 2 : 1),
-      ),
+      decoration: isToday
+          ? AppDimens.cardBox(borderColor: AppColors.mint)
+          : AppDimens.cardBox(),
       child: Row(
         children: [
           Expanded(
@@ -488,22 +492,47 @@ class _PetDetailPageState extends State<PetDetailPage> {
                         fontSize: AppDimens.fsCaption,
                         color: AppColors.textSoft)),
                 const SizedBox(height: AppDimens.sp4),
-                Text(
-                    '$typeName ${MapService.formatDuration(r.duration)} · ${MapService.formatDistance(r.distance)}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                // 行内数字走展示体（与记录页行内规格一致）
+                Text.rich(
+                  TextSpan(
+                    text: '$typeName ',
                     style: const TextStyle(
                         fontSize: AppDimens.fsBody,
-                        fontWeight: FontWeight.w600)),
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text),
+                    children: [
+                      TextSpan(
+                        text:
+                            '${MapService.formatDuration(r.duration)} · ${MapService.formatDistance(r.distance)}',
+                        style: AppText.numericInline(),
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
-          Text(
-            r.canCheckIn ? '🎯 打卡成功' : '未达打卡时长',
-            style: TextStyle(
-                fontSize: AppDimens.fsCaption,
-                fontWeight: FontWeight.w700,
-                color: r.canCheckIn ? AppColors.mint : AppColors.textSoft),
+          // 打卡状态：奖杯图标替代 🎯 emoji
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (r.canCheckIn) ...[
+                const Icon(Icons.emoji_events_rounded,
+                    size: 13, color: AppColors.mint),
+                const SizedBox(width: 2),
+              ],
+              Text(
+                r.canCheckIn ? '打卡成功' : '未达打卡时长',
+                style: TextStyle(
+                    fontSize: AppDimens.fsCaption,
+                    fontWeight: FontWeight.w700,
+                    color: r.canCheckIn
+                        ? AppColors.mint
+                        : AppColors.textSoft),
+              ),
+            ],
           ),
         ],
       ),
