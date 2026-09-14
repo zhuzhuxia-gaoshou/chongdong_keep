@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/map_service.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_dimens.dart';
+import 'pressable_scale.dart';
 
 /// 附近宠物医院列表（真实腾讯 POI 搜索，PRD 4.5.2）。
 ///
@@ -56,24 +58,29 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
         Row(
           children: [
             const Text('附近宠物医院',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-            const SizedBox(width: 8),
-            GestureDetector(
+                style: TextStyle(
+                    fontSize: AppDimens.fsHeadline,
+                    fontWeight: FontWeight.w700)),
+            const SizedBox(width: AppDimens.sp8),
+            PressableScale(
               onTap: () {
                 setState(() {
                   _future = MapService.searchNearbyPetHospitals(
                       widget.wgsLat, widget.wgsLng);
                 });
               },
-              child: const Text('重新定位搜索',
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.mint)),
+              child: const Padding(
+                padding: EdgeInsets.all(AppDimens.sp4),
+                child: Text('重新定位搜索',
+                    style: TextStyle(
+                        fontSize: AppDimens.fsCaption,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.mint)),
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: AppDimens.sp12),
         FutureBuilder<List<PetHospital>?>(
           future: _future,
           builder: (context, snap) {
@@ -105,14 +112,13 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
   Widget _statusCard(String text) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.line),
-      ),
+      padding: const EdgeInsets.all(AppDimens.sp12),
+      decoration: AppDimens.cardBox(borderColor: AppColors.line),
       child: Text(text,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSoft, height: 1.5)),
+          style: const TextStyle(
+              fontSize: AppDimens.fsFoot,
+              color: AppColors.textSoft,
+              height: 1.5)),
     );
   }
 
@@ -123,23 +129,19 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
             ? '${(h.distanceMeters! / 1000).toStringAsFixed(1)}km'
             : '${h.distanceMeters!.round()}m';
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.line),
-      ),
+      padding: const EdgeInsets.all(AppDimens.sp12),
+      decoration: AppDimens.cardBox(),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(AppDimens.sp12),
             decoration: BoxDecoration(
               color: AppColors.mintLight,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppDimens.rMd),
             ),
             child: Icon(Icons.local_hospital_rounded, size: 20, color: AppColors.mint),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimens.sp12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
