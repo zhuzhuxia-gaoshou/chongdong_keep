@@ -157,8 +157,10 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           SectionCard(title: '通知提醒', children: [
             MenuTile(
-              leading: const Icon(Icons.notifications_active_outlined,
-                  size: AppDimens.sp20, color: AppColors.textSoft),
+              leading: const IconChip(
+                  icon: Icons.notifications_active_outlined,
+                  background: AppColors.sky,
+                  color: AppColors.skyDeep),
               title: '运动提醒',
               subtitle: '每天定时提醒遛狗',
               trailing: Switch(
@@ -167,8 +169,10 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             MenuTile(
-              leading: const Icon(Icons.alarm,
-                  size: AppDimens.sp20, color: AppColors.textSoft),
+              leading: const IconChip(
+                  icon: Icons.alarm,
+                  background: AppColors.sky,
+                  color: AppColors.skyDeep),
               title: '提醒时间',
               subtitle:
                   '每天 ${_reminderHour.toString().padLeft(2, '0')}:${_reminderMinute.toString().padLeft(2, '0')}',
@@ -317,7 +321,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _switchTile(IconData icon, String title, String subtitle, bool value,
       ValueChanged<bool> onChanged) {
     return MenuTile(
-      leading: Icon(icon, size: AppDimens.sp20, color: AppColors.textSoft),
+      leading: IconChip(icon: icon),
       title: title,
       subtitle: subtitle,
       trailing: Switch(value: value, onChanged: onChanged),
@@ -327,9 +331,12 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _navTile(String title, String subtitle, IconData icon,
       {bool isDanger = false, VoidCallback? onTap}) {
     return MenuTile(
-      leading: Icon(icon,
-          size: AppDimens.sp20,
-          color: isDanger ? AppColors.coral : AppColors.textSoft),
+      leading: isDanger
+          ? IconChip(
+              icon: icon,
+              background: AppColors.coralLight,
+              color: AppColors.coral)
+          : IconChip(icon: icon),
       title: title,
       subtitle: subtitle,
       danger: isDanger,
@@ -343,14 +350,16 @@ class _SettingsPageState extends State<SettingsPage> {
         ? 'MOCK（内置假数据）'
         : '正式 · ${ApiConfig.liveHost ?? ApiConfig.apiBaseUrl}';
     return MenuTile(
-      leading: const Icon(Icons.dns,
-          size: AppDimens.sp20, color: AppColors.textSoft),
+      leading: const IconChip(
+          icon: Icons.dns,
+          background: AppColors.sand,
+          color: AppColors.textSoft),
       title: '运行环境',
       subtitle: label,
       onTap: () {},
       trailing: TextButton.icon(
         onPressed: _testConnection,
-        icon: const Icon(Icons.wifi_tethering, size: AppDimens.fsSub),
+        icon: const Icon(Icons.wifi_tethering, size: 16),
         label: const Text('测试连接', style: TextStyle(fontSize: AppDimens.fsFoot)),
       ),
     );
