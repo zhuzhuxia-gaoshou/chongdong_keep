@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/ui_kit.dart';
 
+/// 家庭照护组（P2 未定稿的演示页，入口已从「我的」摘除）。
+/// 2026-09-15 质感 v2：heroGradient 内容大卡降级为 mintLight tonal
+/// （全 App 唯一渐变内容卡让位首页 Hero），统计数字迁展示体，
+/// 成员头像 emoji→person 图标，白卡统一浮起。
 class FamilyGroupPage extends StatefulWidget {
   const FamilyGroupPage({super.key});
 
@@ -15,16 +21,16 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('家庭照护组')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimens.sp16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildFamilyCard(),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppDimens.sp20),
             _buildMembersList(),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppDimens.sp20),
             _buildSharedPets(),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppDimens.sp20),
             _buildPermissions(),
           ],
         ),
@@ -39,43 +45,54 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
     );
   }
 
+  Widget _sectionTitle(String text) => Text(text,
+      style: const TextStyle(
+          fontSize: AppDimens.fsBodyMid,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3));
+
   Widget _buildFamilyCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimens.sp16),
       decoration: BoxDecoration(
-        gradient: AppColors.heroGradient,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.mintLight,
+        border: Border.all(color: AppColors.mintLine),
+        borderRadius: BorderRadius.circular(AppDimens.rLg),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.groups_rounded, size: 30, color: AppColors.onAccent),
-              const SizedBox(width: 10),
+              const IconChip(
+                  icon: Icons.groups_rounded,
+                  background: AppColors.card,
+                  color: AppColors.mint),
+              const SizedBox(width: AppDimens.sp12),
               const Expanded(
                 child: Text('可乐的家',
                     style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white)),
+                        fontSize: AppDimens.fsHeadline,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.text)),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimens.sp12, vertical: AppDimens.sp4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(999),
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(AppDimens.rFull),
                 ),
                 child: const Text('管理员',
                     style: TextStyle(
-                        fontSize: 11,
+                        fontSize: AppDimens.fsCaption,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white)),
+                        color: AppColors.mint)),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimens.sp12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -92,14 +109,11 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
   Widget _buildStat(String value, String label) {
     return Column(
       children: [
-        Text(value,
-            style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Colors.white)),
+        Text(value, style: AppText.numericStat(color: AppColors.mint)),
         const SizedBox(height: 2),
         Text(label,
-            style: const TextStyle(fontSize: 11, color: Colors.white70)),
+            style: const TextStyle(
+                fontSize: AppDimens.fsMicro, color: AppColors.textSoft)),
       ],
     );
   }
@@ -108,38 +122,33 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('成员',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 10),
-        _buildMemberItem('我', '管理员', true, '👤'),
-        _buildMemberItem('老婆', '照护者', false, '👩'),
-        _buildMemberItem('妈妈', '只读成员', false, '👵'),
+        _sectionTitle('成员'),
+        const SizedBox(height: AppDimens.sp12),
+        _buildMemberItem('我', '管理员', true),
+        _buildMemberItem('老婆', '照护者', false),
+        _buildMemberItem('妈妈', '只读成员', false),
       ],
     );
   }
 
-  Widget _buildMemberItem(String name, String role, bool isMe, String emoji) {
+  Widget _buildMemberItem(String name, String role, bool isMe) {
     final roleColor = role == '管理员'
         ? AppColors.mint
         : role == '照护者'
             ? AppColors.coral
             : AppColors.textSoft;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.line),
-      ),
+      margin: const EdgeInsets.only(bottom: AppDimens.sp8),
+      padding: const EdgeInsets.all(AppDimens.sp12),
+      decoration: AppDimens.cardBox(),
       child: Row(
         children: [
-          CircleAvatar(
+          const CircleAvatar(
             radius: 22,
             backgroundColor: AppColors.mintLight,
-            child: Text(emoji, style: TextStyle(fontSize: 20)),
+            child: Icon(Icons.person_rounded, size: 24, color: AppColors.mint),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimens.sp12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,38 +157,41 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
                   children: [
                     Text(name,
                         style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w700)),
+                            fontSize: AppDimens.fsBodyMid,
+                            fontWeight: FontWeight.w700)),
                     if (isMe) ...[
-                      const SizedBox(width: 6),
+                      const SizedBox(width: AppDimens.sp8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                            horizontal: AppDimens.sp8, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.mintLight,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius:
+                              BorderRadius.circular(AppDimens.rXs),
                         ),
                         child: const Text('我',
                             style: TextStyle(
-                                fontSize: 9,
+                                fontSize: AppDimens.fsMicro,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.mint)),
                       ),
                     ],
                   ],
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: AppDimens.sp4),
                 Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                          horizontal: AppDimens.sp8, vertical: 2),
                       decoration: BoxDecoration(
                         color: roleColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius:
+                            BorderRadius.circular(AppDimens.rXs),
                       ),
                       child: Text(role,
                           style: TextStyle(
-                              fontSize: 10,
+                              fontSize: AppDimens.fsMicro,
                               fontWeight: FontWeight.w700,
                               color: roleColor)),
                     ),
@@ -205,13 +217,12 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('共享宠物',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 10),
+        _sectionTitle('共享宠物'),
+        const SizedBox(height: AppDimens.sp12),
         Row(
           children: [
             _buildPetCard('🐕', '可乐', '柯基'),
-            const SizedBox(width: 10),
+            const SizedBox(width: AppDimens.sp12),
             _buildPetCard('🐈', '咪咪', '布偶猫'),
           ],
         ),
@@ -222,27 +233,25 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
   Widget _buildPetCard(String emoji, String name, String breed) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.line),
-        ),
+        padding: const EdgeInsets.all(AppDimens.sp12),
+        decoration: AppDimens.cardBox(),
         child: Row(
           children: [
             Text(emoji, style: const TextStyle(fontSize: 28)),
-            const SizedBox(width: 10),
+            const SizedBox(width: AppDimens.sp12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(name,
                       style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w800)),
+                          fontSize: AppDimens.fsBodyMid,
+                          fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
                   Text(breed,
-                      style:
-                          TextStyle(fontSize: 11, color: AppColors.textSoft)),
+                      style: const TextStyle(
+                          fontSize: AppDimens.fsCaption,
+                          color: AppColors.textSoft)),
                 ],
               ),
             ),
@@ -256,9 +265,8 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('权限说明',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 10),
+        _sectionTitle('权限说明'),
+        const SizedBox(height: AppDimens.sp12),
         _buildPermissionItem('管理员', '所有成员记录、修改角色、移除成员'),
         _buildPermissionItem('照护者', '记录运动、查看所有数据、不能修改设置'),
         _buildPermissionItem('只读成员', '只能查看数据，不能记录或修改'),
@@ -268,32 +276,30 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
 
   Widget _buildPermissionItem(String role, String desc) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(10),
-      ),
+      margin: const EdgeInsets.only(bottom: AppDimens.sp8),
+      padding: const EdgeInsets.all(AppDimens.sp12),
+      decoration: AppDimens.cardBox(),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimens.sp8, vertical: AppDimens.sp4),
             decoration: BoxDecoration(
               color: AppColors.mintLight,
               borderRadius: BorderRadius.circular(AppDimens.rSm),
             ),
             child: Text(role,
                 style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: AppDimens.fsCaption,
                     fontWeight: FontWeight.w700,
                     color: AppColors.mint)),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: AppDimens.sp12),
           Expanded(
             child: Text(desc,
-                style:
-                    const TextStyle(fontSize: 12, color: AppColors.textSoft)),
+                style: const TextStyle(
+                    fontSize: AppDimens.fsFoot, color: AppColors.textSoft)),
           ),
         ],
       ),
@@ -309,30 +315,28 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              decoration: const InputDecoration(
-                labelText: '手机号',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '手机号'),
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimens.sp12),
             const Text('或分享邀请链接',
-                style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
-            const SizedBox(height: 8),
+                style: TextStyle(
+                    fontSize: AppDimens.fsFoot, color: AppColors.textSoft)),
+            const SizedBox(height: AppDimens.sp8),
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(AppDimens.sp12),
               decoration: BoxDecoration(
                 color: AppColors.mintLight,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppDimens.rSm),
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.link, size: 16, color: AppColors.mint),
-                  SizedBox(width: 6),
+                  SizedBox(width: AppDimens.sp8),
                   Text('复制邀请链接',
                       style: TextStyle(
-                          fontSize: 12,
+                          fontSize: AppDimens.fsFoot,
                           fontWeight: FontWeight.w700,
                           color: AppColors.mint)),
                 ],
