@@ -8,6 +8,7 @@ import 'home/home_page.dart';
 import 'walk/walk_page.dart';
 import 'mall/mall_page.dart';
 import 'profile/profile_page.dart';
+import '../widgets/ui_kit.dart';
 
 /// 主框架：IndexedStack 五页 + 悬浮毛玻璃 Dock（2026-09 质感升级）。
 /// extendBody 让页面内容延伸到 Dock 下方，毛玻璃才有"透"的质感；
@@ -194,14 +195,14 @@ class _MessagePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('消息')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('💬', style: TextStyle(fontSize: 48)),
-            const SizedBox(height: 12),
-            Text('暂无消息', style: TextStyle(color: AppColors.textSoft)),
-          ],
+      // 品牌空态（二期做推送/好友互动后此处会出现真实消息流）
+      body: const Center(
+        child: SingleChildScrollView(
+          child: EmptyState(
+            emoji: '💬',
+            title: '暂时没有新消息',
+            message: '好友互动和运动提醒会出现在这里，敬请期待哦',
+          ),
         ),
       ),
     );

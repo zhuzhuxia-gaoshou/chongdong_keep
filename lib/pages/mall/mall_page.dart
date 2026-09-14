@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimens.dart';
 
+/// 商城 Tab（三期占位，质感 v2）：品牌化「即将上线」页。
+/// 居中占位位于 Scaffold body（有界），无 Dock 预留问题；
+/// 底部预留 104 与 walk Tab 对齐，extendBody 回归时不出遮挡事故。
 class MallPage extends StatelessWidget {
   const MallPage({super.key});
 
@@ -8,59 +12,121 @@ class MallPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('🛒', style: TextStyle(fontSize: 72)),
-                const SizedBox(height: 16),
-                Text('宠物商城即将上线',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.mint)),
-                const SizedBox(height: 8),
-                Text(
-                  '精选宠物粮、零食、用品\n按你家宝贝的档案智能推荐\n运动打卡还能换优惠券 🎁',
-                  style: TextStyle(
-                      fontSize: 13, color: AppColors.textSoft, height: 1.6),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.center,
+        child: Stack(
+          children: [
+            // 装饰圆：静态低透明度（非动画，无入场依赖）
+            Positioned(
+              right: -40,
+              top: 60,
+              child: _decorCircle(140, 0.35),
+            ),
+            Positioned(
+              left: -30,
+              bottom: 140,
+              child: _decorCircle(100, 0.25),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    AppDimens.sp20, 0, AppDimens.sp20, 104),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _featTag('🍖 主食'),
-                    _featTag('🦴 零食'),
-                    _featTag('🎾 用品'),
-                    _featTag('⌚ 智能硬件'),
+                    // 品牌图章：渐变圆 + 辉光（与登录页同族）
+                    Container(
+                      width: 96,
+                      height: 96,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: AppColors.heroGradient,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.mint.withValues(alpha: 0.3),
+                            offset: const Offset(0, 8),
+                            blurRadius: 24,
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child:
+                          const Text('🛒', style: TextStyle(fontSize: 44)),
+                    ),
+                    const SizedBox(height: AppDimens.sp20),
+                    Text('宠物商城即将上线',
+                        style: TextStyle(
+                            fontSize: AppDimens.fsStat,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.text)),
+                    const SizedBox(height: AppDimens.sp8),
+                    Text(
+                      '精选宠物粮、零食、用品\n按你家宝贝的档案智能推荐\n运动打卡还能换优惠券 🎁',
+                      style: TextStyle(
+                          fontSize: AppDimens.fsBody,
+                          color: AppColors.textSoft,
+                          height: 1.6),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppDimens.sp24),
+                    Wrap(
+                      spacing: AppDimens.sp8,
+                      runSpacing: AppDimens.sp8,
+                      alignment: WrapAlignment.center,
+                      children: const [
+                        _FeatTag(Icons.restaurant_rounded, '主食'),
+                        _FeatTag(Icons.pets_rounded, '零食'),
+                        _FeatTag(Icons.toys_rounded, '用品'),
+                        _FeatTag(Icons.watch_rounded, '智能硬件'),
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _featTag(String text) {
+  Widget _decorCircle(double size, double alpha) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.mintLight.withValues(alpha: alpha),
+        ),
+      );
+}
+
+/// 分类标签：Material 图标 + 文案（功能图标不再用 emoji）
+class _FeatTag extends StatelessWidget {
+  const _FeatTag(this.icon, this.label);
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppDimens.sp16, vertical: AppDimens.sp8),
       decoration: BoxDecoration(
         color: AppColors.mintLight,
         border: Border.all(color: AppColors.mintLine),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppDimens.rFull),
       ),
-      child: Text(text,
-          style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: AppColors.mint)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.mint),
+          const SizedBox(width: AppDimens.sp4),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: AppDimens.fsCaption,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.mint)),
+        ],
+      ),
     );
   }
 }
