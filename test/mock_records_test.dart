@@ -165,27 +165,40 @@ void main() {
     final records = RecordRepository(client);
     await _loginAs(client, store, '13800008000');
 
+    // 锚定「目标日正午」构造记录：any 时刻运行（含凌晨）都不会跨天漂移
+    // （曾用 now-3h 表示今天，凌晨运行会落到昨天，today.isChecked 恒假）
     final now = DateTime.now();
+    DateTime dayAtNoon(int minusDays) {
+      final n = DateTime.now();
+      final day = DateTime(n.year, n.month, n.day)
+          .subtract(Duration(days: minusDays));
+      return day.add(const Duration(hours: 12));
+    }
+
     // 今天：遛狗 600s（打卡）+ 猫玩 299s（不足 5 分钟，不打卡）
     await client.post('/api/v1/exercise-records',
-        body: _body(crid: 'd0-walk', start: now.subtract(const Duration(hours: 3)), route: _routeOf(1)));
+        body: _body(crid: 'd0-walk', start: dayAtNoon(0), route: _routeOf(1)));
     await client.post('/api/v1/exercise-records',
         body: _body(
-            crid: 'd0-cat', type: 'catPlay', durationSec: 299, route: const []));
+            crid: 'd0-cat',
+            type: 'catPlay',
+            durationSec: 299,
+            start: dayAtNoon(0).add(const Duration(hours: 2)),
+            route: const []));
     // 昨天：猫玩 400s —— 契约 §4.7 不限类型，同样计入打卡
     await client.post('/api/v1/exercise-records',
         body: _body(
             crid: 'd1-cat',
             type: 'catPlay',
             durationSec: 400,
-            start: now.subtract(const Duration(days: 1, hours: 2)),
+            start: dayAtNoon(1),
             route: const []));
     // 前天：500s 但 isCompleted=false → 不算
     await client.post('/api/v1/exercise-records',
         body: {
           ..._body(
               crid: 'd2-incomplete',
-              start: now.subtract(const Duration(days: 2, hours: 2)),
+              start: dayAtNoon(2),
               route: _routeOf(1)),
           'isCompleted': false,
         });
