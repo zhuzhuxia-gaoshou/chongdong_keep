@@ -201,6 +201,10 @@ class MockTransport implements Transport {
         return _refresh(body);
       default:
         if (path == '/api/v1/users/me') {
+          if (method == 'DELETE') {
+            // ⑦b 注销（契约 §4.4）：Mock 直接回成功，本地清态由调用方负责
+            return {'code': 0, 'message': 'ok', 'data': <String, dynamic>{}};
+          }
           return method == 'PATCH' ? _patchMe(body, headers) : _me(headers);
         }
         if (path == '/api/v1/pets' || path.startsWith('/api/v1/pets/')) {

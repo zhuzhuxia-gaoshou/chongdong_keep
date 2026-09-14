@@ -204,8 +204,8 @@ class _SettingsPageState extends State<SettingsPage> {
             _navTile('修改手机号',
                 '当前: ${context.watch<AppState>().user?.phone ?? '未登录'}', Icons.phone,
                 onTap: () => _toast('手机号修改需要短信验证服务支持，即将开放')),
-            _navTile('注销账号', '删除所有数据和账号', Icons.person_off, isDanger: true,
-                onTap: () => _toast('账号注销需要后端服务支持，即将开放')),
+            _navTile('注销账号', '删除所有数据和账号（不可恢复）', Icons.person_off,
+                isDanger: true, onTap: _confirmDeactivate),
           ]),
           const SizedBox(height: AppDimens.sp20),
           SectionCard(title: '开发环境', children: [_buildEnvTile()]),
@@ -371,6 +371,62 @@ class _SettingsPageState extends State<SettingsPage> {
     messenger.showSnackBar(SnackBar(
       content: Text(ok ? '服务正常' : '网络异常，暂时连不上服务'),
     ));
+  }
+
+  /// ⑦b 注销账号（契约 §4.4）：两步确认防误触 → 服务端删数据 → 清态回登录页。
+  Future<void> _confirmDeactivate() async {
+    final state = context.read<AppState>();
+    final messenger = ScaffoldMessenger.of(context);
+    // 第一步：说明后果
+    final first = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('注销账号？'),
+        content: const Text(
+            '将永久删除你的全部数据：\n· 所有宠物档案与运动记录\n· 打卡、徽章与排行榜数据\n\n'
+            '删除不可恢复，手机号将释放。确定要继续吗？'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('再想想')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.coral),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('继续'),
+          ),
+        ],
+      ),
+    );
+    if (first != true || !mounted) return;
+    // 第二步：最终确认
+    final second = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('最后确认'),
+        content: const Text('真的要和宠动Keep说再见吗？此操作无法撤销哦。'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('取消')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.coral),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('确认注销'),
+          ),
+        ],
+      ),
+    );
+    if (second != true || !mounted) return;
+    try {
+      await AppServices.instance.users.deleteMe();
+      if (!mounted) return;
+      await state.logout();
+      if (!mounted) return;
+      // 与登出一致：回落到根（根按登录态切到登录页）
+      if (context.mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
+    }
   }
 
   void _showLogoutConfirm() {

@@ -36,6 +36,11 @@ class UserRepository {
         unwrapEnvelope(await _client.patch('/api/v1/users/me', body: body)));
   }
 
+  /// ⑦b 注销账号（契约 §4.4）：服务端事务删除全部数据；调用方负责后续清态回登录页。
+  Future<void> deleteMe() async {
+    await _client.delete('/api/v1/users/me', body: {'confirm': true});
+  }
+
   /// 头像上传：客户端先做与服务端一致的预校验（类型/大小），再走 multipart。
   Future<UploadedImage> uploadAvatar(XFile picked) async {
     final name = _resolveFileName(picked);
