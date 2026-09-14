@@ -6,6 +6,7 @@ import '../../services/app_state.dart';
 import '../../services/map_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/app_bottom_sheet.dart';
 import '../../widgets/local_image.dart';
 import '../share/share_card_page.dart';
@@ -358,10 +359,7 @@ class RecordHistoryPage extends StatelessWidget {
           Text(value,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  fontSize: AppDimens.fsBodyMid,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.text)),
+              style: AppText.numericInline()),
           const SizedBox(height: AppDimens.sp4),
           Text(label,
               style: const TextStyle(

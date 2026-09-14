@@ -1,3 +1,6 @@
+// 版式豁免声明（2026-09-15 质感守门员裁定）：本页是导出海报版式，
+// 数字重字重属海报版式语言，不入 App 屏幕数字展示体体系（app_theme:228 的
+// 「w800 退役」主张不约束本文件）。
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
