@@ -294,7 +294,7 @@ class _HomePageState extends State<HomePage> {
         _selectedPetId ?? state.currentPet?.id;
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -305,7 +305,7 @@ class _HomePageState extends State<HomePage> {
             const Padding(
               padding: EdgeInsets.all(14),
               child: Text('选择要查看的宠物',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
             ),
             for (final p in state.pets)
               ListTile(
@@ -857,7 +857,7 @@ class _HomePageState extends State<HomePage> {
             '还没有添加宠物',
             style: TextStyle(
               fontSize: AppDimens.fsHeadline,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.text,
             ),
           ),
