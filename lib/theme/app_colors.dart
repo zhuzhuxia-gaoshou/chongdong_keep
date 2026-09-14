@@ -34,6 +34,16 @@ class AppColors {
   static const Color warning = Color(0xFFFFF3CD);
   static const Color warningText = Color(0xFF8A6D3B);
 
+  /// 中间风险级（症状自查「建议观察」档，2026-09-15 从页面私造色 0xFFFFB74D 收编）
+  static const Color amber = Color(0xFFFFB74D);
+  static const Color amberLight = Color(0xFFFFF3E0);
+
+  /// 急救渐变：健康/急救页的紧急语义强调（2026-09-15 配方化，
+  /// 属「唯一主角」豁免的语义色——急救场景允许第二渐变）
+  static const LinearGradient coralGradient = LinearGradient(
+    colors: [coral, coralDeep],
+  );
+
   // 中性色
   static const Color cream = Color(0xFFFBF9F5);
   static const Color sand = Color(0xFFF5F1EA);
