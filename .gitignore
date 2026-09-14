@@ -48,8 +48,9 @@ app.*.map.json
 /android/local.properties
 /local.properties
 
-# 密钥与本地环境文件，绝不入库（协作规范 §7）
+# 密钥与本地环境文件，绝不入库（协作规范 §7；.env* 通配防变体漏网）
 .env
+.env.*
 *.keystore
 *.jks
 key.properties
