@@ -9,6 +9,7 @@ import '../../services/app_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 import '../../widgets/local_image.dart';
+import '../../widgets/pressable_scale.dart';
 
 /// 添加/编辑宠物档案。传入 [pet] 即编辑模式（PATCH 上报，服务端回包为准）。
 class AddPetPage extends StatefulWidget {
@@ -183,9 +184,9 @@ class _AddPetPageState extends State<AddPetPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 头像上传（点选相册图片）
+            // 头像上传（点选相册图片）：圆形浮起 + 按压反馈
             Center(
-              child: GestureDetector(
+              child: PressableScale(
                 onTap: _pickAvatar,
                 child: Container(
                   width: 90,
@@ -198,6 +199,7 @@ class _AddPetPageState extends State<AddPetPage> {
                         color: AppColors.mint,
                         width: 2,
                         style: BorderStyle.solid),
+                    boxShadow: AppDimens.shadowCard,
                   ),
                   child: _avatarChild(),
                 ),
@@ -341,9 +343,11 @@ class _AddPetPageState extends State<AddPetPage> {
             size: 30, color: AppColors.textSoft));
   }
 
+  /// 物种选择大卡：emoji 作吉祥物（Material 无猫/狗专属字形），
+  /// 选择态由底色+描边+字色表达，按压有缩放反馈。
   Widget _speciesBtn(PetSpecies species, String emoji, String label) {
     final isActive = _species == species;
-    return GestureDetector(
+    return PressableScale(
       onTap: () => setState(() {
         _species = species;
         _breed =
@@ -357,6 +361,16 @@ class _AddPetPageState extends State<AddPetPage> {
               color: isActive ? AppColors.mint : AppColors.line,
               width: isActive ? 2 : 1),
           borderRadius: BorderRadius.circular(AppDimens.rMd),
+          boxShadow: isActive
+              ? null
+              : [
+                  // 未选中白卡轻浮起，选中 tonal 卡保持平面（质感规则）
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    offset: const Offset(0, 2),
+                    blurRadius: 6,
+                  ),
+                ],
         ),
         child: Column(
           children: [
