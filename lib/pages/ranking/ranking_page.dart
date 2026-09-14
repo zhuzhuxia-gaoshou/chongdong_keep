@@ -5,9 +5,12 @@ import '../../services/app_services.dart';
 import '../../services/storage_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/ui_kit.dart';
 
-/// 排行榜：真实服务端数据（契约 ㉒，metric=分钟）。
-/// 本周 = 滚动近 7 天；本月 = 自然月。
+/// 排行榜（2026-09-15 质感 v2）：真实服务端数据（契约 ㉒，metric=分钟）。
+/// 奖台 emoji→Material 奖牌图标、名次数字 w900/w800→展示体、榜单行白卡浮起、
+/// 我的排名浮条升级 IconChip+展示体。本周=滚动近 7 天；本月=自然月。
 class RankingPage extends StatefulWidget {
   const RankingPage({super.key});
 
@@ -80,13 +83,16 @@ class _RankingPageState extends State<RankingPage>
             return RefreshIndicator(
               onRefresh: () async => _refetch(),
               child: ListView(
-                children: const [
-                  SizedBox(height: 120),
-                  Center(
-                    child: Text('🐾 榜单还空着\n去运动一次，成为第一名！',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.textSoft)),
+                children: [
+                  const SizedBox(height: 60),
+                  const Center(
+                    child: EmptyState(
+                      emoji: '🐾',
+                      title: '榜单还空着',
+                      message: '去运动一次，成为第一名！',
+                    ),
                   ),
+                  const SizedBox(height: 120),
                 ],
               ),
             );
@@ -138,9 +144,9 @@ class _RankingPageState extends State<RankingPage>
   Widget _buildPodium(List<RankingItem> top3) {
     // 展示顺序：第2名、第1名、第3名
     final ordered = [top3[1], top3[0], top3[2]];
-    final medals = ['🥈', '👑', '🥉'];
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+      padding: const EdgeInsets.fromLTRB(
+          AppDimens.sp16, AppDimens.sp20, AppDimens.sp16, AppDimens.sp16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -149,7 +155,6 @@ class _RankingPageState extends State<RankingPage>
             Expanded(
               child: _buildPodiumItem(
                 ordered[i],
-                medals[i],
                 rank: top3[i].rank,
               ),
             ),
@@ -158,7 +163,14 @@ class _RankingPageState extends State<RankingPage>
     );
   }
 
-  Widget _buildPodiumItem(RankingItem item, String medal, {required int rank}) {
+  /// 奖台名次图标：冠=桂冠、亚=军章、季=奖牌（Material 图标替代 emoji）
+  IconData _medalIcon(int rank) => rank == 1
+      ? Icons.workspace_premium_rounded
+      : rank == 2
+          ? Icons.military_tech_rounded
+          : Icons.emoji_events_rounded;
+
+  Widget _buildPodiumItem(RankingItem item, {required int rank}) {
     final isFirst = rank == 1;
     final height = isFirst ? 90.0 : 70.0;
     final color = isFirst
@@ -172,33 +184,44 @@ class _RankingPageState extends State<RankingPage>
         CircleAvatar(
           radius: isFirst ? 28 : 22,
           backgroundColor: color,
-          child: Text(medal, style: TextStyle(fontSize: isFirst ? 24 : 20)),
+          child: Icon(_medalIcon(rank),
+              size: isFirst ? 26 : 22,
+              color: isFirst
+                  ? AppColors.onAccent
+                  : rank == 2
+                      ? AppColors.textSoft
+                      : AppColors.coral),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: AppDimens.sp8),
         Text(item.nickname,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-                fontSize: 12,
+                fontSize: AppDimens.fsFoot,
                 fontWeight: FontWeight.w700,
                 color: item.isMe ? AppColors.mint : AppColors.text)),
         Text('${item.value}分钟',
-            style: TextStyle(fontSize: 10, color: AppColors.textSoft)),
-        const SizedBox(height: 4),
+            style: TextStyle(
+                fontSize: AppDimens.fsMicro, color: AppColors.textSoft)),
+        const SizedBox(height: AppDimens.sp4),
         Container(
           height: height,
           width: 50,
           decoration: BoxDecoration(
             color: color,
             borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(8)),
+                const BorderRadius.vertical(top: Radius.circular(AppDimens.rSm)),
+            boxShadow: isFirst ? AppDimens.shadowCard : null,
           ),
           child: Center(
+            // 名次数字走展示体（w900 全库清零）
             child: Text('$rank',
-                style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white)),
+                style: AppText.numericSection(
+                    color: isFirst
+                        ? AppColors.onAccent
+                        : rank == 2
+                            ? AppColors.textSoft
+                            : AppColors.coral)),
           ),
         ),
       ],
@@ -208,16 +231,17 @@ class _RankingPageState extends State<RankingPage>
   Widget _rankRow(RankingItem item, {int? rank}) {
     final displayRank = rank ?? item.rank;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: item.isMe ? AppColors.mintLight : AppColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: item.isMe ? AppColors.mint : AppColors.line,
-          width: item.isMe ? 2 : 1,
-        ),
-      ),
+      margin: const EdgeInsets.only(bottom: AppDimens.sp8),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppDimens.sp16, vertical: AppDimens.sp12),
+      // 我=tonal 平面+薄荷描边；他人=白卡浮起
+      decoration: item.isMe
+          ? BoxDecoration(
+              color: AppColors.mintLight,
+              borderRadius: BorderRadius.circular(AppDimens.rMd),
+              border: Border.all(color: AppColors.mint, width: 1.5),
+            )
+          : AppDimens.cardBox(),
       child: Row(
         children: [
           Container(
@@ -225,15 +249,18 @@ class _RankingPageState extends State<RankingPage>
             height: 28,
             decoration: BoxDecoration(
               color: AppColors.sand,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppDimens.rSm),
             ),
             child: Center(
+              // 名次小数字：展示体行内档（替代 w800）
               child: Text('$displayRank',
                   style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w800)),
+                      fontSize: AppDimens.fsBody,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3)),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: AppDimens.sp12),
           CircleAvatar(
             radius: 16,
             backgroundColor: AppColors.mintLight,
@@ -245,82 +272,93 @@ class _RankingPageState extends State<RankingPage>
                             const Text('🐾', style: TextStyle(fontSize: 14))))
                 : const Text('🐾', style: TextStyle(fontSize: 14)),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: AppDimens.sp12),
           Expanded(
             child: Text(
               item.isMe ? '${item.nickname}（我）' : item.nickname,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: AppDimens.fsBody,
                 fontWeight: FontWeight.w700,
                 color: item.isMe ? AppColors.mint : AppColors.text,
               ),
             ),
           ),
           Text('${item.value}分钟',
-              style: const TextStyle(fontSize: 12, color: AppColors.textSoft)),
+              style: TextStyle(
+                  fontSize: AppDimens.fsFoot, color: AppColors.textSoft)),
         ],
       ),
+    );
+  }
+
+  /// 底部「我的排名」浮条
+  Widget _myRankShell({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(AppDimens.sp12),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: AppColors.line)),
+        color: AppColors.card,
+      ),
+      child: child,
     );
   }
 
   Widget _buildMyRank(RankingResult result) {
     final me = result.me;
     if (me == null) {
-      return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: AppColors.line)),
-          color: AppColors.card,
-        ),
+      return _myRankShell(
         child: const Text('登录后查看我的排行',
-            style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+            style: TextStyle(
+                fontSize: AppDimens.fsFoot, color: AppColors.textSoft)),
       );
     }
     final period = result.type == 'monthly' ? '本月' : '本周';
     if (_rankOptedOut) {
       // 与服务端口径一致：关闭公开排行榜后不参与排名，后端榜单同样剔除
-      return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: AppColors.line)),
-          color: AppColors.card,
-        ),
+      return _myRankShell(
         child: const Text('已开启隐私保护，不参与排行榜（可在设置中开启）',
-            style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+            style: TextStyle(
+                fontSize: AppDimens.fsFoot, color: AppColors.textSoft)),
       );
     }
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.line)),
-        color: AppColors.card,
-      ),
+    return _myRankShell(
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimens.sp12, vertical: AppDimens.sp8),
             decoration: BoxDecoration(
               color: AppColors.mint,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppDimens.rSm),
             ),
             child: Text(me.rank > 0 ? '第 ${me.rank} 名' : '未上榜',
                 style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontSize: AppDimens.fsBody,
+                    fontWeight: FontWeight.w700,
                     color: Colors.white)),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimens.sp12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('我的排行',
-                    style:
-                        TextStyle(fontSize: 11, color: AppColors.textSoft)),
+                    style: TextStyle(
+                        fontSize: AppDimens.fsCaption,
+                        color: AppColors.textSoft)),
                 const SizedBox(height: 2),
-                Text('$period累计运动 ${me.value} 分钟',
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w700)),
+                // 累计分钟数字走展示体
+                Text.rich(TextSpan(
+                  text: '$period累计运动 ',
+                  style: const TextStyle(
+                      fontSize: AppDimens.fsFoot, color: AppColors.text),
+                  children: [
+                    TextSpan(
+                        text: '${me.value}',
+                        style: AppText.numericInline(color: AppColors.mint)),
+                    const TextSpan(text: ' 分钟'),
+                  ],
+                )),
               ],
             ),
           ),
