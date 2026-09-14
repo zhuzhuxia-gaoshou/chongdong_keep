@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../services/app_state.dart';
 import '../../services/map_service.dart';
 import '../../services/storage_service.dart';
@@ -118,8 +120,7 @@ class _WalkPageState extends State<WalkPage> {
                 ),
                 const SizedBox(height: 18),
                 const Text('记录出发时刻？',
-                    style:
-                        TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 Text('给这次运动拍一张出发照片吧～ 不想拍也可以直接开始',
                     style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
@@ -469,7 +470,7 @@ class _WalkPageState extends State<WalkPage> {
               const Text('遛狗完成！',
                   style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.mint)),
               if (_locationName.isNotEmpty) ...[
                 const SizedBox(height: 6),
@@ -565,11 +566,7 @@ class _WalkPageState extends State<WalkPage> {
       children: [
         Icon(icon, size: 22, color: AppColors.mint),
         const SizedBox(height: 4),
-        Text(value,
-            style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppColors.mint)),
+        Text(value, style: AppText.numericInline(color: AppColors.mint)),
         Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSoft)),
       ],
     );
@@ -596,8 +593,7 @@ class _WalkPageState extends State<WalkPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('宝贝怎么啦？',
-                    style:
-                        TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
                 Text('选一下症状，我来帮你判断要不要就医',
                     style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
@@ -701,8 +697,8 @@ class _WalkPageState extends State<WalkPage> {
           const SizedBox(height: 12),
           Text('GPS 遛狗面向狗狗',
               style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.text)),
           const SizedBox(height: 6),
           Text('猫咪的运动去首页「陪猫玩」记录哦',
@@ -732,10 +728,19 @@ class _WalkPageState extends State<WalkPage> {
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Text('🗺️', style: TextStyle(fontSize: 44)),
+          Container(
+            width: 80,
+            height: 80,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.mintLight,
+            ),
+            child: const Icon(Icons.map_rounded, size: 40, color: AppColors.mint),
+          ),
           const SizedBox(height: 8),
           const Text('准备好出发了吗？',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           const Text('点选一起运动的狗狗，可多选',
               style: TextStyle(fontSize: 13, color: AppColors.textSoft)),
@@ -772,7 +777,7 @@ class _WalkPageState extends State<WalkPage> {
 
   Widget _dogCard(Pet pet) {
     final isSelected = _selectedPets.contains(pet.id);
-    return GestureDetector(
+    return PressableScale(
       onTap: () {
         setState(() {
           if (isSelected) {
@@ -783,15 +788,15 @@ class _WalkPageState extends State<WalkPage> {
         });
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.mintLight : AppColors.card,
-          borderRadius: BorderRadius.circular(AppDimens.rLg),
-          border: Border.all(
-              color: isSelected ? AppColors.mint : AppColors.line,
-              width: isSelected ? 2 : 1),
-        ),
+        margin: const EdgeInsets.only(bottom: AppDimens.sp8),
+        padding: const EdgeInsets.all(AppDimens.sp12),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: AppColors.mintLight,
+                borderRadius: BorderRadius.circular(AppDimens.rLg),
+                border: Border.all(color: AppColors.mint, width: 2),
+              )
+            : AppDimens.cardBox(),
         child: Row(
           children: [
             _petAvatar(pet, selected: isSelected),
@@ -802,7 +807,8 @@ class _WalkPageState extends State<WalkPage> {
                 children: [
                   Text(pet.name,
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w800)),
+                          fontSize: AppDimens.fsSub,
+                          fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
                   Text('${pet.breed} · ${pet.speciesEmoji}',
                       style: const TextStyle(
@@ -1064,9 +1070,10 @@ class _WalkPageState extends State<WalkPage> {
   }
 
   Widget _buildDataCard(String label, String value, String unit) {
-    return Card(
+    return Container(
+      decoration: AppDimens.cardBox(),
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(AppDimens.sp12),
         child: Column(
           children: [
             Text(label,
@@ -1081,10 +1088,7 @@ class _WalkPageState extends State<WalkPage> {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(value,
-                    style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.mint)),
+                    style: AppText.numericInline(color: AppColors.mint)),
                 if (unit.isNotEmpty) ...[
                   const SizedBox(width: 2),
                   Text(unit,
