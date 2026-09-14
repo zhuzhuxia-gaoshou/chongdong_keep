@@ -206,19 +206,22 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                                 final isToday = date.year == today.year &&
                                     date.month == today.month &&
                                     date.day == today.day;
-                                final canMakeup = !isChecked &&
-                                    date.isBefore(today) &&
-                                    signCards > 0;
+                                final isMakeupDay =
+                                    !isChecked && date.isBefore(today);
+                                // 票点只在还有卡时显示；点击任何过去未打卡日期都触发
+                                // （无卡时由 _makeUpFor 弹"补签卡不足"解释，行为不回退）
+                                final showTicket =
+                                    isMakeupDay && signCards > 0;
 
                                 return PressableScale(
-                                  onTap: canMakeup
+                                  onTap: isMakeupDay
                                       ? () => _makeUpFor(date, checkIns)
                                       : null,
                                   child: _dayCell(
                                     day: day,
                                     checked: isChecked,
                                     isToday: isToday,
-                                    canMakeup: canMakeup,
+                                    canMakeup: showTicket,
                                     isFuture: date.isAfter(today) &&
                                         !isToday,
                                   ),

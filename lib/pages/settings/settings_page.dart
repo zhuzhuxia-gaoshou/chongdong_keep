@@ -374,7 +374,10 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   /// ⑦b 注销账号（契约 §4.4）：两步确认防误触 → 服务端删数据 → 清态回登录页。
+  bool _deactivating = false;
+
   Future<void> _confirmDeactivate() async {
+    if (_deactivating) return; // 在途防重入
     final state = context.read<AppState>();
     final messenger = ScaffoldMessenger.of(context);
     // 第一步：说明后果
@@ -417,6 +420,7 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
     if (second != true || !mounted) return;
+    setState(() => _deactivating = true);
     try {
       await AppServices.instance.users.deleteMe();
       if (!mounted) return;
@@ -425,6 +429,8 @@ class _SettingsPageState extends State<SettingsPage> {
       // 与登出一致：回落到根（根按登录态切到登录页）
       if (context.mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _deactivating = false);
       messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
     }
   }

@@ -202,7 +202,15 @@ class MockTransport implements Transport {
       default:
         if (path == '/api/v1/users/me') {
           if (method == 'DELETE') {
-            // ⑦b 注销（契约 §4.4）：Mock 直接回成功，本地清态由调用方负责
+            // ⑦b 注销（契约 §4.4）：confirm 必须显式 true（缺→40001）；
+            // 成功则从 Mock 存储移除该用户（后续 _me 回 40100，与服务端
+            // jwt.validate 用户存在性校验行为对齐）
+            final confirm = (body as Map?)?['confirm'];
+            if (confirm != true) {
+              return {'code': 40001, 'message': 'confirm 必须为 true'};
+            }
+            final userId = _userIdFromAuth(headers);
+            _usersByPhone.removeWhere((_, u) => u['id'] == userId);
             return {'code': 0, 'message': 'ok', 'data': <String, dynamic>{}};
           }
           return method == 'PATCH' ? _patchMe(body, headers) : _me(headers);
@@ -373,8 +381,12 @@ class MockTransport implements Transport {
   Map<String, dynamic> _me(Map<String, String>? headers) {
     final userId = _userIdFromAuth(headers);
     if (userId == null) return {'code': kCodeAccessExpired, 'message': '登录已过期'};
-    final user = _usersByPhone.values.firstWhere((u) => u['id'] == userId);
-    return {'code': 0, 'data': Map<String, dynamic>.of(user)};
+    // 用户不存在（如 ⑦b 注销后）与服务端对齐回 40100，而非 StateError
+    final matches = _usersByPhone.values.where((u) => u['id'] == userId).toList();
+    if (matches.isEmpty) {
+      return {'code': kCodeAccessExpired, 'message': '登录已过期'};
+    }
+    return {'code': 0, 'data': Map<String, dynamic>.of(matches.first)};
   }
 
   Map<String, dynamic> _patchMe(Object? body, Map<String, String>? headers) {

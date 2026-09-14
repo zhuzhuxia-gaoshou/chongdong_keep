@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:chongdong_keep/network/api_client.dart';
+import 'package:chongdong_keep/network/api_exception.dart';
 import 'package:chongdong_keep/network/token_store.dart';
 import 'package:chongdong_keep/repositories/auth_repository.dart';
 import 'package:chongdong_keep/repositories/user_repository.dart';
@@ -92,5 +93,22 @@ void main() {
     await auth.login('13800008000', MockTransport.fixedSmsCode);
 
     await UserRepository(client).deleteMe(); // 不抛即通过
+
+    // 注销后同 token 再读 /users/me → 40100（与服务端 jwt.validate 行为对齐）
+    await expectLater(
+      UserRepository(client).fetchMe(),
+      throwsA(isA<ApiException>()
+          .having((e) => e.code, 'code', kCodeAccessExpired)),
+    );
+  });
+
+  test('⑦b deleteMe：缺 confirm → 40001（契约必显式确认）', () async {
+    final (client, store) = await stack();
+    final auth = AuthRepository(client, store);
+    await auth.sendSmsCode('13800008000');
+    await auth.login('13800008000', MockTransport.fixedSmsCode);
+
+    final raw = await client.delete('/api/v1/users/me');
+    expect(raw['code'], kCodeParamInvalid);
   });
 }
