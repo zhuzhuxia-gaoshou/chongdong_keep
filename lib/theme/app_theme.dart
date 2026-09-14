@@ -223,4 +223,14 @@ class AppText {
         height: 1.1,
         color: color,
       );
+
+  /// 统计数值级：StatTile 等小空间数字（20px 中粗+紧字距；
+  /// 2026-09-15 起 w800 数据数字全面退役，统一走本档）
+  static TextStyle numericStat({Color color = AppColors.text}) => TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.3,
+        height: 1.1,
+        color: color,
+      );
 }

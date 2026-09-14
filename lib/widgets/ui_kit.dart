@@ -2,6 +2,239 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_dimens.dart';
+import '../theme/app_theme.dart';
+
+/// 页面英雄头（2026-09-15 质感 v2）：品牌渐变 + 装饰圆 + 爪印水印 +
+/// 白字标题/副标题 + 头像/动作插槽。给主要页面统一的「开头仪式感」。
+/// 高度由内容决定（不写死），底部大圆角压在画布上。
+class PageHero extends StatelessWidget {
+  const PageHero({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.leading,
+    this.trailing,
+    this.child,
+    this.gradient = AppColors.heroGradient,
+    this.watermark = '🐾',
+  });
+
+  final String title;
+  final String? subtitle;
+  final Widget? leading;
+  final Widget? trailing;
+
+  /// 头部下沿的扩展内容（如统计行），会获得完整宽度。
+  final Widget? child;
+  final LinearGradient gradient;
+
+  /// 右下角装饰水印（内容性 emoji，属品牌元素而非功能图标）
+  final String watermark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: const BorderRadius.vertical(
+          bottom: Radius.circular(AppDimens.rXxl),
+        ),
+      ),
+      child: Stack(
+        children: [
+          // 装饰层：静态低透明度图形（非动画，无入场依赖）
+          Positioned(
+            right: -28,
+            top: -34,
+            child: _decorCircle(96, 0.10),
+          ),
+          Positioned(
+            left: -20,
+            bottom: 18,
+            child: _decorCircle(64, 0.08),
+          ),
+          Positioned(
+            right: 18,
+            bottom: 6,
+            child: Transform.rotate(
+              angle: -0.35,
+              child: Text(watermark,
+                  style: TextStyle(
+                    fontSize: 64,
+                    color: Colors.white.withValues(alpha: 0.14),
+                  )),
+            ),
+          ),
+          // 内容层
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+                AppDimens.sp20, AppDimens.sp8, AppDimens.sp20, AppDimens.sp20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    if (leading != null) ...[
+                      leading!,
+                      const SizedBox(width: AppDimens.sp12),
+                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: AppDimens.fsHeadline,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.onAccent,
+                              height: 1.2,
+                            ),
+                          ),
+                          if (subtitle != null &&
+                              subtitle!.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: AppDimens.fsBody,
+                                color:
+                                    Colors.white.withValues(alpha: 0.85),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (trailing != null) trailing!,
+                  ],
+                ),
+                if (child != null) ...[
+                  const SizedBox(height: AppDimens.sp16),
+                  child!,
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _decorCircle(double size, double alpha) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white.withValues(alpha: alpha),
+        ),
+      );
+}
+
+/// 品牌空态（2026-09-15）：爪印圆 + 标题 + 温柔文案 + 可选 CTA。
+/// mainAxisSize.min——放进 Center/ListView 任意有界环境都安全。
+class EmptyState extends StatelessWidget {
+  const EmptyState({
+    super.key,
+    required this.emoji,
+    required this.title,
+    this.message,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  final String emoji;
+  final String title;
+  final String? message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppDimens.sp32, vertical: AppDimens.sp40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 88,
+            height: 88,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.mintLight,
+            ),
+            child: Text(emoji, style: const TextStyle(fontSize: 40)),
+          ),
+          const SizedBox(height: AppDimens.sp16),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: AppDimens.fsSub,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text,
+            ),
+          ),
+          if (message != null && message!.isNotEmpty) ...[
+            const SizedBox(height: AppDimens.sp8),
+            Text(
+              message!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: AppDimens.fsBody,
+                height: 1.5,
+                color: AppColors.textSoft,
+              ),
+            ),
+          ],
+          if (actionLabel != null && onAction != null) ...[
+            const SizedBox(height: AppDimens.sp20),
+            ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// 图标章（2026-09-15）：着色圆角方块图标底，设置/菜单行的统一前导。
+/// 取代散落各页的 emoji 前导与裸图标，配色走 tonal（浅底+深图标）。
+class IconChip extends StatelessWidget {
+  const IconChip({
+    super.key,
+    required this.icon,
+    this.background = AppColors.mintLight,
+    this.color = AppColors.mint,
+    this.size = 36,
+  });
+
+  final IconData icon;
+  final Color background;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(AppDimens.rMd),
+      ),
+      child: Icon(icon, size: size * 0.56, color: color),
+    );
+  }
+}
 
 /// 分区容器：白底描边卡片 + 可选软标题。
 /// 统一 settings/profile 各自克隆的分区壳写法。
@@ -139,10 +372,7 @@ class StatTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(value,
-              style: TextStyle(
-                  fontSize: AppDimens.fsStat,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.mint)),
+              style: AppText.numericStat(color: AppColors.mint)),
           const SizedBox(height: 2),
           Text(label,
               maxLines: 1,
