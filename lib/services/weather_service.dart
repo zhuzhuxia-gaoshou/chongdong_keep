@@ -119,7 +119,7 @@ class WeatherService {
     if (condition.contains('暴雨')) return '暴雨天不建议外出，在家玩耍也能打卡';
     if (condition.contains('雨')) return '下雨了，带好雨具或在家陪宝贝玩';
     if (condition.contains('雪')) return '下雪天路面滑，注意安全';
-    if (condition.contains('雷')) return '雷暴天气，请待在室内';
+    if (condition.contains('雷')) return '雷暴天气，先待在室内哦';
     if (windScale >= 6) return '风太大了，建议改天再遛';
     if (condition.contains('晴') && temp >= 15 && temp <= 28) return '天气不错，适合带宝贝出门运动';
     return '天气正常，适合出门运动';
@@ -137,7 +137,7 @@ class WeatherService {
       return WeatherWarning(type: 'rain', title: '暴雨预警', advice: '建议在家运动，逗猫棒/拔河都算打卡');
     }
     if (condition.contains('雷')) {
-      return WeatherWarning(type: 'storm', title: '雷暴预警', advice: '请待在室内，不要外出');
+      return WeatherWarning(type: 'storm', title: '雷暴预警', advice: '待在室内更安全哦，先别外出啦');
     }
     if (condition.contains('霾') || condition.contains('雾')) {
       return WeatherWarning(type: 'haze', title: '雾霾预警', advice: '空气差，减少外出时间');

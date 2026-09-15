@@ -35,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
     final messenger = ScaffoldMessenger.of(context);
     if (_phoneController.text.length != 11) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('请输入11位手机号')),
+        const SnackBar(content: Text('手机号还没输够 11 位哦')),
       );
       return;
     }
@@ -66,13 +66,13 @@ class _LoginPageState extends State<LoginPage> {
     final messenger = ScaffoldMessenger.of(context);
     if (!_agreed) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('请先同意用户协议和隐私政策')),
+        const SnackBar(content: Text('先勾一下用户协议和隐私政策，就能继续啦')),
       );
       return;
     }
     if (_phoneController.text.length != 11 || _codeController.text.length < 4) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('请输入正确的手机号和验证码')),
+        const SnackBar(content: Text('手机号或验证码好像没填对呢，再核对一下哦')),
       );
       return;
     }
@@ -183,7 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                       keyboardType: TextInputType.phone,
                       maxLength: 11,
                       decoration: const InputDecoration(
-                        hintText: '请输入手机号',
+                        hintText: '你的手机号',
                         counterText: '',
                       ),
                     ),
@@ -198,7 +198,7 @@ class _LoginPageState extends State<LoginPage> {
                             keyboardType: TextInputType.number,
                             maxLength: 6,
                             decoration: const InputDecoration(
-                              hintText: '请输入验证码',
+                              hintText: '短信验证码',
                               counterText: '',
                             ),
                           ),

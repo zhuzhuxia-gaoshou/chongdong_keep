@@ -97,7 +97,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
       'icon': Icons.bolt_rounded,
       'name': '抽搐',
       'level': 'high',
-      'advice': '⚠️ 建议立即就医！保持冷静，不要强行按压'
+      'advice': '⚠️ 建议立即就医！保持冷静，先别强行按压哦'
     },
     {
       'icon': Icons.no_food_rounded,

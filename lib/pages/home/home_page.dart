@@ -267,7 +267,7 @@ class _HomePageState extends State<HomePage> {
           ),
           GestureDetector(
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('消息中心即将开放，敬请期待')),
+              const SnackBar(content: Text('消息中心即将开放，敬请期待哦')),
             ),
             child: Container(
               width: AppDimens.sp40,

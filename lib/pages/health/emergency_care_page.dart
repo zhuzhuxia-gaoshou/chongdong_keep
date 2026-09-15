@@ -129,7 +129,7 @@ class _EmergencyCarePageState extends State<EmergencyCarePage> {
             const SizedBox(height: AppDimens.sp8),
             _tipItem(Icons.bed_rounded, '让宝贝安静平躺，避免剧烈移动和按压'),
             _tipItem(Icons.thermostat_rounded, '注意保暖，但也别捂得太严实'),
-            _tipItem(Icons.block_rounded, '不要自行喂药喂食（可能加重病情）'),
+            _tipItem(Icons.block_rounded, '先别自行喂药喂食哦（可能加重病情）'),
             _tipItem(Icons.call_rounded, '提前打电话给医院确认急诊与位置，减少等待'),
             const SizedBox(height: AppDimens.sp16),
             if (_lat != null && _lng != null)

@@ -44,7 +44,7 @@ class _BadgesPageState extends State<BadgesPage> {
           if (snap.hasError) {
             final msg = snap.error is ApiException
                 ? (snap.error as ApiException).friendlyMessage
-                : '加载失败，请重试';
+                : '没加载出来呢，再试一次吧';
             return Center(child: ErrorRetry(message: msg, onRetry: _refetch));
           }
           final result = snap.data!;

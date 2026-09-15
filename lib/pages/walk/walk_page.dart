@@ -63,7 +63,7 @@ class _WalkPageState extends State<WalkPage> {
     if (!hasPermission) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('需要定位权限才能记录遛狗路线，请在设置中开启')),
+          const SnackBar(content: Text('记录遛狗路线需要定位权限呢，去设置里开启就好')),
         );
       }
       return;
@@ -1100,7 +1100,7 @@ class _WalkPageState extends State<WalkPage> {
     return const Center(
       child: EmptyState(
         emoji: '🐾',
-        title: '请先添加宠物',
+        title: '还没有宝贝档案',
         message: '在首页添加宝贝档案后，这里就能开始 GPS 遛狗打卡',
       ),
     );

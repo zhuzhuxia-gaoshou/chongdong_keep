@@ -44,20 +44,21 @@ class ApiException implements Exception {
   /// 传输层故障（非服务端业务码）
   bool get isNetwork => code < 0;
 
-  /// 用户可见文案：永不向用户展示裸错误码
+  /// 用户可见文案：永不向用户展示裸错误码；语气走温柔治愈系
+  /// （不命令、不指责，D2-2 全量润色，测试断言的关键词子串已保留）
   String get friendlyMessage {
-    if (isNetwork) return '网络不给力，请检查网络后重试';
+    if (isNetwork) return '网络不给力，稍后再试试呀';
     switch (code) {
       case kCodeAccessExpired || kCodeRefreshInvalid:
-        return '登录已过期，请重新登录';
+        return '登录悄悄过期啦，再登录一次就好';
       case kCodeSmsWrong:
-        return '验证码错误或已过期';
+        return '验证码不对或过期了，再核对一下哦';
       case kCodeSmsTooFrequent:
-        return '发送太频繁了，请稍等再试';
+        return '发送太频繁啦，稍等一下再试哦';
       case kCodeParamInvalid:
-        return '请求参数有误';
+        return '信息好像没填对，再核对一下哦';
       case kCodeNicknameInvalid:
-        return '昵称需为1~12个字符';
+        return '昵称要 1~12 个字符哦';
       case kCodeMakeupInvalid:
         return '该日期无需补签';
       case kCodeUploadType:
@@ -68,19 +69,19 @@ class ApiException implements Exception {
     // 400xx 参数族兜底：联调实测后端会用 40000（契约只定义了 40001 起），
     // 这类回包的 message 本身即中文可展示文案（如"手机号格式不正确"）。
     if (code >= 40000 && code < kCodeUnauthorizedGeneric) {
-      return message.isNotEmpty ? message : '请求参数有误';
+      return message.isNotEmpty ? message : '信息好像没填对，再核对一下哦';
     }
     if (code >= kCodeForbiddenBase && code < kCodeForbiddenBase + 100) {
-      return '没有权限执行此操作';
+      return '暂时没有权限做这件事哦';
     }
     if (code >= kCodeNotFoundBase && code < kCodeNotFoundBase + 100) {
       return '内容不存在或已删除';
     }
     if (code >= kCodeTooFrequentBase && code < kCodeTooFrequentBase + 100) {
-      return '操作太频繁，请稍后再试';
+      return '操作太频繁啦，稍等一下再试哦';
     }
-    if (code >= kCodeServerErrorBase) return '服务器开小差了，请稍后重试';
-    return '请求失败，请稍后重试';
+    if (code >= kCodeServerErrorBase) return '服务器开小差了，稍后再来哦';
+    return '请求失败啦，稍后再试试呀';
   }
 
   @override
@@ -97,7 +98,7 @@ Map<String, dynamic> unwrapEnvelope(
   int? httpStatus,
 }) {
   if (json == null) {
-    throw ApiException(kCodeServerErrorBase, '服务器开小差了，请稍后重试',
+    throw ApiException(kCodeServerErrorBase, '服务器开小差了，稍后再来哦',
         httpStatus: httpStatus);
   }
   final dynamic rawCode = json['code'];

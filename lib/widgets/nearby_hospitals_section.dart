@@ -90,7 +90,7 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
             final list = snap.data;
             if (list == null) {
               return _statusCard(
-                  '暂时查不到附近的医院（未配置地图Key或网络不佳）。\n紧急情况请直接拨打当地宠物医院电话或前往就近门店哦🥺');
+                  '暂时查不到附近的医院（未配置地图Key或网络不佳）。\n紧急情况可以直接拨打当地宠物医院电话或前往就近门店哦🥺');
             }
             if (list.isEmpty) {
               return _statusCard('附近 5 公里内没搜到宠物医院，可以扩大范围或咨询线上兽医哦');

@@ -75,7 +75,7 @@ class _RankingPageState extends State<RankingPage>
           if (snap.hasError) {
             final msg = snap.error is ApiException
                 ? (snap.error as ApiException).friendlyMessage
-                : '加载失败，请下拉重试';
+                : '没加载出来呢，下拉再试试呀';
             return Center(child: ErrorRetry(message: msg, onRetry: _refetch));
           }
           final result = snap.data!;

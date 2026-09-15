@@ -386,7 +386,7 @@ class _ProfilePageState extends State<ProfilePage> {
             } catch (_) {
               if (ctx.mounted) {
                 ScaffoldMessenger.of(ctx).showSnackBar(
-                  const SnackBar(content: Text('无法打开相机或相册，请检查权限')),
+                  const SnackBar(content: Text('打不开相机或相册呀，去设置里允许一下权限吧')),
                 );
               }
             }

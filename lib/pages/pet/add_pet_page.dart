@@ -103,12 +103,12 @@ class _AddPetPageState extends State<AddPetPage> {
     final messenger = ScaffoldMessenger.of(context);
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      messenger.showSnackBar(const SnackBar(content: Text('请输入宠物名字')));
+      messenger.showSnackBar(const SnackBar(content: Text('宝贝的名字还没填哦')));
       return;
     }
     final weight = double.tryParse(_weightController.text) ?? 0;
     if (weight <= 0) {
-      messenger.showSnackBar(const SnackBar(content: Text('体重需大于 0 kg')));
+      messenger.showSnackBar(const SnackBar(content: Text('体重要大于 0 kg 哦')));
       return;
     }
     if (_saving) return;
@@ -319,7 +319,7 @@ class _AddPetPageState extends State<AddPetPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('无法打开相册，请检查权限')),
+          const SnackBar(content: Text('打不开相册呀，去设置里允许一下权限吧')),
         );
       }
     }

@@ -93,7 +93,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!mounted) return;
       if (!granted) {
         _update('pushEnabled', false);
-        _toast('没有通知权限，请在系统设置里允许宠动Keep发送通知');
+        _toast('还没拿到通知权限呢，去系统设置里允许宠动Keep发通知吧');
         return;
       }
       await _scheduleReminderQuietly();
