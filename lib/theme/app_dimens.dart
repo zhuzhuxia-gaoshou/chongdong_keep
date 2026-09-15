@@ -5,10 +5,11 @@ import 'app_colors.dart';
 /// 宠动Keep 非颜色设计令牌：圆角 / 间距 / 字号 / 共享表面配方。
 ///
 /// 约定：
-/// - 圆角只允许 {rXs,rSm,rMd,rLg,rXl,rFull} 六档；
+/// - 圆角只允许 {rXs,rSm,rMd,rLg,rXl,rXxl,rFull} 七档（rXxl 限悬浮 Dock/大面积容器）；
 /// - 间距走严格 4 级制（sp4..sp60），禁止 6/10/13/14 这类偏格值；
-/// - 字号九档，emoji 与登录大标题等展示字形豁免；
+/// - 字号十档（fsDisplay 为 2026-09-15 D1-6 补档），emoji 与登录大标题等展示字形豁免；
 /// - 表面一律优先复用 [cardBox]，不要再手写 decoration。
+/// 人读版契约见 docs/DESIGN_SYSTEM.md（v3）。
 class AppDimens {
   AppDimens._();
 
