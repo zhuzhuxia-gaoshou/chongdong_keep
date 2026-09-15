@@ -56,7 +56,7 @@ class RecordHistoryPage extends StatelessWidget {
               context.read<AppState>().setIndex(1); // 切到运动 tab
               Navigator.pop(context);
             },
-            child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.pets_rounded, size: 16), SizedBox(width: 6), Text('去遛一次')]),
+            child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.pets_rounded, size: AppDimens.iconSm), SizedBox(width: 6), Text('去遛一次')]),
           ),
         ],
       ),
@@ -189,7 +189,7 @@ class RecordHistoryPage extends StatelessWidget {
                           builder: (_) => ShareCardPage(record: r)),
                     ),
                     icon: const Icon(Icons.ios_share,
-                        size: AppDimens.sp20, color: AppColors.textMute),
+                        size: AppDimens.iconMd, color: AppColors.textMute),
                     tooltip: '生成分享卡片',
                   ),
                 ],

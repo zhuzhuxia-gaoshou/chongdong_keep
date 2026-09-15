@@ -321,7 +321,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
       child: Row(
         children: [
           const Icon(Icons.emergency,
-              size: AppDimens.sp20, color: AppColors.mint),
+              size: AppDimens.iconMd, color: AppColors.mint),
           const SizedBox(width: AppDimens.sp12),
           Expanded(
             child: Column(
@@ -545,7 +545,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
       child: OutlinedButton.icon(
         onPressed: () => Navigator.push(
             context, MaterialPageRoute(builder: (_) => AddPetPage(pet: pet))),
-        icon: const Icon(Icons.edit, size: AppDimens.sp20),
+        icon: const Icon(Icons.edit, size: AppDimens.iconMd),
         label: const Text('编辑档案'),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: AppColors.mint),

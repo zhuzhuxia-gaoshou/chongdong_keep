@@ -9,6 +9,7 @@ import '../../models/exercise_record.dart';
 import '../../models/pet.dart' show PetSpecies;
 import '../../services/app_state.dart';
 import '../../services/map_service.dart';
+import '../../theme/app_dimens.dart';
 import '../../services/storage_service.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/app_platform.dart';
@@ -640,7 +641,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.location_off, size: 18, color: AppColors.textSoft),
+          const Icon(Icons.location_off, size: AppDimens.iconMd, color: AppColors.textSoft),
           const SizedBox(width: 10),
           const Expanded(child: Text('显示位置', style: TextStyle(fontSize: 13))),
           Switch(

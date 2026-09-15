@@ -136,7 +136,7 @@ class RouteFavoritesPage extends StatelessWidget {
                     IconButton(
                       // 收藏态=珊瑚点缀色（板外 Colors.amber 已退役）
                       icon:
-                          const Icon(Icons.star_rounded, color: AppColors.coral, size: 24),
+                          const Icon(Icons.star_rounded, color: AppColors.coral, size: AppDimens.iconLg),
                       onPressed: () {},
                     ),
                   ],
@@ -152,7 +152,7 @@ class RouteFavoritesPage extends StatelessWidget {
   Widget _buildStat(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppColors.textSoft),
+        Icon(icon, size: AppDimens.iconSm, color: AppColors.textSoft),
         const SizedBox(width: AppDimens.sp4),
         Text(text,
             style: const TextStyle(

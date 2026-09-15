@@ -268,7 +268,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
                     color: levelColor.withValues(alpha: 0.14),
                   ),
                   child: Icon(symptom['icon'] as IconData,
-                      size: 22, color: levelColor),
+                      size: AppDimens.iconLg, color: levelColor),
                 ),
                 const SizedBox(height: AppDimens.sp8),
                 Text(
@@ -332,7 +332,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _jumpToHospitals,
-                  icon: const Icon(Icons.place_outlined, size: 16),
+                  icon: const Icon(Icons.place_outlined, size: AppDimens.iconSm),
                   label: const Text('附近医院'),
                 ),
               ),
@@ -388,7 +388,7 @@ class _HealthSafetyPageState extends State<HealthSafetyPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline, size: 16, color: AppColors.mint),
+              Icon(Icons.info_outline, size: AppDimens.iconSm, color: AppColors.mint),
               SizedBox(width: AppDimens.sp8),
               Text('温馨提示',
                   style: TextStyle(

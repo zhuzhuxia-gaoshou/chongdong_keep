@@ -164,7 +164,7 @@ class _DockItemState extends State<_DockItem> {
                   child: Icon(
                     selected ? widget.activeIcon : widget.icon,
                     key: ValueKey(selected),
-                    size: 21,
+                    size: AppDimens.iconMd,
                     color: selected ? Colors.white : AppColors.textMute,
                   ),
                 ),

@@ -247,7 +247,7 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                         child: Row(
                           children: [
                             const Icon(Icons.confirmation_num_outlined,
-                                size: 20, color: AppColors.coral),
+                                size: AppDimens.iconMd, color: AppColors.coral),
                             const SizedBox(width: AppDimens.sp8),
                             Expanded(
                               child: Column(
@@ -297,7 +297,7 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
           width: 36,
           height: 36,
           child: Icon(Icons.arrow_back_ios_new,
-              size: 18, color: AppColors.onAccent),
+              size: AppDimens.iconMd, color: AppColors.onAccent),
         ),
       ),
     );
@@ -335,7 +335,7 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
         child: SizedBox(
             width: 32,
             height: 32,
-            child: Icon(icon, size: 20, color: AppColors.textSoft)),
+            child: Icon(icon, size: AppDimens.iconMd, color: AppColors.textSoft)),
       ),
     );
   }

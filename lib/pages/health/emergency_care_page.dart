@@ -103,7 +103,7 @@ class _EmergencyCarePageState extends State<EmergencyCarePage> {
                   if (contact != null && _phoneFromContact(contact) != null)
                     ElevatedButton.icon(
                       onPressed: () => _dial(_phoneFromContact(contact)!),
-                      icon: const Icon(Icons.phone, size: 16),
+                      icon: const Icon(Icons.phone, size: AppDimens.iconSm),
                       label: Text('拨打紧急联系人（$contact）',
                           style:
                               const TextStyle(fontSize: AppDimens.fsFoot)),
@@ -172,7 +172,7 @@ class _EmergencyCarePageState extends State<EmergencyCarePage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: AppColors.coral),
+          Icon(icon, size: AppDimens.iconSm, color: AppColors.coral),
           const SizedBox(width: AppDimens.sp8),
           Expanded(
               child: Text(text,

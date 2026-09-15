@@ -279,7 +279,7 @@ class _HomePageState extends State<HomePage> {
               ),
               child: const Center(
                 child: Icon(Icons.notifications_none_rounded,
-                    size: 20, color: AppColors.textSoft),
+                    size: AppDimens.iconMd, color: AppColors.textSoft),
               ),
             ),
           ),
@@ -612,7 +612,7 @@ class _HomePageState extends State<HomePage> {
                     const Row(
                       children: [
                         Icon(Icons.check_circle_rounded,
-                            size: 16, color: Colors.white),
+                            size: AppDimens.iconSm, color: Colors.white),
                         SizedBox(width: 4),
                         Text('已达成',
                             style: TextStyle(
@@ -728,7 +728,7 @@ class _HomePageState extends State<HomePage> {
             ),
             child: const Center(
               child: Icon(Icons.local_fire_department_rounded,
-                  size: 24, color: AppColors.coral),
+                  size: AppDimens.iconLg, color: AppColors.coral),
             ),
           ),
         ],
@@ -796,7 +796,7 @@ class _HomePageState extends State<HomePage> {
               shape: BoxShape.circle,
               color: iconBg,
             ),
-            child: Center(child: Icon(icon, size: 20, color: iconColor)),
+            child: Center(child: Icon(icon, size: AppDimens.iconMd, color: iconColor)),
           ),
           const SizedBox(height: AppDimens.sp8),
           Text(title,
@@ -875,7 +875,7 @@ class _HomePageState extends State<HomePage> {
               context,
               MaterialPageRoute(builder: (_) => const AddPetPage()),
             ),
-            icon: const Icon(Icons.add_rounded, size: 18),
+            icon: const Icon(Icons.add_rounded, size: AppDimens.iconMd),
             label: const Text('添加宠物'),
           ),
         ],
@@ -915,7 +915,7 @@ class _QuickAction extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 17, color: foregroundColor),
+                Icon(icon, size: AppDimens.iconSm, color: foregroundColor),
                 const SizedBox(width: AppDimens.sp8),
                 Text(
                   label,

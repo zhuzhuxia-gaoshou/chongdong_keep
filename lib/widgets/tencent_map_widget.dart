@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../services/api_config.dart';
 import '../models/exercise_record.dart';
+import '../theme/app_dimens.dart';
 import '../utils/app_platform.dart';
 import '../utils/coord_convert.dart';
 import '../theme/app_colors.dart';
@@ -267,7 +268,7 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.location_on, size: 16, color: AppColors.mint),
+                Icon(Icons.location_on, size: AppDimens.iconSm, color: AppColors.mint),
                 SizedBox(width: 4),
                 Text('腾讯地图',
                     style: TextStyle(

@@ -71,7 +71,7 @@ class _BadgesPageState extends State<BadgesPage> {
                 Row(
                   children: [
                     const Icon(Icons.emoji_events_rounded,
-                        size: 18, color: AppColors.mint),
+                        size: AppDimens.iconMd, color: AppColors.mint),
                     const SizedBox(width: 8),
                     const Text('我的徽章墙',
                         style: TextStyle(
@@ -151,7 +151,7 @@ class _BadgesPageState extends State<BadgesPage> {
                   color: AppColors.mintLight,
                 ),
                 child: const Icon(Icons.emoji_events_rounded,
-                    size: 24, color: AppColors.mint),
+                    size: AppDimens.iconLg, color: AppColors.mint),
               ),
             ],
           ),

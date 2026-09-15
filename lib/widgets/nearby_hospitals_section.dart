@@ -139,7 +139,7 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
               color: AppColors.mintLight,
               borderRadius: BorderRadius.circular(AppDimens.rMd),
             ),
-            child: Icon(Icons.local_hospital_rounded, size: 20, color: AppColors.mint),
+            child: Icon(Icons.local_hospital_rounded, size: AppDimens.iconMd, color: AppColors.mint),
           ),
           const SizedBox(width: AppDimens.sp12),
           Expanded(

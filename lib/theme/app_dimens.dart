@@ -43,6 +43,13 @@ class AppDimens {
   static const double fsHeadline = 18; // 区块大字
   static const double fsStat = 20; // 统计数值
 
+  // ---- 图标尺寸（2026-09-15 D1-2）----
+  // 功能 Icon 的 size 一律走这三档，禁止字面量；
+  // 装饰性大字号（PageHero 爪印水印/EmptyState emoji 等 Text 字形）不在其列。
+  static const double iconSm = 16; // 行内小图标（按钮内联/紧凑行尾）
+  static const double iconMd = 20; // 常规功能图标（菜单尾箭头/列表行）
+  static const double iconLg = 24; // 大号功能图标（宫格/空态引导）
+
   /// 共享表面配方：填充色 + 可选描边 + 统一大圆角 + 分层投影。
   ///
   /// 投影规则（2026-09 质感升级）：白色卡片且未显式描边时默认携带

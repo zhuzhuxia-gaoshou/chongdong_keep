@@ -298,7 +298,7 @@ class _AddPetPageState extends State<AddPetPage> {
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Icon(Icons.check, size: AppDimens.sp16),
+                    : const Icon(Icons.check, size: AppDimens.iconSm),
                 label: Text(_saving ? '保存中…' : '保存宠物档案'),
               ),
             ),

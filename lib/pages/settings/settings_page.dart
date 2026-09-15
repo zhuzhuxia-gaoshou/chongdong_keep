@@ -359,7 +359,7 @@ class _SettingsPageState extends State<SettingsPage> {
       onTap: () {},
       trailing: TextButton.icon(
         onPressed: _testConnection,
-        icon: const Icon(Icons.wifi_tethering, size: 16),
+        icon: const Icon(Icons.wifi_tethering, size: AppDimens.iconSm),
         label: const Text('测试连接', style: TextStyle(fontSize: AppDimens.fsFoot)),
       ),
     );

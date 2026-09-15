@@ -157,7 +157,7 @@ class WeeklyReportPage extends StatelessWidget {
   Widget _buildScoreItem(String value, String label, IconData icon) {
     return Column(
       children: [
-        Icon(icon, size: 16, color: Colors.white),
+        Icon(icon, size: AppDimens.iconSm, color: Colors.white),
         const SizedBox(height: 4),
         Text(value,
             style: const TextStyle(
@@ -200,7 +200,7 @@ class WeeklyReportPage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, size: 20, color: iconColor),
+          Icon(icon, size: AppDimens.iconMd, color: iconColor),
           const SizedBox(height: 6),
           Text(value,
               style:
@@ -420,7 +420,7 @@ class WeeklyReportPage extends StatelessWidget {
           const Row(
             children: [
               Icon(Icons.tips_and_updates_rounded,
-                  size: 16, color: AppColors.coral),
+                  size: AppDimens.iconSm, color: AppColors.coral),
               SizedBox(width: 6),
               Text('本周小结',
                   style: TextStyle(

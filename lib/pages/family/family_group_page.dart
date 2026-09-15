@@ -146,7 +146,7 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
           const CircleAvatar(
             radius: 22,
             backgroundColor: AppColors.mintLight,
-            child: Icon(Icons.person_rounded, size: 24, color: AppColors.mint),
+            child: Icon(Icons.person_rounded, size: AppDimens.iconLg, color: AppColors.mint),
           ),
           const SizedBox(width: AppDimens.sp12),
           Expanded(
@@ -332,7 +332,7 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.link, size: 16, color: AppColors.mint),
+                  Icon(Icons.link, size: AppDimens.iconSm, color: AppColors.mint),
                   SizedBox(width: AppDimens.sp8),
                   Text('复制邀请链接',
                       style: TextStyle(

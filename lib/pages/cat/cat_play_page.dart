@@ -169,7 +169,7 @@ class _CatPlayPageState extends State<CatPlayPage> {
                         const Row(
                           children: [
                             Icon(Icons.timer_outlined,
-                                size: 16, color: AppColors.textSoft),
+                                size: AppDimens.iconSm, color: AppColors.textSoft),
                             SizedBox(width: AppDimens.sp8),
                             Text('时长',
                                 style: TextStyle(
@@ -199,7 +199,7 @@ class _CatPlayPageState extends State<CatPlayPage> {
                       onPressed:
                           _selectedCatIds.isEmpty ? null : _save,
                       icon: const Icon(Icons.check_circle_rounded,
-                          size: 18),
+                          size: AppDimens.iconMd),
                       label: const Text('保存记录并打卡'),
                     ),
                   ),
@@ -225,7 +225,7 @@ class _CatPlayPageState extends State<CatPlayPage> {
         child: SizedBox(
           width: 28,
           height: 28,
-          child: Icon(icon, size: 16, color: AppColors.mint),
+          child: Icon(icon, size: AppDimens.iconSm, color: AppColors.mint),
         ),
       ),
     );

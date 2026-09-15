@@ -179,7 +179,7 @@ class _ProfilePageState extends State<ProfilePage> {
           color: bg ?? AppColors.mintLight,
           borderRadius: BorderRadius.circular(AppDimens.rSm),
         ),
-        child: Icon(icon, size: 20, color: fg ?? AppColors.mint),
+        child: Icon(icon, size: AppDimens.iconMd, color: fg ?? AppColors.mint),
       );
 
   /// 菜单行快捷构造：着色图标底 + 标题 + 副标题 + 统一右箭头。
@@ -488,7 +488,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   TextButton.icon(
                     onPressed: () => pickImage(ImageSource.camera),
                     icon: const Icon(Icons.photo_camera_outlined,
-                        size: AppDimens.sp16),
+                        size: AppDimens.iconSm),
                     label: const Text('拍照',
                         style: TextStyle(fontSize: AppDimens.fsFoot)),
                   ),
@@ -496,7 +496,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   TextButton.icon(
                     onPressed: () => pickImage(ImageSource.gallery),
                     icon:
-                        const Icon(Icons.photo_outlined, size: AppDimens.sp16),
+                        const Icon(Icons.photo_outlined, size: AppDimens.iconSm),
                     label: const Text('相册',
                         style: TextStyle(fontSize: AppDimens.fsFoot)),
                   ),
@@ -529,7 +529,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.check, size: AppDimens.sp16),
+                      : const Icon(Icons.check, size: AppDimens.iconSm),
                   label: Text(saving ? '保存中…' : '保存'),
                 ),
               ),
