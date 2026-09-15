@@ -9,6 +9,7 @@ import '../../theme/app_dimens.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_bottom_sheet.dart';
 import '../../widgets/local_image.dart';
+import '../../widgets/ui_kit.dart';
 import '../share/share_card_page.dart';
 
 /// 运动记录列表页
@@ -32,33 +33,19 @@ class RecordHistoryPage extends StatelessWidget {
     );
   }
 
-  // ---- 空态 ----
+  // ---- 空态（D1-8 收编为品牌 EmptyState；Scaffold body 有界，Center 安全）----
 
   Widget _buildEmpty(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('🐾', style: TextStyle(fontSize: 64)),
-          const SizedBox(height: AppDimens.sp16),
-          const Text('还没有运动记录',
-              style: TextStyle(
-                  fontSize: AppDimens.fsHeadline,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.text)),
-          const SizedBox(height: AppDimens.sp8),
-          const Text('完成一次遛狗/陪玩后，就会出现在这里',
-              style: TextStyle(
-                  fontSize: AppDimens.fsBody, color: AppColors.textSoft)),
-          const SizedBox(height: AppDimens.sp24),
-          ElevatedButton(
-            onPressed: () {
-              context.read<AppState>().setIndex(1); // 切到运动 tab
-              Navigator.pop(context);
-            },
-            child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.pets_rounded, size: AppDimens.iconSm), SizedBox(width: 6), Text('去遛一次')]),
-          ),
-        ],
+      child: EmptyState(
+        emoji: '🐾',
+        title: '还没有运动记录',
+        message: '完成一次遛狗/陪玩后，就会出现在这里',
+        actionLabel: '去遛一次',
+        onAction: () {
+          context.read<AppState>().setIndex(1); // 切到运动 tab
+          Navigator.pop(context);
+        },
       ),
     );
   }

@@ -846,39 +846,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// 无宠物空态（D1-8 收编为品牌 EmptyState；SafeArea 内 body 有界，Center 安全）
   Widget _buildNoPet(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('🐾', style: TextStyle(fontSize: 64)),
-          const SizedBox(height: AppDimens.sp16),
-          const Text(
-            '还没有添加宠物',
-            style: TextStyle(
-              fontSize: AppDimens.fsHeadline,
-              fontWeight: FontWeight.w700,
-              color: AppColors.text,
-            ),
-          ),
-          const SizedBox(height: AppDimens.sp8),
-          const Text(
-            '添加你的宝贝，开始运动打卡吧',
-            style: TextStyle(
-              fontSize: AppDimens.fsBody,
-              color: AppColors.textSoft,
-            ),
-          ),
-          const SizedBox(height: AppDimens.sp24),
-          ElevatedButton.icon(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AddPetPage()),
-            ),
-            icon: const Icon(Icons.add_rounded, size: AppDimens.iconMd),
-            label: const Text('添加宠物'),
-          ),
-        ],
+      child: EmptyState(
+        emoji: '🐾',
+        title: '还没有添加宠物',
+        message: '添加你的宝贝，开始运动打卡吧',
+        actionLabel: '添加宠物',
+        onAction: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddPetPage()),
+        ),
       ),
     );
   }

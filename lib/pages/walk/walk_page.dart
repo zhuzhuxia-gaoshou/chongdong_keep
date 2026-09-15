@@ -7,6 +7,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/pressable_scale.dart';
+import '../../widgets/ui_kit.dart';
 import '../../services/app_state.dart';
 import '../../services/map_service.dart';
 import '../../services/storage_service.dart';
@@ -688,22 +689,13 @@ class _WalkPageState extends State<WalkPage> {
   }
 
   /// 只养猫的提示：遛狗功能面向狗狗，猫咪引导去「陪猫玩」
+  /// （D1-8 收编为品牌 EmptyState；Scaffold body 有界，Center 安全）
   Widget _buildNoDog() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('🐈', style: TextStyle(fontSize: 48)),
-          const SizedBox(height: 12),
-          Text('GPS 遛狗面向狗狗',
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.text)),
-          const SizedBox(height: 6),
-          Text('猫咪的运动去首页「陪猫玩」记录哦',
-              style: TextStyle(color: AppColors.textSoft)),
-        ],
+    return const Center(
+      child: EmptyState(
+        emoji: '🐈',
+        title: 'GPS 遛狗面向狗狗',
+        message: '猫咪的运动去首页「陪猫玩」记录哦',
       ),
     );
   }
@@ -1103,15 +1095,13 @@ class _WalkPageState extends State<WalkPage> {
     );
   }
 
+  /// 无宠物空态（D1-8 收编为品牌 EmptyState）
   Widget _buildNoPet() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('🐾', style: TextStyle(fontSize: 48)),
-          const SizedBox(height: 12),
-          Text('请先添加宠物', style: TextStyle(color: AppColors.textSoft)),
-        ],
+    return const Center(
+      child: EmptyState(
+        emoji: '🐾',
+        title: '请先添加宠物',
+        message: '在首页添加宝贝档案后，这里就能开始 GPS 遛狗打卡',
       ),
     );
   }
