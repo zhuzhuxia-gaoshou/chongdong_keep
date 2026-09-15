@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../widgets/ui_kit.dart';
 
 /// 商城 Tab（三期占位，质感 v2）：品牌化「即将上线」页。
 /// 居中占位位于 Scaffold body（有界），无 Dock 预留问题；
@@ -98,7 +99,7 @@ class MallPage extends StatelessWidget {
       );
 }
 
-/// 分类标签：Material 图标 + 文案（功能图标不再用 emoji）
+/// 分类标签：AppChip 薄荷 tonal 静态形态（Material 图标 + 文案，功能图标不再用 emoji）
 class _FeatTag extends StatelessWidget {
   const _FeatTag(this.icon, this.label);
 
@@ -107,26 +108,12 @@ class _FeatTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppDimens.sp16, vertical: AppDimens.sp8),
-      decoration: BoxDecoration(
-        color: AppColors.mintLight,
-        border: Border.all(color: AppColors.mintLine),
-        borderRadius: BorderRadius.circular(AppDimens.rFull),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: AppColors.mint),
-          const SizedBox(width: AppDimens.sp4),
-          Text(label,
-              style: const TextStyle(
-                  fontSize: AppDimens.fsCaption,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.mint)),
-        ],
-      ),
+    return AppChip(
+      label: label,
+      leading: Icon(icon, size: AppDimens.iconSm, color: AppColors.mint),
+      background: AppColors.mintLight,
+      borderColor: AppColors.mintLine,
+      textColor: AppColors.mint,
     );
   }
 }

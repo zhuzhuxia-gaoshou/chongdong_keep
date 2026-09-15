@@ -280,6 +280,116 @@ class SectionCard extends StatelessWidget {
   }
 }
 
+/// 统一胶囊 chip（2026-09-15 D1-3）：一处组件承载三种形态——
+/// ① 选中/未选中双态胶囊（宠物切换条）② tonal 静态标签（商城分类）
+/// ③ 带副文案的说明条（日历补签票点）。视觉语言统一为：胶囊圆角 +
+/// 1px 描边（选中态加重 1.5px）+ 前导小件 + fsFoot 加粗主文案。
+class AppChip extends StatelessWidget {
+  const AppChip({
+    super.key,
+    required this.label,
+    this.leading,
+    this.message,
+    this.selected = false,
+    this.onTap,
+    this.background,
+    this.borderColor,
+    this.textColor,
+    this.radius = AppDimens.rFull,
+    this.padding,
+  });
+
+  /// 主文案
+  final String label;
+
+  /// 前导小件：功能图标（iconSm 档、着 textColor 同色）或 emoji 字形
+  final Widget? leading;
+
+  /// 副文案：传入即说明条形态（主文案着色加粗 + 副文案微字灰），
+  /// 整卡占满可用宽度；不传则是 hug 内容的紧凑胶囊
+  final String? message;
+
+  /// 选中态：mintLight 底 + mint 加重描边 + mint 字
+  final bool selected;
+
+  /// 点击回调（传入即自带 InkWell 波纹；缩放物理交给外层 PressableScale 叠加）
+  final VoidCallback? onTap;
+
+  /// 显式 tonal 配色（珊瑚票点/薄荷标签等），未传则走选中双态默认色
+  final Color? background;
+  final Color? borderColor;
+  final Color? textColor;
+
+  final double radius;
+  final EdgeInsetsGeometry? padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bg =
+        background ?? (selected ? AppColors.mintLight : AppColors.card);
+    final Color border =
+        borderColor ?? (selected ? AppColors.mint : AppColors.line);
+    final Color fg = textColor ?? (selected ? AppColors.mint : AppColors.text);
+    final EdgeInsetsGeometry insets = padding ??
+        (message != null
+            ? const EdgeInsets.symmetric(
+                horizontal: AppDimens.sp16, vertical: AppDimens.sp12)
+            : const EdgeInsets.symmetric(
+                horizontal: AppDimens.sp12, vertical: AppDimens.sp8));
+
+    final Widget content = Container(
+      padding: insets,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: border, width: selected ? 1.5 : 1),
+      ),
+      child: Row(
+        mainAxisSize: message != null ? MainAxisSize.max : MainAxisSize.min,
+        children: [
+          if (leading != null) ...[
+            leading!,
+            const SizedBox(width: AppDimens.sp8),
+          ],
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: AppDimens.fsFoot,
+                        fontWeight: FontWeight.w700,
+                        color: fg)),
+                if (message != null && message!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(message!,
+                      style: TextStyle(
+                          fontSize: AppDimens.fsMicro,
+                          height: 1.4,
+                          color: AppColors.textSoft)),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (onTap == null) return content;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(radius),
+        child: content,
+      ),
+    );
+  }
+}
+
 /// 菜单行：前导图标/emoji + 标题 + 副标题 + 尾部控件（默认右箭头）。
 /// 自带 InkWell 波纹——设置页"运行环境"行借此获得可点击反馈。
 class MenuTile extends StatelessWidget {

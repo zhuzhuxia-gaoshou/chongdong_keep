@@ -232,46 +232,18 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                         ),
                       ),
                       const SizedBox(height: AppDimens.sp16),
-                      // 补签说明条
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimens.sp16,
-                            vertical: AppDimens.sp12),
-                        decoration: BoxDecoration(
-                          color: AppColors.coralLight,
-                          border:
-                              Border.all(color: AppColors.coralLine),
-                          borderRadius:
-                              BorderRadius.circular(AppDimens.rMd),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.confirmation_num_outlined,
-                                size: AppDimens.iconMd, color: AppColors.coral),
-                            const SizedBox(width: AppDimens.sp8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-                                  Text('补签卡',
-                                      style: const TextStyle(
-                                          fontSize: AppDimens.fsFoot,
-                                          color: AppColors.coral,
-                                          fontWeight: FontWeight.w700)),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                      signCards > 0
-                                          ? '点日历上带票点的过去日期就能补上哦'
-                                          : '这个月的补签卡用完啦，分享 APP 可以获得哦',
-                                      style: const TextStyle(
-                                          fontSize: AppDimens.fsMicro,
-                                          color: AppColors.textSoft)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      // 补签说明条：AppChip 珊瑚 tonal 说明形态（票点图标 + 主副文案）
+                      AppChip(
+                        label: '补签卡',
+                        message: signCards > 0
+                            ? '点日历上带票点的过去日期就能补上哦'
+                            : '这个月的补签卡用完啦，分享 APP 可以获得哦',
+                        leading: const Icon(Icons.confirmation_num_outlined,
+                            size: AppDimens.iconMd, color: AppColors.coral),
+                        background: AppColors.coralLight,
+                        borderColor: AppColors.coralLine,
+                        textColor: AppColors.coral,
+                        radius: AppDimens.rMd,
                       ),
                     ],
                   ),

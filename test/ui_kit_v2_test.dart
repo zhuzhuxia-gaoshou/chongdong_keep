@@ -77,6 +77,76 @@ void main() {
     expect(style.letterSpacing, lessThan(0));
   });
 
+  // ====== D1-3 AppChip 统一胶囊 ======
+
+  BoxDecoration chipDecoration(WidgetTester tester) {
+    final box = tester.widget<Container>(find.descendant(
+        of: find.byType(AppChip), matching: find.byType(Container)));
+    return box.decoration! as BoxDecoration;
+  }
+
+  testWidgets('AppChip：选中态 mintLight 底 + mint 1.5 描边；未选中 card 底 + line 1 描边',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(body: AppChip(label: '柯基', selected: true)),
+    ));
+    var deco = chipDecoration(tester);
+    expect(deco.color, AppColors.mintLight);
+    expect((deco.border! as Border).top.color, AppColors.mint);
+    expect((deco.border! as Border).top.width, 1.5);
+
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(body: AppChip(label: '柯基')),
+    ));
+    deco = chipDecoration(tester);
+    expect(deco.color, AppColors.card);
+    expect((deco.border! as Border).top.color, AppColors.line);
+    expect((deco.border! as Border).top.width, 1);
+    // 无 onTap 时不引入 InkWell（缩放物理交给外层 PressableScale）
+    expect(find.byType(InkWell), findsNothing);
+  });
+
+  testWidgets('AppChip：显式 tonal 配色覆盖双态默认（商城薄荷标签/日历珊瑚票点）',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: AppChip(
+          label: '补签卡',
+          message: '点日历上带票点的过去日期就能补上哦',
+          leading: Icon(Icons.confirmation_num_outlined,
+              size: AppDimens.iconMd, color: AppColors.coral),
+          background: AppColors.coralLight,
+          borderColor: AppColors.coralLine,
+          textColor: AppColors.coral,
+          radius: AppDimens.rMd,
+        ),
+      ),
+    ));
+    final deco = chipDecoration(tester);
+    expect(deco.color, AppColors.coralLight);
+    expect((deco.border! as Border).top.color, AppColors.coralLine);
+    expect(deco.borderRadius, BorderRadius.circular(AppDimens.rMd));
+    // 说明条形态：主副文案同时渲染
+    expect(find.text('补签卡'), findsOneWidget);
+    expect(find.text('点日历上带票点的过去日期就能补上哦'), findsOneWidget);
+    expect(find.byIcon(Icons.confirmation_num_outlined), findsOneWidget);
+    final title = tester.widget<Text>(find.text('补签卡'));
+    expect(title.style?.color, AppColors.coral);
+    expect(title.style?.fontSize, AppDimens.fsFoot);
+  });
+
+  testWidgets('AppChip：传 onTap 时带 InkWell 且可点击', (tester) async {
+    var tapped = false;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: AppChip(label: '零食', onTap: () => tapped = true),
+      ),
+    ));
+    expect(find.byType(InkWell), findsOneWidget);
+    await tester.tap(find.text('零食'));
+    expect(tapped, isTrue);
+  });
+
   // ====== ⑦b 注销链路（Mock 层） ======
 
   Future<(ApiClient, TokenStore)> stack() async {

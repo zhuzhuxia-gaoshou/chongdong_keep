@@ -10,6 +10,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/pressable_scale.dart';
+import '../../widgets/ui_kit.dart';
 import '../record/record_history_page.dart';
 import 'add_pet_page.dart';
 
@@ -73,7 +74,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
     );
   }
 
-  /// 多宠物切换条（仅一只时隐藏）
+  /// 多宠物切换条（仅一只时隐藏）——统一 AppChip 双态胶囊，缩放物理由外层承担
   Widget _buildPetSwitcher(List<Pet> pets, Pet current) {
     return SizedBox(
       height: 44,
@@ -85,34 +86,11 @@ class _PetDetailPageState extends State<PetDetailPage> {
               padding: const EdgeInsets.only(right: AppDimens.sp8),
               child: PressableScale(
                 onTap: () => setState(() => _selectedId = p.id),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimens.sp12, vertical: AppDimens.sp8),
-                  decoration: BoxDecoration(
-                    color: p.id == current.id
-                        ? AppColors.mintLight
-                        : AppColors.card,
-                    borderRadius: BorderRadius.circular(AppDimens.rFull),
-                    border: Border.all(
-                      color: p.id == current.id ? AppColors.mint : AppColors.line,
-                      width: p.id == current.id ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(p.speciesEmoji,
-                          style: const TextStyle(fontSize: 14)),
-                      const SizedBox(width: AppDimens.sp4),
-                      Text(p.name,
-                          style: TextStyle(
-                              fontSize: AppDimens.fsFoot,
-                              fontWeight: FontWeight.w700,
-                              color: p.id == current.id
-                                  ? AppColors.mint
-                                  : AppColors.text)),
-                    ],
-                  ),
+                child: AppChip(
+                  label: p.name,
+                  selected: p.id == current.id,
+                  leading: Text(p.speciesEmoji,
+                      style: const TextStyle(fontSize: AppDimens.fsBodyMid)),
                 ),
               ),
             ),
