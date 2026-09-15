@@ -5,6 +5,7 @@ import '../../services/app_services.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/ui_kit.dart';
 
 /// 徽章成就：服务端真实解锁状态（契约 ㉓，GET 时惰性评估解锁事件）。
 class BadgesPage extends StatefulWidget {
@@ -37,26 +38,14 @@ class _BadgesPageState extends State<BadgesPage> {
         future: _future,
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
-            return const Center(
-                child: CircularProgressIndicator(color: AppColors.mint));
+            // Scaffold body 有界，Center 安全
+            return const Center(child: LoadingView());
           }
           if (snap.hasError) {
             final msg = snap.error is ApiException
                 ? (snap.error as ApiException).friendlyMessage
                 : '加载失败，请重试';
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.wifi_off_rounded,
-                      size: 40, color: AppColors.textMute),
-                  const SizedBox(height: AppDimens.sp12),
-                  Text(msg, style: const TextStyle(color: AppColors.textSoft)),
-                  const SizedBox(height: AppDimens.sp12),
-                  OutlinedButton(onPressed: _refetch, child: const Text('重试')),
-                ],
-              ),
-            );
+            return Center(child: ErrorRetry(message: msg, onRetry: _refetch));
           }
           final result = snap.data!;
           final total = result.list.length;

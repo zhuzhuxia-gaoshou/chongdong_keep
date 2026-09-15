@@ -147,6 +147,48 @@ void main() {
     expect(tapped, isTrue);
   });
 
+  // ====== D1-7 ErrorRetry / LoadingView ======
+
+  testWidgets('ErrorRetry：文案+默认断网图标+重试钮可点；无 onRetry 时不渲染按钮',
+      (tester) async {
+    var retried = false;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: ErrorRetry(
+            message: '加载失败，请重试',
+            onRetry: () => retried = true,
+          ),
+        ),
+      ),
+    ));
+    expect(find.text('加载失败，请重试'), findsOneWidget);
+    expect(find.byIcon(Icons.wifi_off_rounded), findsOneWidget);
+    await tester.tap(find.widgetWithText(OutlinedButton, '重试'));
+    expect(retried, isTrue);
+
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(body: Center(child: ErrorRetry(message: '服务暂不可用'))),
+    ));
+    expect(find.byType(OutlinedButton), findsNothing);
+  });
+
+  testWidgets('LoadingView：品牌色进度圈；message 为空不渲染文案，有值则渲染',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(body: Center(child: LoadingView())),
+    ));
+    final spinner = tester
+        .widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
+    expect(spinner.color, AppColors.mint);
+    expect(find.byType(Text), findsNothing);
+
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(body: Center(child: LoadingView(message: '地图加载中...'))),
+    ));
+    expect(find.text('地图加载中...'), findsOneWidget);
+  });
+
   // ====== ⑦b 注销链路（Mock 层） ======
 
   Future<(ApiClient, TokenStore)> stack() async {

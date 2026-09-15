@@ -147,7 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     if (!_settingsLoaded) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: LoadingView()));
     }
     return Scaffold(
       appBar: AppBar(title: const Text('设置')),

@@ -205,6 +205,98 @@ class EmptyState extends StatelessWidget {
   }
 }
 
+/// 异常重试态（2026-09-15 D1-7）：状态图形 + 文案 + 重试钮。
+/// 收编 ranking/badges 逐字克隆的 _errorView。与 [EmptyState] 同约定：
+/// mainAxisSize.min、自身不含 Center——由调用方在有界 body 内包 Center，
+/// 避免"松高度约束下直接放 Center"的历史事故。
+class ErrorRetry extends StatelessWidget {
+  const ErrorRetry({
+    super.key,
+    required this.message,
+    this.onRetry,
+    this.icon = Icons.wifi_off_rounded,
+    this.actionLabel = '重试',
+  });
+
+  final String message;
+  final VoidCallback? onRetry;
+  final IconData icon;
+  final String actionLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppDimens.sp32, vertical: AppDimens.sp40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.sand,
+            ),
+            // 状态插画级尺寸（同 EmptyState emoji 40），不入 iconSm/Md/Lg 三档
+            child: Icon(icon, size: 32, color: AppColors.textMute),
+          ),
+          const SizedBox(height: AppDimens.sp16),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: AppDimens.fsBodyMid,
+              height: 1.5,
+              color: AppColors.textSoft,
+            ),
+          ),
+          if (onRetry != null) ...[
+            const SizedBox(height: AppDimens.sp16),
+            OutlinedButton(onPressed: onRetry, child: Text(actionLabel)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// 加载态（2026-09-15 D1-7）：品牌色圆形进度 + 可选说明文案。
+/// 收编各页 Center(CircularProgressIndicator) 裸写；同样不含 Center。
+class LoadingView extends StatelessWidget {
+  const LoadingView({super.key, this.message, this.size = 28});
+
+  final String? message;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: size,
+          height: size,
+          child: const CircularProgressIndicator(
+              color: AppColors.mint, strokeWidth: 2.5),
+        ),
+        if (message != null && message!.isNotEmpty) ...[
+          const SizedBox(height: AppDimens.sp12),
+          Text(
+            message!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: AppDimens.fsBody,
+              color: AppColors.textSoft,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 /// 图标章（2026-09-15）：着色圆角方块图标底，设置/菜单行的统一前导。
 /// 取代散落各页的 emoji 前导与裸图标，配色走 tonal（浅底+深图标）。
 class IconChip extends StatelessWidget {

@@ -69,14 +69,14 @@ class _RankingPageState extends State<RankingPage>
         future: _future,
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
-            return const Center(
-                child: CircularProgressIndicator(color: AppColors.mint));
+            // Scaffold body 有界，Center 安全
+            return const Center(child: LoadingView());
           }
           if (snap.hasError) {
             final msg = snap.error is ApiException
                 ? (snap.error as ApiException).friendlyMessage
                 : '加载失败，请下拉重试';
-            return _errorView(msg);
+            return Center(child: ErrorRetry(message: msg, onRetry: _refetch));
           }
           final result = snap.data!;
           if (result.list.isEmpty) {
@@ -121,22 +121,6 @@ class _RankingPageState extends State<RankingPage>
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _errorView(String msg) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.wifi_off_rounded,
-              size: 40, color: AppColors.textMute),
-          const SizedBox(height: AppDimens.sp12),
-          Text(msg, style: const TextStyle(color: AppColors.textSoft)),
-          const SizedBox(height: AppDimens.sp12),
-          OutlinedButton(onPressed: _refetch, child: const Text('重试')),
-        ],
       ),
     );
   }

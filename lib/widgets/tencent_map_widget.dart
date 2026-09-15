@@ -8,6 +8,7 @@ import '../theme/app_dimens.dart';
 import '../utils/app_platform.dart';
 import '../utils/coord_convert.dart';
 import '../theme/app_colors.dart';
+import 'ui_kit.dart';
 
 /// 遛狗地图组件
 ///
@@ -237,23 +238,8 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
         if (_isLoading)
           Container(
             color: AppColors.mintLight,
-            child: const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 30,
-                    height: 30,
-                    child: CircularProgressIndicator(
-                        color: AppColors.mint, strokeWidth: 2),
-                  ),
-                  SizedBox(height: 8),
-                  Text('地图加载中...',
-                      style:
-                          TextStyle(fontSize: 12, color: AppColors.textSoft)),
-                ],
-              ),
-            ),
+            // Stack 撑满父级有界，Center 安全
+            child: const Center(child: LoadingView(message: '地图加载中...')),
           ),
         Positioned(
           right: 10,
