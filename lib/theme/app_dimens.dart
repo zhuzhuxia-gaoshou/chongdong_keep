@@ -55,16 +55,21 @@ class AppDimens {
   /// 投影规则（2026-09 质感升级）：白色卡片且未显式描边时默认携带
   /// [shadowCard]（接触影+环境影双层），浮起于画布之上；
   /// 粉彩 tonal 卡（sky/coral 等）与描边卡保持平面，避免脏影。
+  ///
+  /// 密集宫格禁令（2026-09-15 D1-4）：格间距 ≤ sp8 的宫格不得用默认双层影
+  /// （环境影 offset 6 / blur 16 外扩约 22px，必压邻格），改传 borderColor
+  /// 走描边平面；[radius] 用于与同格位选中态的圆角对齐，避免切换跳变。
   static BoxDecoration cardBox({
     Color color = AppColors.card,
     Color? borderColor,
     List<BoxShadow>? shadow,
+    double radius = rLg,
   }) {
     final effectiveShadow = shadow ??
         (color == AppColors.card && borderColor == null ? shadowCard : null);
     return BoxDecoration(
       color: color,
-      borderRadius: BorderRadius.circular(rLg),
+      borderRadius: BorderRadius.circular(radius),
       border:
           borderColor == null ? null : Border.all(color: borderColor),
       boxShadow: effectiveShadow,

@@ -135,7 +135,11 @@ class _CatPlayPageState extends State<CatPlayPage> {
                                   borderRadius: BorderRadius.circular(
                                       AppDimens.rMd),
                                 )
-                              : AppDimens.cardBox(),
+                              // 未选中：2 列 sp8 间距密集宫格，双层影压邻格 →
+                              // 描边平面，圆角与选中态 rMd 对齐（D1-4）
+                              : AppDimens.cardBox(
+                                  borderColor: AppColors.line,
+                                  radius: AppDimens.rMd),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
