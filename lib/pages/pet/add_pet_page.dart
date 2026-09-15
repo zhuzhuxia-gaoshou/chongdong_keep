@@ -355,23 +355,15 @@ class _AddPetPageState extends State<AddPetPage> {
       }),
       child: Container(
         padding: const EdgeInsets.all(AppDimens.sp16),
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.mintLight : AppColors.card,
-          border: Border.all(
-              color: isActive ? AppColors.mint : AppColors.line,
-              width: isActive ? 2 : 1),
-          borderRadius: BorderRadius.circular(AppDimens.rMd),
-          boxShadow: isActive
-              ? null
-              : [
-                  // 未选中白卡轻浮起，选中 tonal 卡保持平面（质感规则）
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    offset: const Offset(0, 2),
-                    blurRadius: 6,
-                  ),
-                ],
-        ),
+        decoration: isActive
+            ? BoxDecoration(
+                color: AppColors.mintLight,
+                borderRadius: BorderRadius.circular(AppDimens.rMd),
+                border: Border.all(color: AppColors.mint, width: 2),
+              )
+            // 未选中白卡描边+轻影（影基色统一 text 色相），选中 tonal 卡保持平面
+            : AppDimens.cardElevatedOutline(
+                borderColor: AppColors.line, radius: AppDimens.rMd),
         child: Column(
           children: [
             Text(emoji, style: const TextStyle(fontSize: 24)),

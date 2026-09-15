@@ -64,6 +64,23 @@ class AppDimens {
     );
   }
 
+  /// 描边浮起卡（2026-09-15 D1-1）：白底 + line 描边 + 轻接触影。
+  /// 用于「带描边但仍需与画布分离」的表面——典型如选中/未选中双态卡的
+  /// 未选中面（tonal 选中面保持平面）。影基色同 [shadowCard] 族。
+  static BoxDecoration cardElevatedOutline({
+    Color color = AppColors.card,
+    Color borderColor = AppColors.line,
+    double borderWidth = 1,
+    double radius = rLg,
+  }) {
+    return BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: borderColor, width: borderWidth),
+      boxShadow: shadowCardLight,
+    );
+  }
+
   // ---- 投影刻度（2026-09 质感底座）----
   // 以 text 色相为影基色，双层结构：一层紧贴接触影定边缘、一层大范围环境影造深度。
   static const List<BoxShadow> shadowCard = [
@@ -85,6 +102,17 @@ class AppDimens {
       color: Color(0x1A2E3A3B), // 10% text
       offset: Offset(0, 8),
       blurRadius: 24,
+    ),
+  ];
+
+  /// 轻接触影：描边卡的浮起伴侣（2026-09-15 D1-1 收编 add_pet_page
+  /// 手写的 Colors.black 4% 单层影——影基色统一走 text 色相 2E3A3B 族，
+  /// 禁止裸黑，与 [shadowCard] 同族但更轻更近，不与描边打架）。
+  static const List<BoxShadow> shadowCardLight = [
+    BoxShadow(
+      color: Color(0x0A2E3A3B), // 4% text
+      offset: Offset(0, 2),
+      blurRadius: 6,
     ),
   ];
 
