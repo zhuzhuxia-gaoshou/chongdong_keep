@@ -7,6 +7,7 @@ import '../../theme/app_theme.dart';
 import '../../models/user.dart' show CheckInRecord;
 import '../../services/app_services.dart';
 import '../../services/app_state.dart';
+import '../../utils/brand_copy.dart';
 import '../../widgets/pressable_scale.dart';
 import '../../widgets/ui_kit.dart';
 
@@ -85,8 +86,9 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
       if (user != null) {
         await state.updateUser(user.copyWith(signCardCount: remaining));
       }
+      // 补签成功文案走品牌文案库（D2-4），按剩余卡数取变体
       messenger.showSnackBar(SnackBar(
-          content: Text('补签成功！剩余补签卡 $remaining 张')));
+          content: Text(BrandCopy.makeupSuccess(remaining, seed: remaining))));
       _load();
     } on ApiException {
       // 具体原因（卡不足/已打卡）由服务端给出，静默失败页面自动刷新
@@ -123,9 +125,8 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                 // 英雄头：品牌渐变 + 三项统计随头部浮在渐变上
                 PageHero(
                   title: '打卡日历',
-                  subtitle: streak > 0
-                      ? '已经连续打卡 $streak 天啦，宝贝为你骄傲'
-                      : '今天也要记得陪宝贝动一动哦',
+                  // 连胜副标题走品牌文案库：里程碑专属句 / 通用轮换 / 0 天鼓励（D2-4）
+                  subtitle: BrandCopy.streakLine(streak),
                   leading: _heroBackButton(context),
                   child: Row(
                     children: [

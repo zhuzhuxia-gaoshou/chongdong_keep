@@ -7,6 +7,7 @@ import '../../services/map_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/brand_copy.dart';
 import '../../widgets/app_bottom_sheet.dart';
 import '../../widgets/local_image.dart';
 import '../../widgets/ui_kit.dart';
@@ -40,7 +41,8 @@ class RecordHistoryPage extends StatelessWidget {
       child: EmptyState(
         emoji: '🐾',
         title: '还没有运动记录',
-        message: '完成一次遛狗/陪玩后，就会出现在这里',
+        // 空态副文案走品牌文案库（D2-4），按日序轮换、同一天稳定
+        message: BrandCopy.emptyRecords(),
         actionLabel: '去遛一次',
         onAction: () {
           context.read<AppState>().setIndex(1); // 切到运动 tab

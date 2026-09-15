@@ -5,6 +5,7 @@ import '../../theme/app_dimens.dart';
 import '../../theme/app_theme.dart';
 import '../../services/app_state.dart';
 import '../../models/exercise_record.dart';
+import '../../utils/brand_copy.dart';
 import '../../utils/uuid.dart';
 import '../../widgets/pressable_scale.dart';
 import '../../widgets/ui_kit.dart';
@@ -253,8 +254,12 @@ class _CatPlayPageState extends State<CatPlayPage> {
       ));
     }
     Navigator.pop(context);
+    // 打卡成功/未达门槛文案走品牌文案库（D2-4），按时长取变体
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('记录成功！运动$_duration分钟${_duration >= 5 ? '，打卡成功✅' : ''}')),
+      SnackBar(
+          content: Text(_duration >= 5
+              ? BrandCopy.checkinSuccess(seed: _duration)
+              : BrandCopy.recordSavedShort(_duration, seed: _duration))),
     );
   }
 }

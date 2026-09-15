@@ -293,6 +293,13 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
 - **信息型校验**：该日期无需补签 / 仅支持 JPG/PNG/WebP 图片 / 图片大小超出限制 / 内容不存在或已删除（陈述事实、无指责，不强加语气符）。
 - **非命令用法**：「敬请期待哦」（敬语惯用）、「要不要就医」（疑问式）。
 
+### 8.4 温柔文案库（D2-4）
+- **代码唯一出口** `lib/utils/brand_copy.dart`（`BrandCopy`）；**人读镜像** `docs/copy_library.md`；两者改一处必同步另一处。
+- 四类池：打卡成功 ×5 / 未达门槛 ×3 / 补签成功 ×4 / 连胜（里程碑 6 档 + 通用 ×3 + 0 天 ×3）/ 运动记录空态 ×3。
+- 轮换用**确定性种子**（缺省日序 `daySeed`，成功类 toast 传业务量），同一天稳定、隔天换新——彩蛋感且可测试；页面禁止把文案字面量复制回来。
+- **品牌守护测试** `test/brand_copy_test.dart`：遍历全部条目校验 §6.2-4 密度（≤1 语气符）、§6.2-3 品牌集（🐾💗🥺🌸🎉）、§8.1 不命令不指责，另测 pick 确定性 / 占位符替换 / 里程碑命中。新增条目必须过此测试。
+- 落地引用 5 处：cat_play 打卡 SnackBar（顺带清除 ✅）、calendar 补签 SnackBar + PageHero 连胜副标题、walk 结果横幅、record_history 空态副文案。
+
 ---
 **UI Designer** · 设计契约 v3 · 2026-09-15 D1 设计夜
 **配套基线**：flutter analyze 零问题 · flutter test 97/97 · 前端 dev 分支（不 push）

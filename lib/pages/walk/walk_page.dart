@@ -16,6 +16,7 @@ import '../../widgets/local_image.dart';
 import '../../models/pet.dart';
 import '../../models/exercise_record.dart';
 import '../../models/walk_session.dart';
+import '../../utils/brand_copy.dart';
 import '../../utils/uuid.dart';
 import '../share/share_card_page.dart';
 import '../health/emergency_care_page.dart';
@@ -508,9 +509,10 @@ class _WalkPageState extends State<WalkPage> {
                     color: AppColors.mintLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text('今日打卡成功！',
+                  // 打卡成功横幅走品牌文案库（D2-4），按本次时长取变体
+                  child: Text(BrandCopy.checkinSuccess(seed: _elapsed.inMinutes),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: AppColors.mint)),
