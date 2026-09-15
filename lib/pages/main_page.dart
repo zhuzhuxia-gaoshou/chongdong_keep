@@ -20,11 +20,11 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final tabs = [
-      (icon: Icons.home_outlined, activeIcon: Icons.home, label: '首页'),
-      (icon: Icons.map_outlined, activeIcon: Icons.map, label: '运动'),
-      (icon: Icons.storefront_outlined, activeIcon: Icons.storefront, label: '商城'),
-      (icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: '消息'),
-      (icon: Icons.person_outline, activeIcon: Icons.person, label: '我的'),
+      (icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: '首页'),
+      (icon: Icons.map_outlined, activeIcon: Icons.map_rounded, label: '运动'),
+      (icon: Icons.storefront_outlined, activeIcon: Icons.storefront_rounded, label: '商城'),
+      (icon: Icons.chat_bubble_outlined, activeIcon: Icons.chat_bubble_rounded, label: '消息'),
+      (icon: Icons.person_outlined, activeIcon: Icons.person_rounded, label: '我的'),
     ];
     final pages = [
       const HomePage(),

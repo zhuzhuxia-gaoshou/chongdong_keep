@@ -641,7 +641,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.location_off, size: AppDimens.iconMd, color: AppColors.textSoft),
+          const Icon(Icons.location_off_rounded, size: AppDimens.iconMd, color: AppColors.textSoft),
           const SizedBox(width: 10),
           const Expanded(child: Text('显示位置', style: TextStyle(fontSize: 13))),
           Switch(

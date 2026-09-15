@@ -173,7 +173,7 @@ class _NearbyHospitalsSectionState extends State<NearbyHospitalsSection> {
           if (h.tel != null)
             IconButton(
               tooltip: '拨打 ${h.tel}',
-              icon: const Icon(Icons.phone, color: AppColors.mint),
+              icon: const Icon(Icons.phone_rounded, color: AppColors.mint),
               onPressed: () => _call(h.tel!),
             ),
         ],

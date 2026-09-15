@@ -188,7 +188,7 @@ class RecordHistoryPage extends StatelessWidget {
                       MaterialPageRoute(
                           builder: (_) => ShareCardPage(record: r)),
                     ),
-                    icon: const Icon(Icons.ios_share,
+                    icon: const Icon(Icons.ios_share_rounded,
                         size: AppDimens.iconMd, color: AppColors.textMute),
                     tooltip: '生成分享卡片',
                   ),
@@ -206,7 +206,7 @@ class RecordHistoryPage extends StatelessWidget {
                 const SizedBox(height: AppDimens.sp8),
                 Row(
                   children: [
-                    const Icon(Icons.place_outlined,
+                    const Icon(Icons.place_rounded,
                         size: AppDimens.fsCaption * 1.4,
                         color: AppColors.textMute),
                     const SizedBox(width: AppDimens.sp4),
@@ -343,7 +343,7 @@ class RecordHistoryPage extends StatelessWidget {
                 ctx,
                 MaterialPageRoute(builder: (_) => ShareCardPage(record: r)),
               ),
-              icon: const Icon(Icons.ios_share, size: AppDimens.fsSub),
+              icon: const Icon(Icons.ios_share_rounded, size: AppDimens.fsSub),
               label: const Text('生成分享卡片'),
             ),
           ),

@@ -474,7 +474,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.all(AppDimens.sp4),
                         decoration: BoxDecoration(
                             shape: BoxShape.circle, color: AppColors.mint),
-                        child: const Icon(Icons.photo_camera,
+                        child: const Icon(Icons.photo_camera_rounded,
                             size: 14, color: Colors.white),
                       ),
                     ),
@@ -487,7 +487,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   TextButton.icon(
                     onPressed: () => pickImage(ImageSource.camera),
-                    icon: const Icon(Icons.photo_camera_outlined,
+                    icon: const Icon(Icons.photo_camera_rounded,
                         size: AppDimens.iconSm),
                     label: const Text('拍照',
                         style: TextStyle(fontSize: AppDimens.fsFoot)),
@@ -496,7 +496,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   TextButton.icon(
                     onPressed: () => pickImage(ImageSource.gallery),
                     icon:
-                        const Icon(Icons.photo_outlined, size: AppDimens.iconSm),
+                        const Icon(Icons.photo_rounded, size: AppDimens.iconSm),
                     label: const Text('相册',
                         style: TextStyle(fontSize: AppDimens.fsFoot)),
                   ),
@@ -529,7 +529,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.check, size: AppDimens.iconSm),
+                      : const Icon(Icons.check_rounded, size: AppDimens.iconSm),
                   label: Text(saving ? '保存中…' : '保存'),
                 ),
               ),

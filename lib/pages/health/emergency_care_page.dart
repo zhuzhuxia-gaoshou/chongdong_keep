@@ -103,7 +103,7 @@ class _EmergencyCarePageState extends State<EmergencyCarePage> {
                   if (contact != null && _phoneFromContact(contact) != null)
                     ElevatedButton.icon(
                       onPressed: () => _dial(_phoneFromContact(contact)!),
-                      icon: const Icon(Icons.phone, size: AppDimens.iconSm),
+                      icon: const Icon(Icons.phone_rounded, size: AppDimens.iconSm),
                       label: Text('拨打紧急联系人（$contact）',
                           style:
                               const TextStyle(fontSize: AppDimens.fsFoot)),

@@ -57,7 +57,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(
       home: Scaffold(
         body: IconChip(
-          icon: Icons.dns,
+          icon: Icons.dns_rounded,
           background: AppColors.sand,
           color: AppColors.textSoft,
         ),
@@ -66,7 +66,7 @@ void main() {
     final box = tester.widget<Container>(
         find.descendant(of: find.byType(IconChip), matching: find.byType(Container)));
     expect(box.constraints?.maxWidth, 36);
-    final icon = tester.widget<Icon>(find.byIcon(Icons.dns));
+    final icon = tester.widget<Icon>(find.byIcon(Icons.dns_rounded));
     expect(icon.color, AppColors.textSoft);
   });
 
@@ -113,7 +113,7 @@ void main() {
         body: AppChip(
           label: '补签卡',
           message: '点日历上带票点的过去日期就能补上哦',
-          leading: Icon(Icons.confirmation_num_outlined,
+          leading: Icon(Icons.confirmation_num_rounded,
               size: AppDimens.iconMd, color: AppColors.coral),
           background: AppColors.coralLight,
           borderColor: AppColors.coralLine,
@@ -129,7 +129,7 @@ void main() {
     // 说明条形态：主副文案同时渲染
     expect(find.text('补签卡'), findsOneWidget);
     expect(find.text('点日历上带票点的过去日期就能补上哦'), findsOneWidget);
-    expect(find.byIcon(Icons.confirmation_num_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.confirmation_num_rounded), findsOneWidget);
     final title = tester.widget<Text>(find.text('补签卡'));
     expect(title.style?.color, AppColors.coral);
     expect(title.style?.fontSize, AppDimens.fsFoot);

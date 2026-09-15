@@ -109,7 +109,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
       actions: [
         IconButton(
           onPressed: () => _confirmDelete(pet),
-          icon: const Icon(Icons.delete_outline, color: Colors.white),
+          icon: const Icon(Icons.delete_outline_rounded, color: Colors.white),
           tooltip: '删除档案',
         ),
       ],
@@ -298,7 +298,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.emergency,
+          const Icon(Icons.emergency_rounded,
               size: AppDimens.iconMd, color: AppColors.mint),
           const SizedBox(width: AppDimens.sp12),
           Expanded(
@@ -523,7 +523,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
       child: OutlinedButton.icon(
         onPressed: () => Navigator.push(
             context, MaterialPageRoute(builder: (_) => AddPetPage(pet: pet))),
-        icon: const Icon(Icons.edit, size: AppDimens.iconMd),
+        icon: const Icon(Icons.edit_rounded, size: AppDimens.iconMd),
         label: const Text('编辑档案'),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: AppColors.mint),

@@ -40,7 +40,7 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
           _showInviteDialog();
         },
         backgroundColor: AppColors.mint,
-        child: const Icon(Icons.person_add, color: Colors.white),
+        child: const Icon(Icons.person_add_rounded, color: Colors.white),
       ),
     );
   }
@@ -202,7 +202,7 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
           ),
           if (!isMe)
             PopupMenuButton(
-              icon: const Icon(Icons.more_vert, color: AppColors.textSoft),
+              icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSoft),
               itemBuilder: (context) => [
                 const PopupMenuItem(value: 'edit', child: Text('修改角色')),
                 const PopupMenuItem(value: 'remove', child: Text('移除成员')),
@@ -332,7 +332,7 @@ class _FamilyGroupPageState extends State<FamilyGroupPage> {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.link, size: AppDimens.iconSm, color: AppColors.mint),
+                  Icon(Icons.link_rounded, size: AppDimens.iconSm, color: AppColors.mint),
                   SizedBox(width: AppDimens.sp8),
                   Text('复制邀请链接',
                       style: TextStyle(

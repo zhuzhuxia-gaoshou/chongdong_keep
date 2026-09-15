@@ -107,9 +107,9 @@ class RouteFavoritesPage extends StatelessWidget {
                 const SizedBox(height: AppDimens.sp12),
                 Row(
                   children: [
-                    _buildStat(Icons.route, route['distance'] as String),
+                    _buildStat(Icons.route_rounded, route['distance'] as String),
                     const SizedBox(width: AppDimens.sp20),
-                    _buildStat(Icons.access_time, route['duration'] as String),
+                    _buildStat(Icons.access_time_rounded, route['duration'] as String),
                   ],
                 ),
                 const SizedBox(height: AppDimens.sp12),

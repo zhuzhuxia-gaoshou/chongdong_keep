@@ -268,7 +268,7 @@ class _TencentMapWidgetState extends State<TencentMapWidget> {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.location_on, size: AppDimens.iconSm, color: AppColors.mint),
+                Icon(Icons.location_on_rounded, size: AppDimens.iconSm, color: AppColors.mint),
                 SizedBox(width: 4),
                 Text('腾讯地图',
                     style: TextStyle(
@@ -306,7 +306,7 @@ class _TrackView extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.satellite_alt_outlined,
+                  Icon(Icons.satellite_alt_rounded,
                       size: 40, color: Colors.white.withValues(alpha: 0.9)),
                   const SizedBox(height: 8),
                   Text('等待GPS信号…',
@@ -336,7 +336,7 @@ class _TrackView extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.route, size: 14, color: AppColors.mint),
+                  const Icon(Icons.route_rounded, size: 14, color: AppColors.mint),
                   const SizedBox(width: 4),
                   Text(badgeText,
                       style: const TextStyle(

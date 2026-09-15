@@ -137,7 +137,7 @@ class _WalkPageState extends State<WalkPage> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () => Navigator.pop(ctx, true),
-                        icon: const Icon(Icons.photo_camera_outlined, size: AppDimens.iconSm),
+                        icon: const Icon(Icons.photo_camera_rounded, size: AppDimens.iconSm),
                         label: const Text('拍一张'),
                       ),
                     ),
@@ -819,7 +819,7 @@ class _WalkPageState extends State<WalkPage> {
             Icon(
               isSelected
                   ? Icons.check_circle_rounded
-                  : Icons.radio_button_unchecked,
+                  : Icons.radio_button_unchecked_rounded,
               size: AppDimens.iconLg,
               color: isSelected ? AppColors.mint : AppColors.textMute,
             ),
@@ -921,7 +921,7 @@ class _WalkPageState extends State<WalkPage> {
               padding: const EdgeInsets.only(top: 6),
               child: Row(
                 children: [
-                  const Icon(Icons.location_on,
+                  const Icon(Icons.location_on_rounded,
                       size: 14, color: AppColors.textSoft),
                   const SizedBox(width: 4),
                   Expanded(

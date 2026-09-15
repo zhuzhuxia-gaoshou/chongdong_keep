@@ -168,7 +168,7 @@ class _CatPlayPageState extends State<CatPlayPage> {
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.timer_outlined,
+                            Icon(Icons.timer_rounded,
                                 size: AppDimens.iconSm, color: AppColors.textSoft),
                             SizedBox(width: AppDimens.sp8),
                             Text('时长',
@@ -179,13 +179,13 @@ class _CatPlayPageState extends State<CatPlayPage> {
                         ),
                         Row(
                           children: [
-                            _circleBtn(Icons.remove,
+                            _circleBtn(Icons.remove_rounded,
                                 () => setState(() => _duration = (_duration - 5).clamp(5, 120))),
                             const SizedBox(width: AppDimens.sp12),
                             Text('$_duration分',
                                 style: AppText.numericInline()),
                             const SizedBox(width: AppDimens.sp12),
-                            _circleBtn(Icons.add,
+                            _circleBtn(Icons.add_rounded,
                                 () => setState(() => _duration = (_duration + 5).clamp(5, 120))),
                           ],
                         ),

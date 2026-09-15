@@ -105,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                 await StorageService.clearWeatherLocation();
                 _loadWeather();
               },
-              icon: const Icon(Icons.my_location, size: AppDimens.fsSub),
+              icon: const Icon(Icons.my_location_rounded, size: AppDimens.fsSub),
               label: const Text('使用当前定位'),
             ),
           ),
@@ -382,7 +382,7 @@ class _HomePageState extends State<HomePage> {
                             else ...[
                               const SizedBox(width: AppDimens.sp4),
                               const Icon(
-                                Icons.swap_horiz,
+                                Icons.swap_horiz_rounded,
                                 size: AppDimens.fsFoot,
                                 color: AppColors.textMute,
                               ),

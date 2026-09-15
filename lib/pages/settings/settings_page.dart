@@ -158,7 +158,7 @@ class _SettingsPageState extends State<SettingsPage> {
           SectionCard(title: '通知提醒', children: [
             MenuTile(
               leading: const IconChip(
-                  icon: Icons.notifications_active_outlined,
+                  icon: Icons.notifications_active_rounded,
                   background: AppColors.sky,
                   color: AppColors.skyDeep),
               title: '运动提醒',
@@ -170,7 +170,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             MenuTile(
               leading: const IconChip(
-                  icon: Icons.alarm,
+                  icon: Icons.alarm_rounded,
                   background: AppColors.sky,
                   color: AppColors.skyDeep),
               title: '提醒时间',
@@ -181,30 +181,30 @@ class _SettingsPageState extends State<SettingsPage> {
           ]),
           const SizedBox(height: AppDimens.sp20),
           SectionCard(title: '隐私设置', children: [
-            _switchTile(Icons.route, '轨迹可见', '好友功能上线后生效：好友可查看运动路线',
+            _switchTile(Icons.route_rounded, '轨迹可见', '好友功能上线后生效：好友可查看运动路线',
                 _locationVisible, (v) => _update('locationVisible', v)),
-            _switchTile(Icons.leaderboard_outlined, '公开排行榜', '参与好友排行榜排名',
+            _switchTile(Icons.leaderboard_rounded, '公开排行榜', '参与好友排行榜排名',
                 _publicRanking, (v) => _update('publicRanking', v)),
-            _switchTile(Icons.straighten, '显示距离', '分享卡片显示运动距离', _showDistance,
+            _switchTile(Icons.straighten_rounded, '显示距离', '分享卡片显示运动距离', _showDistance,
                 (v) => _update('showDistance', v)),
-            _switchTile(Icons.location_on_outlined, '分享位置', '分享卡片显示具体位置',
+            _switchTile(Icons.location_on_rounded, '分享位置', '分享卡片显示具体位置',
                 _shareLocation, (v) => _update('shareLocation', v)),
           ]),
           const SizedBox(height: AppDimens.sp20),
           SectionCard(title: '数据管理', children: [
-            _navTile('导出数据', '运动记录与宠物档案摘要（文本分享）', Icons.download,
+            _navTile('导出数据', '运动记录与宠物档案摘要（文本分享）', Icons.download_rounded,
                 onTap: _exportData),
-            _navTile('删除运动记录', '清除本机缓存的历史运动记录', Icons.delete_outline,
+            _navTile('删除运动记录', '清除本机缓存的历史运动记录', Icons.delete_outline_rounded,
                 isDanger: true, onTap: _confirmClearRecords),
-            _navTile('删除宠物档案', '删除全部宠物（同步服务端，不可恢复）', Icons.pets,
+            _navTile('删除宠物档案', '删除全部宠物（同步服务端，不可恢复）', Icons.pets_rounded,
                 isDanger: true, onTap: _confirmClearPets),
           ]),
           const SizedBox(height: AppDimens.sp20),
           SectionCard(title: '账号', children: [
             _navTile('修改手机号',
-                '当前: ${context.watch<AppState>().user?.phone ?? '未登录'}', Icons.phone,
+                '当前: ${context.watch<AppState>().user?.phone ?? '未登录'}', Icons.phone_rounded,
                 onTap: () => _toast('手机号修改需要短信验证服务支持，即将开放')),
-            _navTile('注销账号', '删除所有数据和账号（不可恢复）', Icons.person_off,
+            _navTile('注销账号', '删除所有数据和账号（不可恢复）', Icons.person_off_rounded,
                 isDanger: true, onTap: _confirmDeactivate),
           ]),
           const SizedBox(height: AppDimens.sp20),
@@ -351,7 +351,7 @@ class _SettingsPageState extends State<SettingsPage> {
         : '正式 · ${ApiConfig.liveHost ?? ApiConfig.apiBaseUrl}';
     return MenuTile(
       leading: const IconChip(
-          icon: Icons.dns,
+          icon: Icons.dns_rounded,
           background: AppColors.sand,
           color: AppColors.textSoft),
       title: '运行环境',
@@ -359,7 +359,7 @@ class _SettingsPageState extends State<SettingsPage> {
       onTap: () {},
       trailing: TextButton.icon(
         onPressed: _testConnection,
-        icon: const Icon(Icons.wifi_tethering, size: AppDimens.iconSm),
+        icon: const Icon(Icons.wifi_tethering_rounded, size: AppDimens.iconSm),
         label: const Text('测试连接', style: TextStyle(fontSize: AppDimens.fsFoot)),
       ),
     );

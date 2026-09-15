@@ -29,7 +29,7 @@ class WeeklyReportPage extends StatelessWidget {
         title: const Text('周报'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_outlined),
+            icon: const Icon(Icons.share_rounded),
             tooltip: '分享周报',
             onPressed: () => _shareSummary(context, summary, petNames),
           ),

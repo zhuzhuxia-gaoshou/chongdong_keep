@@ -157,14 +157,14 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                               children: [
-                                _monthArrow(Icons.chevron_left,
+                                _monthArrow(Icons.chevron_left_rounded,
                                     () => _shiftMonth(-1)),
                                 Text(
                                     '${_currentMonth.year}年${_currentMonth.month}月',
                                     style: const TextStyle(
                                         fontSize: AppDimens.fsSub,
                                         fontWeight: FontWeight.w700)),
-                                _monthArrow(Icons.chevron_right,
+                                _monthArrow(Icons.chevron_right_rounded,
                                     () => _shiftMonth(1)),
                               ],
                             ),
@@ -238,7 +238,7 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                         message: signCards > 0
                             ? '点日历上带票点的过去日期就能补上哦'
                             : '这个月的补签卡用完啦，分享 APP 可以获得哦',
-                        leading: const Icon(Icons.confirmation_num_outlined,
+                        leading: const Icon(Icons.confirmation_num_rounded,
                             size: AppDimens.iconMd, color: AppColors.coral),
                         background: AppColors.coralLight,
                         borderColor: AppColors.coralLine,
@@ -268,7 +268,7 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
         child: const SizedBox(
           width: 36,
           height: 36,
-          child: Icon(Icons.arrow_back_ios_new,
+          child: Icon(Icons.arrow_back_ios_new_rounded,
               size: AppDimens.iconMd, color: AppColors.onAccent),
         ),
       ),
@@ -370,7 +370,7 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
           if (canMakeup)
             Container(
               margin: const EdgeInsets.only(top: 2),
-              child: const Icon(Icons.confirmation_num,
+              child: const Icon(Icons.confirmation_num_rounded,
                   size: 10, color: AppColors.coral),
             ),
         ],

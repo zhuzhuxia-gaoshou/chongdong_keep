@@ -19,7 +19,7 @@ Widget localImageWidget(
               height: height,
               color: const Color(0xFFEFEFEF),
               alignment: Alignment.center,
-              child: const Icon(Icons.broken_image_outlined,
+              child: const Icon(Icons.broken_image_rounded,
                   size: 28, color: Colors.grey),
             ),
   );

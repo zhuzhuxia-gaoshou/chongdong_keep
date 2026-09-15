@@ -252,7 +252,7 @@ class _LoginPageState extends State<LoginPage> {
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.pets, size: AppDimens.iconSm),
+                      : const Icon(Icons.pets_rounded, size: AppDimens.iconSm),
                   label: Text(_busy ? '登录中…' : '登录 / 注册'),
                 ),
               ),
@@ -280,7 +280,7 @@ class _LoginPageState extends State<LoginPage> {
                           color: _agreed ? AppColors.mint : Colors.transparent,
                         ),
                         child: _agreed
-                            ? const Icon(Icons.check,
+                            ? const Icon(Icons.check_rounded,
                                 size: 13, color: Colors.white)
                             : null,
                       ),

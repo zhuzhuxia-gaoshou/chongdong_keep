@@ -452,7 +452,7 @@ class MenuTile extends StatelessWidget {
                 ),
               ),
               trailing ??
-                  const Icon(Icons.chevron_right,
+                  const Icon(Icons.chevron_right_rounded,
                       size: AppDimens.iconMd, color: AppColors.textMute),
             ],
           ),
