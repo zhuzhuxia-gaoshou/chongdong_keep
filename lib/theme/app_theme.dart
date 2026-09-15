@@ -32,7 +32,7 @@ class AppTheme {
         color: AppColors.card,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppDimens.rLg),
           side: const BorderSide(color: AppColors.line, width: 1),
         ),
         margin: EdgeInsets.zero,
@@ -42,12 +42,14 @@ class AppTheme {
           backgroundColor: AppColors.mint,
           foregroundColor: AppColors.onAccent,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+          // 竖向 14 为按钮专用偏格值（历史定稿，非 4 级制），保留
+          padding: const EdgeInsets.symmetric(
+              vertical: 14, horizontal: AppDimens.sp24),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppDimens.rFull),
           ),
           textStyle: const TextStyle(
-            fontSize: 15,
+            fontSize: AppDimens.fsSub,
             fontWeight: FontWeight.w800,
             letterSpacing: 1.2,
           ),
@@ -57,12 +59,13 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.text,
           side: const BorderSide(color: AppColors.line),
-          padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 24),
+          padding: const EdgeInsets.symmetric(
+              vertical: 13, horizontal: AppDimens.sp24),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppDimens.rFull),
           ),
           textStyle: const TextStyle(
-            fontSize: 14,
+            fontSize: AppDimens.fsBodyMid,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -71,25 +74,25 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.cream,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimens.rMd),
           borderSide: const BorderSide(color: AppColors.line),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimens.rMd),
           borderSide: const BorderSide(color: AppColors.line),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimens.rMd),
           borderSide: const BorderSide(color: AppColors.mint, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         labelStyle: const TextStyle(
-          fontSize: 12,
+          fontSize: AppDimens.fsFoot,
           color: AppColors.textSoft,
           fontWeight: FontWeight.w600,
         ),
         hintStyle: const TextStyle(
-          fontSize: 14,
+          fontSize: AppDimens.fsBodyMid,
           color: AppColors.textMute,
         ),
       ),
@@ -103,8 +106,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppDimens.rMd),
         ),
         elevation: 0,
-        insetPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        insetPadding: const EdgeInsets.symmetric(
+            horizontal: AppDimens.sp16, vertical: AppDimens.sp12),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.card,
@@ -145,7 +148,8 @@ class AppTheme {
         backgroundColor: AppColors.card,
         modalBackgroundColor: AppColors.card,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(AppDimens.rXl)),
         ),
       ),
       dividerTheme: const DividerThemeData(color: AppColors.line, thickness: 1),
@@ -176,16 +180,17 @@ class AppTheme {
         color: AppColors.mint,
         linearTrackColor: AppColors.sand,
       ),
+      // 字号全部走 AppDimens 档位（D1-6 等值归档，视觉零变化）
       textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.text),
-        headlineMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.text),
-        titleLarge: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.text),
-        titleMedium: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text),
-        bodyLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.text),
-        bodyMedium: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.text),
-        bodySmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textSoft),
-        labelLarge: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.text),
-        labelSmall: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textSoft),
+        headlineLarge: TextStyle(fontSize: AppDimens.fsDisplay, fontWeight: FontWeight.w700, color: AppColors.text),
+        headlineMedium: TextStyle(fontSize: AppDimens.fsHeadline, fontWeight: FontWeight.w700, color: AppColors.text),
+        titleLarge: TextStyle(fontSize: AppDimens.fsTitle, fontWeight: FontWeight.w600, color: AppColors.text),
+        titleMedium: TextStyle(fontSize: AppDimens.fsSub, fontWeight: FontWeight.w600, color: AppColors.text),
+        bodyLarge: TextStyle(fontSize: AppDimens.fsBodyMid, fontWeight: FontWeight.w500, color: AppColors.text),
+        bodyMedium: TextStyle(fontSize: AppDimens.fsBody, fontWeight: FontWeight.w500, color: AppColors.text),
+        bodySmall: TextStyle(fontSize: AppDimens.fsCaption, fontWeight: FontWeight.w500, color: AppColors.textSoft),
+        labelLarge: TextStyle(fontSize: AppDimens.fsBody, fontWeight: FontWeight.w600, color: AppColors.text),
+        labelSmall: TextStyle(fontSize: AppDimens.fsMicro, fontWeight: FontWeight.w600, color: AppColors.textSoft),
       ),
     );
   }
@@ -221,7 +226,7 @@ class AppText {
 
   /// 行内级：列表行的距离/时长（16-18px 观感）
   static TextStyle numericInline({Color color = AppColors.text}) => TextStyle(
-        fontSize: 17,
+        fontSize: AppDimens.fsTitle,
         fontWeight: FontWeight.w500,
         letterSpacing: -0.3,
         height: 1.1,
@@ -231,7 +236,7 @@ class AppText {
   /// 统计数值级：StatTile 等小空间数字（20px 中粗+紧字距；
   /// 2026-09-15 起 w800 数据数字全面退役，统一走本档）
   static TextStyle numericStat({Color color = AppColors.text}) => TextStyle(
-        fontSize: 20,
+        fontSize: AppDimens.fsStat,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.3,
         height: 1.1,

@@ -42,6 +42,7 @@ class AppDimens {
   static const double fsTitle = 17; // 页面级标题
   static const double fsHeadline = 18; // 区块大字
   static const double fsStat = 20; // 统计数值
+  static const double fsDisplay = 24; // 展示级标题（textTheme.headlineLarge，2026-09-15 D1-6 补档）
 
   // ---- 图标尺寸（2026-09-15 D1-2）----
   // 功能 Icon 的 size 一律走这三档，禁止字面量；
