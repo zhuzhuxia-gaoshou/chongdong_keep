@@ -276,8 +276,18 @@ class RecordHistoryPage extends StatelessWidget {
       width: double.infinity,
       color: AppColors.sand,
       alignment: Alignment.center,
-      child: const Text('📷 出发照片已丢失',
-          style: TextStyle(fontSize: AppDimens.fsFoot, color: AppColors.textMute)),
+      // 状态占位属功能语义 → Material 图标 + 文案（D2-3 emoji 政策）
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.no_photography_rounded,
+              size: AppDimens.iconSm, color: AppColors.textMute),
+          SizedBox(width: AppDimens.sp4),
+          Text('出发照片已丢失',
+              style: TextStyle(
+                  fontSize: AppDimens.fsFoot, color: AppColors.textMute)),
+        ],
+      ),
     );
   }
 

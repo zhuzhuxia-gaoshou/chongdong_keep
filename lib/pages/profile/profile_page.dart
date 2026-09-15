@@ -229,8 +229,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     color: Colors.white,
                     border: Border.all(color: AppColors.mint, width: 1.5),
                   ),
+                  // 编辑角标属功能语义 → Material 图标（D2-3 emoji 政策）；
+                  // 尺寸随 20px 角标推导（同 IconChip size*0.56 写法），不入三档
                   child: const Center(
-                      child: Text('✏️', style: TextStyle(fontSize: 9))),
+                      child: Icon(Icons.edit_rounded,
+                          size: AppDimens.sp20 * 0.55,
+                          color: AppColors.mint)),
                 ),
               ),
             ],
@@ -254,7 +258,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     const SizedBox(width: AppDimens.sp4),
-                    const Text('✏️', style: TextStyle(fontSize: 11)),
+                    // 昵称可编辑提示属功能语义 → Material 图标（D2-3）
+                    Icon(Icons.edit_rounded,
+                        size: AppDimens.iconSm,
+                        color: Colors.white.withValues(alpha: 0.85)),
                   ],
                 ),
                 const SizedBox(height: AppDimens.sp4),

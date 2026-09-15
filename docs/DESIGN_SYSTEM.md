@@ -96,7 +96,7 @@
 | `iconMd` | 20 | 常规功能图标（菜单尾箭头/列表行） |
 | `iconLg` | 24 | 大号功能图标（宫格/空态引导） |
 
-**豁免（非功能 Icon，不入三档）**：PageHero 爪印水印（emoji 字形 64）、EmptyState emoji（40）、BadgeCircle emoji（`size*0.5`）、ErrorRetry 状态图形（32，插画级）、LoadingView 进度圈（28，参数化）、IconChip 内部推导（`size*0.56`）。
+**豁免（非功能 Icon，不入三档）**：PageHero 爪印水印（emoji 字形 64）、EmptyState emoji（40）、BadgeCircle emoji（`size*0.5`）、ErrorRetry 状态图形（32，插画级）、LoadingView 进度圈（28，参数化）、IconChip 内部推导（`size*0.56`）、profile 头像编辑角标 `edit_rounded`（`sp20*0.55`≈11，20px 角标内推导，D2-3 从 ✏️ 收编）。
 功能 Icon 的 `size:` 字面量已全库清零（2026-09-15 复查 grep `size: 1[6-9]` / `size: 2[0-4]` = 0 处），新增图标必须走三档。
 
 ### 2.5 投影刻度（影基色统一 text 色相 2E3A3B）
@@ -192,18 +192,35 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
 
 > 本章为骨架预留：emoji 政策与称谓表由品牌守护者次夜正式定稿。补全时保持编号稳定，便于外部引用。
 
-### 6.1 现状盘点（emoji 作为品牌字形的使用位，2026-09-15 扫描）
-| 位置 | emoji | 形态 |
-|---|---|---|
-| `PageHero.watermark` | 默认 🐾（各页可覆写） | 64px 白 14% 右下装饰水印 |
-| `EmptyState.emoji` | 各页自定（🐾/💬/🐈…） | 88 mintLight 圆底内 40px 主视觉 |
-| `BadgeCircle.emoji` | 徽章图形 | `size*0.5` 字形 |
-| `AppChip.leading` | 允许传 emoji 字形 | 政策待定：优先功能图标（§4） |
-| 卡内行内占位 | 🐾（pet_detail）🌸（weekly_report）等 | 行内点缀 |
-| 登录页品牌区 | 🐾 爪印字标 | 品牌字标豁免位 |
+### 6.1 现状盘点（emoji 作为品牌字形的使用位，2026-09-15 扫描；D2-3 复核）
+| 位置 | emoji | 形态 | D2-3 归类 |
+|---|---|---|---|
+| `PageHero.watermark` | 默认 🐾（各页可覆写） | 64px 白 14% 右下装饰水印 | 品牌字形 |
+| `EmptyState.emoji` | 各页自定（🐾/💬/🐈…） | 88 mintLight 圆底内 40px 主视觉 | 品牌字形 |
+| `BadgeCircle.emoji` / profile 徽章条 | 徽章图形（🔥🏅💎🚀👑…） | `size*0.5` 字形 | 身份字形 |
+| `AppChip.leading` | pet_detail 宠物切换传 `speciesEmoji` | 前导小件 | 身份字形（功能语义则传 Icon，见 §6.2-6） |
+| 宠物物种 / 运动类型 / 头像回退 | 🐕 🐈 🐾 👩 | 胶囊、行前导、CircleAvatar 回退 | 身份字形 |
+| 天气 `conditionIcon` | 🌤️ 等（服务返回） | 首页天气行 | 数据字形 |
+| 卡内行内占位 / SnackBar / Dialog 句末 | 🐾 💗 🥺 🎉 | 语气符 | 文案语气符 |
+| 急救/症状风险文案 | ⚠️ | 风险卡建议行 | 安全语义豁免 |
+| 登录页品牌区 / mall 占位页 | 🐾 48px / 🛒 44px | 品牌字标 / §5.3 有意保留占位页 | 品牌字形 |
+| 分享海报模板 | 📖📊🌙🎂🎉📍 | 导出海报内容 | 内容生成面（不在 App UI 口径内） |
+| ~~profile 编辑角标 ✏️×2 / record 照片丢失 📷~~ | — | — | **功能位违例，D2-3 已 Material 化**（`edit_rounded` / `no_photography_rounded`） |
 
-### 6.2 emoji 使用政策（**待品牌守护者补全**）
-预留要点：何时允许 emoji vs 必须 Material 图标（功能/装饰边界）；emoji 密度上限；可否作为唯一信息载体（无障碍替身文本）；与 §4 图标 family 规则的衔接。
+### 6.2 emoji 使用政策（品牌守护者 D2-3 定稿，2026-09-15）
+**总纲：emoji 是品牌的「语气与身份」，不是「功能与状态」。** 与 §4 的衔接：凡表达动作、状态、导航、筛选的位置，用 Material `_rounded` 图标；凡表达品牌气质、宠物身份、情绪陪伴的位置，用 emoji。
+
+1. **功能位零 emoji**：按钮 / Tab / AppBar 动作 / 菜单行前导（走 `IconChip`）/ 编辑·删除·更多等操作角标 / 加载·错误·缺失等状态占位 / 导航——一律 Material 图标。审计现状：本轮扫描 lib/pages+widgets 共 86 行 emoji，功能位违例 3 处已清零（profile 头像编辑角标 ✏️、昵称编辑提示 ✏️、record 出发照片丢失 📷），其余全部落入下列白名单。
+2. **内容位白名单（四类）**：
+   - **品牌字形**：PageHero 水印 🐾、登录页字标 🐾、EmptyState 主 emoji、mall 占位页 🛒。
+   - **身份字形**：宠物 `speciesEmoji`（🐕/🐈）、头像回退（👩/🐾）、徽章图形、运动类型字形。它们是宠物/成就的「头像替身」，允许出现在胶囊前导、列表行前导、卡片角。
+   - **数据字形**：天气 `conditionIcon` 等由服务返回的状态字形。
+   - **文案语气符**：句末 🐾 💗 🥺 🌸 与庆典 🎉；急救/风险内容内的 ⚠️ 属安全语义豁免（安全 > 品牌集）。
+3. **品牌语气符集**：`🐾 💗 🥺 🌸` 为主，`🎉` 仅限成就/庆典（打卡成功、连胜、徽章解锁）。✅ ❌ ⭐ 👍 等「功能感」符号不进文案（cat_play「打卡成功✅」由 D2-4 文案库替换为品牌集）。
+4. **密度上限**：一句话 ≤ 1 个语气符；同一 SnackBar / Dialog 只用一种 emoji；一屏可见语气符 ≤ 3（EmptyState 主 emoji 不计）。
+5. **无障碍**：emoji 不得作为唯一信息载体——旁边必须有文字（EmptyState 有 title、胶囊有 label、天气字形伴随文字描述）。新增纯装饰 emoji 建议包 `ExcludeSemantics`；现有 PageHero 水印属静态装饰层，列入待办不追溯。
+6. **`AppChip.leading` 决议**：功能语义（筛选 / 排序 / 设置）传 `Icon(size: iconSm)`；身份语义（宠物切换）传 `Text(speciesEmoji)`。禁止为同一语义在不同页面混用两种形态。
+7. **审计命令**：`grep -rnP "[\x{1F000}-\x{1FFFF}\x{2600}-\x{27BF}]" lib/pages lib/widgets --include="*.dart"`，逐行对照第 2 条白名单；命中 `Button(` / `Tab(` / `MenuTile(leading:` / 操作角标 / 状态占位的即违例。
 
 ### 6.3 称谓表（**待品牌守护者补全**）
 预留要点：对宠物的称谓（宝贝/毛孩子/它…）按场景与物种的统一口径；对用户的自称（「你」 vs 「铲屎官」）；语气规范（温柔、不命令）；示例句式库。
