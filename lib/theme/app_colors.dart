@@ -44,6 +44,13 @@ class AppColors {
     colors: [coral, coralDeep],
   );
 
+  // 海报模板色（2026-09-15 D2-1 从 share_card_page 页面私造色收编）：
+  /// 导出海报的模板身份色——属内容生成面的版式语言，非 UI 语义色，
+  /// 不参与界面用色；仅分享卡片模板切换处引用（板外禁用）。
+  static const Color posterMagazine = Color(0xFF7E57C2);
+  static const Color posterData = Color(0xFF26C6DA);
+  static const Color posterNight = Color(0xFF37474F);
+
   // 中性色
   static const Color cream = Color(0xFFFBF9F5);
   static const Color sand = Color(0xFFF5F1EA);

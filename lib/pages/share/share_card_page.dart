@@ -39,9 +39,10 @@ class _ShareCardPageState extends State<ShareCardPage> {
 
   final List<Map<String, dynamic>> _templates = [
     {'name': '可爱风', 'color': AppColors.mint, 'icon': '🐾'},
-    {'name': '杂志风', 'color': const Color(0xFF7E57C2), 'icon': '📖'},
-    {'name': '数据风', 'color': const Color(0xFF26C6DA), 'icon': '📊'},
-    {'name': '夜景风', 'color': const Color(0xFF37474F), 'icon': '🌙'},
+    // 海报模板身份色已收编 AppColors.poster*（内容生成面版式语言，D2-1）
+    {'name': '杂志风', 'color': AppColors.posterMagazine, 'icon': '📖'},
+    {'name': '数据风', 'color': AppColors.posterData, 'icon': '📊'},
+    {'name': '夜景风', 'color': AppColors.posterNight, 'icon': '🌙'},
     {'name': '生日风', 'color': AppColors.coral, 'icon': '🎂'},
   ];
 

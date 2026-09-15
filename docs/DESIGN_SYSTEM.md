@@ -35,7 +35,8 @@
 | `coral` / `coralLight` / `coralDeep` / `coralLine` | `0xFFFF8A65` / `0xFFFFE8DF` / `0xFFEE6D45` / `0xFFFFD9C8` | 珊瑚点缀：急救语义、警示提示、票点 |
 | `amber` / `amberLight` | `0xFFFFB74D` / `0xFFFFF3E0` | 症状自查「建议观察」中间风险档（已收编，勿页面私造） |
 | `warning` / `warningText` | `0xFFFFF3CD` / `0xFF8A6D3B` | 开发标识（MOCK 角标）、预警文案底 |
-| `cream` / `sand` | `0xFFFBF9F5` / `0xFFF5F1EA` | 次级中性底：输入框填充 / 图标章与状态圆底 |
+| `cream` / `sand` | `0xFFFBF9F5` / `0xFFF5F1EA` | 次级中性底：输入框填充 / 图标章与状态圆底（图片加载失败占位底亦走 sand，D2-1 收编冷灰 `0xFFEFEFEF`） |
+| `posterMagazine` / `posterData` / `posterNight` | `0xFF7E57C2` / `0xFF26C6DA` / `0xFF37474F` | 海报模板身份色（D2-1 从 share_card_page 收编）：仅导出海报的模板切换引用，属内容生成面的版式语言，**非 UI 语义色，板外禁用** |
 | `canvas` | `0xFFF3EFE8` | 页面画布，比卡片深半档，白卡凭投影浮起 |
 | `card` | `0xFFFFFFFF` | 卡片白 |
 | `line` | `0xFFECEAE5` | 描边、分隔线 |
@@ -49,6 +50,8 @@
 - **影基色一律 `text` 色相（2E3A3B 族）**，禁止裸黑 `Colors.black`（D1-1 守门员点名项，已收编为 `shadowCardLight`）。
 - **tonal 配方** = 淡底 + 同族深字/图标 + 描边伴侣色：`mintLight+mint+mintLine`、`coralLight+coral+coralLine`、`sky+skyDeep+skyLine`。tonal 面不加影。
 - **禁板外私造色**：页面需要新语义色时先收编进 AppColors 再用（amber 收编为先例）。
+- **品牌色透明度变体一律派生（D2-1 定稿）**：品牌色的 alpha 变体（渐变卡落地影 = mintDeep 20%、徽章辉光 = mint 30%）必须写 `AppColors.xxx.withValues(alpha: n)` 从 token 派生，禁止硬编码 ARGB 字面量——主色若调、变体随动；独立 token 会重复编码同一色相，造成失联。
+- **D2-1 色彩秩序审计结论（2026-09-15）**：板外 `Color(0x…)` 扫描 4 处违例全部处置——home 渐变卡落地影 `0x332E7D5F`→派生、ui_kit BadgeCircle 辉光 `0x4D4CAF82`→派生、local_image 占位灰 `0xFFEFEFEF`→`sand`、share 海报三色→`poster*` token 收编；复查命令见 §7。
 
 ---
 
@@ -214,6 +217,7 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
 - **commit 格式**：`type(scope): 中文一句话`；每任务独立 commit，禁止混合。
 - **审计工具命令**（防回归）：
   - 图标字面量：`grep -rn "size: 1[6-9]\|size: 2[0-4]" lib/`（应为空）
+  - 色彩字面量：`grep -rn "Color(0x" lib/ --include="*.dart" | grep -v "lib/theme"`（应为空，D2-1 起生效；`Colors.white/grey` 等系统色豁免）
   - 图标 family：见 §4.2 复查命令
   - 裸黑影：`grep -rn "Colors.black" lib/pages/`（应仅在豁免注释中出现）
 

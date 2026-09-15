@@ -505,10 +505,11 @@ class _HomePageState extends State<HomePage> {
           colors: [AppColors.mint, AppColors.mintDeep],
         ),
         borderRadius: BorderRadius.circular(AppDimens.rXl),
-        boxShadow: const [
+        // 落地影从 mintDeep token 派生（20%），主色若调、投影随动（D2-1）
+        boxShadow: [
           BoxShadow(
-            color: Color(0x332E7D5F), // mintDeep 20%：渐变卡的落地影
-            offset: Offset(0, 8),
+            color: AppColors.mintDeep.withValues(alpha: 0.20),
+            offset: const Offset(0, 8),
             blurRadius: 20,
           ),
         ],

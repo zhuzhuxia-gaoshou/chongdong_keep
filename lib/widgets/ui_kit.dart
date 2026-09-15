@@ -622,11 +622,11 @@ class BadgeCircle extends StatelessWidget {
             ),
             boxShadow: showShadow && unlocked
                 ? [
-                    // 与既有品牌一致的柔和薄荷投影（30%）
-                    const BoxShadow(
-                      color: Color(0x4D4CAF82),
+                    // 柔和薄荷辉光：从 mint token 派生（30%），主色若调、辉光随动（D2-1）
+                    BoxShadow(
+                      color: AppColors.mint.withValues(alpha: 0.30),
                       blurRadius: 8,
-                      offset: Offset(0, 4),
+                      offset: const Offset(0, 4),
                     ),
                   ]
                 : null,
