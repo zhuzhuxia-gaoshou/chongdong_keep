@@ -228,6 +228,8 @@ id / clientRecordId(幂等键) / petId / userId / type(walkDog/catPlay) / catPla
 
 **⑥⑦ /users/me**：GET → UserDTO；PATCH `{nickname?, avatarUrl?, isPublicRank?}` 至少一项，nickname 去空格后 1-12 字否则 40002。`isPublicRank=false` 后服务端在排行榜构建与读取双侧剔除该用户（构建缓存 ≤5 分钟内由读取侧兜底过滤，名次重排），前端"我的排名"区同步显示隐私提示。
 
+**⑦b DELETE /users/me（注销账号，2026-09-15 新增，上架合规）**：请求体 `{confirm: true}`（布尔，必须显式 true，否则 40001）。服务端事务内删除该用户全部数据（徽章/补签记录/运动记录及其轨迹/宠物含软删/用户行），手机号释放可重新注册（再注册即新用户）。安全语义：auth/refresh 校验用户存在性，注销后旧 refreshToken 一律 40104；accessToken 自然过期（≤7 天）。前端流程：二次确认弹窗（危险红按钮）→ 调用本接口 → 清本地 token/状态 → 回登录页。反作弊口径同日新增：榜单构建剔除单次 duration>6h 或速度>60km/h 的记录（PRD §2.5 底线）。
+
 **⑧ GET /pets**：分页可省（默认一页 100），创建时间正序（前端「第一只为默认宠物」依赖此序）。
 
 **⑨ POST /pets**：name/species/breed/gender/weight/birthDate 必填，其余可选（含 ageYears、avatarUrl、allergies、chronicConditions、isNeutered、isVaccinated、emergencyContact）。校验 weight>0；品种白名单暂不强制；上限 20 只（40003）。
@@ -362,6 +364,8 @@ flutter run --dart-define=MOCK=1
 
 ### 5.3 发布红线（不可违反）
 
+0. **权限基线（2026-09-15 存档，发布清单"只增不删"依据，AndroidManifest 实测 11 项）**：
+   `INTERNET` / `ACCESS_NETWORK_STATE` / `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION` / `ACCESS_BACKGROUND_LOCATION`（后台定位=遛狗锁屏轨迹记录场景，商店审核重点说明项）/ `CAMERA`（出发照片）/ `READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE` / `POST_NOTIFICATIONS`（运动提醒）/ `WAKE_LOCK` / `FOREGROUND_SERVICE`
 1. Android 包名 `com.chongdong.chongdong_keep` 永不改（改了用户无法升级）
 2. keystore 签名多地备份，丢失 = 全量用户重装
 3. AndroidManifest 权限只增不删

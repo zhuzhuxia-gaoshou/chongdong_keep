@@ -8,23 +8,24 @@
 
 ## 📍 一、当前阶段（最重要的一行）
 
-**M4 里程碑完成（2026-09-05）：后端接管成功 + 前端假数据页全部清零。全 APP 无假数据页面，进入真机回归与发布准备阶段。**
+**2026-09-15 通宵批次完成（夜间自主工作）：全 APP 界面质感 v2 改版（14 页深度美化，守门员放行）+ 后端安全加固批落地 + ⑦b 注销接口全链路上线（未部署）+ 运维脚本化。前端 20 commit（92 测试全绿），后端 8 commit（build/lint 过），等真机验收 + 部署。**
 
 关键进展：
-- ✅ **后端接管**：47.104.129.148 上找回完整源码（NestJS11+Prisma6），入库 GitHub chongdong_server；审计发现 22/23 接口已实现；7 项修复（上传URL 404/打卡口径 catPlay/TTL 数字/昵称 40002 等）已部署上线并冒烟通过
-- ✅ **M4 前端对接**：排行榜(/ranking)、徽章(/badges)、补签卡(⑲)接真实服务端接口；Mock 同步补齐 ⑱⑲㉒㉓（网页演示全真）
-- ✅ **假功能批次1接真（2026-09-13）**：B-隐私开关（isPublicRank 服务端剔除榜单+迁移部署冒烟通过 cc411fa；分享卡读取显示距离/分享位置）；C-出发照片上传（⑬ 先传图床再报 ⑭，失败静默降级，历史页远端兜底展示）
-- ✅ **假功能批次2接真（2026-09-13）**：B-运动提醒（flutter_local_notifications 已获用户批准，每日本地通知+时间可调+权限回退）；C-猫玩玩法落库（catPlayType ⑭ 全链路+迁移冒烟通过 58636d8/14487b4）；A-家庭照护组假入口摘除
-- ✅ **真机回归修复批（2026-09-13）**：全局中文化（flutter_localizations，时间/日期选择器等 Material 组件）+时间选择器配色；宠物档案页运动记录补玩法显示（typeDisplayName 共享扩展）；分享卡重做——5 套真实版式、动态类型徽章（修写死"遛狗"）、宠物名、腾讯静态图真实地图描线（GCJ-02，配额耗尽/Web 自动回退手绘轨迹）
-- ✅ **首页红屏事故已修复并真机确认（2026-09-13）**：运动入口 Row 误用 `CrossAxisAlignment.stretch`，在滚动视图无界高度下产生 infinite height 渲染崩溃，真机首页打不开。**根因定位手法**：临时 widget 测试 + 解除测试框架 HTTP 拦截（HttpOverrides.global=null）+ runAsync 包网络（TokenStore 的 prefs future 在 FakeAsync 区外会死锁）+ 冷启动缓存数据模拟，Live 模式连真实服务器复现。已修复 + 固化为回归守卫 `test/cold_start_home_test.dart`（布局类改动必跑），用户装机确认正常
-- ⚠️ **腾讯地图 Key 当日配额易耗尽**（2026-09-13 傍晚地理编码/静态图双双 121）：免费档总量有限，天气地点名/附近医院/静态图会间歇不可用（已有优雅降级）；如频繁出现，考虑控制台提升配额或企业认证
-- ⏳ **真机回归**：新 APK 已构建（含批次1+2 全部改动），装机验证清单见聊天记录
-- ⏳ **发布准备**：正式签名 keystore 确认 / versionCode / 应用上架材料
+- ✅ **界面质感 v2（用户授权大幅改版）**：新建共享组件 PageHero（渐变页头）/EmptyState（品牌空态）/IconChip（图标章）/numericStat（数字档）；登录/日历/设置/宠物档案/添加宠物/健康×2/猫玩/排行榜/遛狗/商城/消息/家庭组/路线收藏 14 处深度改造——30+ 功能 emoji 换 Material 图标、数据数字 w800/w900 全清零（迁展示体）、4 处板外私造色收回调色板（amber/coralGradient 收编 token）、15 处白卡浮起、家庭组渐变内容卡降级 tonal（唯一主角回归首页）。界面质感守门员逐 commit 审查：14/14 PASS 零红线
+- ✅ **后端安全加固批（原 PROGRESS 遗留项全部清零）**：helmet 安全头；登录防爆破（同号试错 5 次锁 5 分钟，固定窗口）；异常响应脱敏；幂等并发 P2002 兜底；**streak N+1 修复**（最坏 730 条 SQL→2 条）；**榜单反作弊落地**（PRD 2.5 底线：单次>6h 或速度>60km/h 不入榜）
+- ✅ **⑦b 注销账号接口（上架合规刚需，契约先行）**：DELETE /users/me {confirm:true}→事务删全部数据→手机号释放；jwt.validate/refresh 补用户存在性校验（注销后新旧 token 全失效）；设置页两步危险确认接通；SPEC §4.4 契约已更新
+- ✅ **运维脚本化**：README / smoke.sh（契约冒烟）/ deploy.sh（一键部署，需 DEPLOY_CONFIRM=1）/ backup.sh（每日备份保留 7 份）
+- ✅ **密钥泄漏审计（密钥管家）**：双仓库 git 全历史零真实密钥（🔴无高危）；.gitignore 补 .env.* 通配；遗留建议：SECRETS.local.md 迁密码管理器、chongdong-backup.tar.gz 含旧服务器 .env 应加密或删除、和风/腾讯 Key 择机轮换（2026-08 前曾在交接文档明文）
+- ✅ **代码审查（代码审查工程师）**：前后端全量 diff「可推送」，零 P0；3 条 P1（deploy 构建链/smoke BASE 取值/注销 access 残留）已全部返工修复
+- ✅ **测试修复**：日历用例凌晨时间炸弹（now-3h 跨天→目标日正午锚点）；测试 86→**92** 全绿
+- ⏳ **真机回归**：最终版 debug APK 已构建（含全部 20 个 commit），待装机验收
+- ⏳ **部署**：后端 8 个 commit build/lint 全过但**未部署上线**（deploy.sh 已备好，需用户确认后执行）
 
 遗留尾巴（低优先级）：
 - 天气地点名：和风 GeoAPI 需控制台放行安全限制（用户操作）；腾讯配额已恢复
-- 后端优化项：幂等并发兜底(P2002)、streak N+1 性能、排行榜口径确认、helmet 安全加固
-- **部署方式提醒**：服务器 /root/chongdong 不是 git 仓库（当年纯文件拷贝部署），部署=本地改动后 scp 同步文件 → 服务器上 prisma migrate deploy + npm run build + pm2 restart
+- 保存相册接真：需新增 image_gallery_saver 类插件（按"下载规矩"等用户批准）
+- **备忘（原 WORKLOG-20260913，归档后迁此）**：Flutter Web 开发服务器默认从 gstatic CDN 拉 CanvasKit 渲染引擎，网络不通时网页白屏（与 App 无关）；release 构建本地自带，build 脚本已补 useLocalCanvasKit 补丁
+- **部署方式提醒**：部署=本地改动后跑 `scripts/deploy.sh`（DEPLOY_CONFIRM=1）→ 服务器 prisma migrate deploy + build + pm2 restart
 - ⚠️ **服务器 2026-09-27 到期，需续费！**
 
 ### 📋 假功能/壳功能盘点（2026-09-05 审计，待用户拍板处理顺序）
@@ -105,9 +106,9 @@
 - 配色全程保持用户认可的浅色清爽系；内容性 emoji（症状/宠物/徽章/文案语气符）保留
 
 ### 质量现状
-- `dart analyze` 零问题；`flutter test` 80 用例全绿
-- `flutter build web` 通过，Edge 实测可跑（Mock 模式）
-- 最新 debug APK（Live 模式）已构建可装机：`build\app\outputs\flutter-apk\app-debug.apk`
+- `dart analyze` 零问题；`flutter test` **92 用例全绿**（含冷启动红屏回归守卫 + 质感底座v2组件测试 + 注销链路用例）
+- `flutter build web` 通过；Live 模式 debug APK 已构建可装机：`build\app\outputs\flutter-apk\app-debug.apk`
+- 后端 `npm run build` + `npm run lint` 全过；后端测试纪律见 SPEC §5.4
 
 ---
 
@@ -188,6 +189,12 @@ docker ps 2>/dev/null # 若用 docker 部署，能看到容器
 
 | 日期 | 决策 | 说明 |
 |---|---|---|
+| 2026-09-15 | 界面质感 v2 大改版 | 用户明确对现有界面不满意、授权大幅改动；四原则升级为"页头英雄化+组件表达力+空态品牌化+字重交响"；共享组件 PageHero/EmptyState/IconChip/numericStat 入 ui_kit |
+| 2026-09-15 | 数字字重纪律收口 | 数据数字 w800/w900 全库退役（App 屏幕走 AppText 展示体；分享卡海报版式豁免并在文件头声明）；中风险色 amber、急救渐变 coralGradient 正式收编 AppColors |
+| 2026-09-15 | 榜单反作弊落地 | 排行榜构建剔除单次>6h 或速度>60km/h 记录（PRD §2.5 底线此前仅定义未实现） |
+| 2026-09-15 | ⑦b 注销账号契约 | DELETE /users/me {confirm:true}；事务删全部数据；jwt.validate/refresh 校验用户存在性——注销后新旧 token 全失效；上架合规 |
+| 2026-09-15 | 登录防爆破 | 同号验证码试错 5 次锁 5 分钟（固定窗口 TTL）；已知权衡：无 IP 维度计数（README 备案） |
+| 2026-09-15 | 子智能体体系落地 | .zcode/agents 装 11 个中文名子智能体（工程/安全/测试/设计向）；本轮实战调度 6 个（盘点/守门员/密钥管家/代码审查/发布清单/生产就绪），全部产出可执行报告 |
 | 2026-09-05 | 后端暂停，前端优先 | 先做网页版实验 → 界面美化 → 真机验证；后端启动时照 §3.1 勘察指南执行（第 0 步 = 登录服务器找回源码） |
 | 2026-09-05 | 服务器归属确认 | `47.104.129.148` 实为本人购入的阿里云服务器（当年交给后端伙伴部署）；后端代码大概率仍在服务器上，找回则接管而非重建；勘察后做一轮安全清理 |
 | 2026-09-05 | 部署设施确认 | 开发：VMware 虚拟机（已装 Docker）跑 MySQL/后端容器；生产：自有阿里云服务器；零新增采购 |
