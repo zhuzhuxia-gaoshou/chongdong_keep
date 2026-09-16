@@ -120,7 +120,10 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
                 alignment: Alignment.center,
-                child: const Text('🐾', style: TextStyle(fontSize: 48)),
+                // 品牌图章属纯装饰（下方紧随「宠动Keep」字标），不进读屏（E5-1）
+                child: const ExcludeSemantics(
+                  child: Text('🐾', style: TextStyle(fontSize: 48)),
+                ),
               ),
               const SizedBox(height: AppDimens.sp20),
               // 品牌名：字重交响——品牌词允许重字重，紧字距
@@ -205,32 +208,37 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(width: AppDimens.sp8),
                         // 压缩感反馈交给配色态变化（克制原则：不加动效）
-                        GestureDetector(
-                          onTap: codeReady ? _sendCode : null,
-                          child: Container(
-                            height: 48, // 与主题输入框精确等高
-                            alignment: Alignment.center,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: AppDimens.sp12),
-                            decoration: BoxDecoration(
-                              color: codeReady
-                                  ? AppColors.mint
-                                  : AppColors.sand,
-                              borderRadius:
-                                  BorderRadius.circular(AppDimens.rMd),
-                            ),
-                            child: Text(
-                              _sendingCode
-                                  ? '发送中…'
-                                  : (_countdown == 0
-                                      ? '获取验证码'
-                                      : '${_countdown}s'),
-                              style: TextStyle(
-                                fontSize: AppDimens.fsFoot,
-                                fontWeight: FontWeight.w700,
+                        // 文字按钮补按钮角色，读屏可识别为可点（E5-1）
+                        Semantics(
+                          button: true,
+                          enabled: codeReady,
+                          child: GestureDetector(
+                            onTap: codeReady ? _sendCode : null,
+                            child: Container(
+                              height: 48, // 与主题输入框精确等高
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppDimens.sp12),
+                              decoration: BoxDecoration(
                                 color: codeReady
-                                    ? AppColors.onAccent
-                                    : AppColors.textMute,
+                                    ? AppColors.mint
+                                    : AppColors.sand,
+                                borderRadius:
+                                    BorderRadius.circular(AppDimens.rMd),
+                              ),
+                              child: Text(
+                                _sendingCode
+                                    ? '发送中…'
+                                    : (_countdown == 0
+                                        ? '获取验证码'
+                                        : '${_countdown}s'),
+                                style: TextStyle(
+                                  fontSize: AppDimens.fsFoot,
+                                  fontWeight: FontWeight.w700,
+                                  color: codeReady
+                                      ? AppColors.onAccent
+                                      : AppColors.textMute,
+                                ),
                               ),
                             ),
                           ),
@@ -263,26 +271,32 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // 4px 透明热区，实际点击面积 ≥26px
-                  GestureDetector(
-                    onTap: () => setState(() => _agreed = !_agreed),
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimens.sp4),
-                      child: Container(
-                        width: 18,
-                        height: 18,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              color: _agreed
-                                  ? AppColors.mint
-                                  : AppColors.textMute,
-                              width: 1.5),
-                          color: _agreed ? AppColors.mint : Colors.transparent,
+                  // 纯图形勾选圈：补勾选框语义（角色 + 勾选态 + 标签，E5-1）
+                  Semantics(
+                    checked: _agreed,
+                    label: '同意用户协议和隐私政策',
+                    child: GestureDetector(
+                      onTap: () => setState(() => _agreed = !_agreed),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppDimens.sp4),
+                        child: Container(
+                          width: 18,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: _agreed
+                                    ? AppColors.mint
+                                    : AppColors.textMute,
+                                width: 1.5),
+                            color:
+                                _agreed ? AppColors.mint : Colors.transparent,
+                          ),
+                          child: _agreed
+                              ? const Icon(Icons.check_rounded,
+                                  size: 13, color: Colors.white)
+                              : null,
                         ),
-                        child: _agreed
-                            ? const Icon(Icons.check_rounded,
-                                size: 13, color: Colors.white)
-                            : null,
                       ),
                     ),
                   ),
