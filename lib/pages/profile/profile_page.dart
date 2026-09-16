@@ -9,6 +9,7 @@ import '../../services/app_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 import '../../widgets/app_bottom_sheet.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../widgets/ui_kit.dart';
 import '../../widgets/user_avatar.dart';
 import '../badge/badges_page.dart';
@@ -43,7 +44,9 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             children: [
               const SizedBox(height: AppDimens.sp16),
-              GestureDetector(
+              // D3-3 按压反馈：头部整卡是「编辑资料」入口，裸 GestureDetector
+              // → PressableScale（与首页运动入口卡同款缩放物理）
+              PressableScale(
                 onTap: () => _showEditProfileSheet(context),
                 child: _buildHeader(),
               ),
