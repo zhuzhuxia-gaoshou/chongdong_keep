@@ -208,11 +208,12 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
 | 登录页品牌区 / mall 占位页 | 🐾 48px / 🛒 44px | 品牌字标 / §5.3 有意保留占位页 | 品牌字形 |
 | 分享海报模板 | 📖📊🌙🎂🎉📍 | 导出海报内容 | 内容生成面（不在 App UI 口径内） |
 | ~~profile 编辑角标 ✏️×2 / record 照片丢失 📷~~ | — | — | **功能位违例，D2-3 已 Material 化**（`edit_rounded` / `no_photography_rounded`） |
+| ~~walk 症状选择 OutlinedButton 前导 😫🤮😷🦴❓×5~~ | — | — | **功能位违例（D2-3 漏网：emoji 数据表与 `Button(` 分行，行级 grep 未命中），守门员 D4 返工已 Material 化**（`sentiment_dissatisfied_rounded` / `sick_rounded` / `masks_rounded` / `healing_rounded` / `help_outline_rounded`，iconSm） |
 
 ### 6.2 emoji 使用政策（品牌守护者 D2-3 定稿，2026-09-15）
 **总纲：emoji 是品牌的「语气与身份」，不是「功能与状态」。** 与 §4 的衔接：凡表达动作、状态、导航、筛选的位置，用 Material `_rounded` 图标；凡表达品牌气质、宠物身份、情绪陪伴的位置，用 emoji。
 
-1. **功能位零 emoji**：按钮 / Tab / AppBar 动作 / 菜单行前导（走 `IconChip`）/ 编辑·删除·更多等操作角标 / 加载·错误·缺失等状态占位 / 导航——一律 Material 图标。审计现状：本轮扫描 lib/pages+widgets 共 86 行 emoji，功能位违例 3 处已清零（profile 头像编辑角标 ✏️、昵称编辑提示 ✏️、record 出发照片丢失 📷），其余全部落入下列白名单。
+1. **功能位零 emoji**：按钮 / Tab / AppBar 动作 / 菜单行前导（走 `IconChip`）/ 编辑·删除·更多等操作角标 / 加载·错误·缺失等状态占位 / 导航——一律 Material 图标。审计现状：本轮扫描 lib/pages+widgets 共 86 行 emoji，功能位违例 3 处已清零（profile 头像编辑角标 ✏️、昵称编辑提示 ✏️、record 出发照片丢失 📷），其余全部落入下列白名单；守门员 D4 终审补捉 walk 症状按钮 5 处漏网（emoji 在独立数据表中，见 §6.1 末行），已 Material 化。
 2. **内容位白名单（四类）**：
    - **品牌字形**：PageHero 水印 🐾、登录页字标 🐾、EmptyState 主 emoji、mall 占位页 🛒。
    - **身份字形**：宠物 `speciesEmoji`（🐕/🐈）、头像回退（👩/🐾）、徽章图形、运动类型字形。它们是宠物/成就的「头像替身」，允许出现在胶囊前导、列表行前导、卡片角。
@@ -222,7 +223,7 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
 4. **密度上限**：一句话 ≤ 1 个语气符；同一 SnackBar / Dialog 只用一种 emoji；一屏可见语气符 ≤ 3（EmptyState 主 emoji 不计）。
 5. **无障碍**：emoji 不得作为唯一信息载体——旁边必须有文字（EmptyState 有 title、胶囊有 label、天气字形伴随文字描述）。新增纯装饰 emoji 建议包 `ExcludeSemantics`；现有 PageHero 水印属静态装饰层，列入待办不追溯。
 6. **`AppChip.leading` 决议**：功能语义（筛选 / 排序 / 设置）传 `Icon(size: iconSm)`；身份语义（宠物切换）传 `Text(speciesEmoji)`。禁止为同一语义在不同页面混用两种形态。
-7. **审计命令**：`grep -rnP "[\x{1F000}-\x{1FFFF}\x{2600}-\x{27BF}]" lib/pages lib/widgets --include="*.dart"`，逐行对照第 2 条白名单；命中 `Button(` / `Tab(` / `MenuTile(leading:` / 操作角标 / 状态占位的即违例。
+7. **审计命令**：`grep -rnP "[\x{1F000}-\x{1FFFF}\x{2600}-\x{27BF}]" lib/pages lib/widgets --include="*.dart"`，逐行对照第 2 条白名单；命中 `Button(` / `Tab(` / `MenuTile(leading:` / 操作角标 / 状态占位的即违例。**注意**：emoji 数据表（`for (final s in const [(…), …])` 元组 / 常量列表）与消费它的 `Button(` 常分行，行级 grep 只见数据行不见按钮——命中数据表时需跨行核对其消费点（D4 漏网教训：walk 症状按钮）。
 
 ### 6.3 称谓表（品牌守护者 D2-5 定稿，2026-09-16）
 

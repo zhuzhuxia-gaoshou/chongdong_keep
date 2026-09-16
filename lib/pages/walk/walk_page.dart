@@ -554,16 +554,26 @@ class _WalkPageState extends State<WalkPage> {
             spacing: AppDimens.sp8,
             runSpacing: AppDimens.sp8,
             children: [
+              // D4 返工：症状前导 emoji → Material 图标（DESIGN_SYSTEM §6.2-1
+              // 按钮零 emoji）。元组首位 emoji→IconData，pop 回传仍为 s.$2
+              // 症状字串，下方高风险判定（呕吐/瘸了）不受影响。
               for (final s in const [
-                ('😫', '累了'),
-                ('🤮', '呕吐'),
-                ('😷', '咳嗽'),
-                ('🦴', '瘸了'),
-                ('❓', '其他'),
+                (Icons.sentiment_dissatisfied_rounded, '累了'),
+                (Icons.sick_rounded, '呕吐'),
+                (Icons.masks_rounded, '咳嗽'),
+                (Icons.healing_rounded, '瘸了'),
+                (Icons.help_outline_rounded, '其他'),
               ])
                 OutlinedButton(
                   onPressed: () => Navigator.pop(ctx, s.$2),
-                  child: Text('${s.$1} ${s.$2}'),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(s.$1, size: AppDimens.iconSm),
+                      const SizedBox(width: AppDimens.sp4),
+                      Text(s.$2),
+                    ],
+                  ),
                 ),
             ],
           ),
