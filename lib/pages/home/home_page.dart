@@ -10,6 +10,7 @@ import '../../services/weather_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/brand_copy.dart';
 import '../../widgets/pressable_scale.dart';
 import '../../widgets/app_bottom_sheet.dart';
 import '../../widgets/ui_kit.dart';
@@ -668,7 +669,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// D3-2 连胜里程碑徽标命中档（任务口径 3/7/14/30；BrandCopy 另有 100/365
+  /// 专属句由日历页副标题承接，不在本徽标范围）。
+  /// 恰好命中当天才显示——下一档不预告、过档不滞留（与 BrandCopy.streakLine
+  /// 「命中即用、非命中日走通用句」的语义一致，避免大数字与徽标口径打架）。
+  static const Set<int> _streakBadgeDays = {3, 7, 14, 30};
+
   Widget _buildStreakCard(AppState state) {
+    final streak = state.user?.streakDays ?? 0;
+    final milestone = _streakBadgeDays.contains(streak)
+        ? BrandCopy.streakMilestones[streak]
+        : null;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimens.sp16,
@@ -676,51 +687,72 @@ class _HomePageState extends State<HomePage> {
       ),
       // 白卡+投影（Hero 之后的次级元素，安静克制）
       decoration: AppDimens.cardBox(),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                '连续打卡',
-                style: TextStyle(
-                  fontSize: AppDimens.fsCaption,
-                  color: AppColors.textSoft,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: AppDimens.sp4),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${state.user?.streakDays ?? 0}',
-                      style: AppText.numericSection(color: AppColors.mint)),
-                  const SizedBox(width: AppDimens.sp4),
                   const Text(
-                    '天',
+                    '连续打卡',
                     style: TextStyle(
-                      fontSize: AppDimens.fsBody,
-                      color: AppColors.mint,
+                      fontSize: AppDimens.fsCaption,
+                      color: AppColors.textSoft,
+                      fontWeight: FontWeight.w500,
                     ),
+                  ),
+                  const SizedBox(height: AppDimens.sp4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text('$streak',
+                          style:
+                              AppText.numericSection(color: AppColors.mint)),
+                      const SizedBox(width: AppDimens.sp4),
+                      const Text(
+                        '天',
+                        style: TextStyle(
+                          fontSize: AppDimens.fsBody,
+                          color: AppColors.mint,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.coralLight,
+                ),
+                child: const Center(
+                  child: Icon(Icons.local_fire_department_rounded,
+                      size: AppDimens.iconLg, color: AppColors.coral),
+                ),
+              ),
             ],
           ),
-          Container(
-            width: 42,
-            height: 42,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.coralLight,
+          // D3-2 里程碑徽标：纯静态视觉（tonal 薄荷说明条 + 奖杯图标），
+          // 零动画——达标当天安静出现，文案取 BrandCopy 连胜里程碑专属句。
+          if (milestone != null) ...[
+            const SizedBox(height: AppDimens.sp12),
+            AppChip(
+              label: '连胜里程碑',
+              message: milestone,
+              leading: const Icon(Icons.emoji_events_rounded,
+                  size: AppDimens.iconMd, color: AppColors.mint),
+              background: AppColors.mintLight,
+              borderColor: AppColors.mintLine,
+              textColor: AppColors.mint,
+              radius: AppDimens.rMd,
             ),
-            child: const Center(
-              child: Icon(Icons.local_fire_department_rounded,
-                  size: AppDimens.iconLg, color: AppColors.coral),
-            ),
-          ),
+          ],
         ],
       ),
     );
