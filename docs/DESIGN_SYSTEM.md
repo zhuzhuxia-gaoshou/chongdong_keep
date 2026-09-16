@@ -177,7 +177,7 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
 | 底部弹层（选择器 / 确认 / 结果面板） | `AppBottomSheet.show(context, title:, isScrollControlled:, builder:)`（`lib/widgets/app_bottom_sheet.dart`：透明底 + 白面板 rXl + 抓手条 + 居中标题 + SafeArea + sp20 内边距 + 键盘避让） | 裸调 `showModalBottomSheet` 手写面板/抓手条（D2-6 已收编 home 宠物选择、walk 出发照片/运动结果/症状 4 处克隆，板外清零） |
 
 ### 5.2 页面三态约定
-- `EmptyState(emoji, title, message?, actionLabel?+onAction?)`：空态；CTA 可选。
+- `EmptyState(emoji, title, message?, messages?, actionLabel?+onAction?)`：空态；CTA 可选。`messages?`（D3-5 空态文案轮换）：传非空数组时按 BrandCopy 确定性轮换取一条（默认日序，同日稳定隔天换新），优先于 `message`；为 null/空数组时行为与单文案完全一致。数据源建议直接传 BrandCopy 各池。
 - `ErrorRetry(message, onRetry?, icon = wifi_off_rounded, actionLabel = '重试')`：异常态；`onRetry` 为空则不渲染按钮。
 - `LoadingView(message?, size = 28)`：加载态。
 - 共同约定：`mainAxisSize.min`、**自身不含 Center**——调用方在有界 body 内包 `Center`（红线 2 的防线在调用侧）；列表页可作 ListView 首 child。

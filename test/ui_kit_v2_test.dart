@@ -1,6 +1,7 @@
 import 'package:chongdong_keep/theme/app_colors.dart';
 import 'package:chongdong_keep/theme/app_dimens.dart';
 import 'package:chongdong_keep/theme/app_theme.dart';
+import 'package:chongdong_keep/utils/brand_copy.dart';
 import 'package:chongdong_keep/widgets/ui_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -51,6 +52,66 @@ void main() {
     expect(find.byType(ElevatedButton), findsOneWidget);
     await tester.tap(find.text('去添加'));
     expect(tapped, isTrue);
+  });
+
+  // ====== D3-5 空态文案轮换（messages 可选数组） ======
+
+  testWidgets('EmptyState：传 messages 数组不崩且命中 BrandCopy 轮换结果之一',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: EmptyState(
+            emoji: '🐾',
+            title: '还没有记录',
+            messages: BrandCopy.emptyRecordsPool,
+          ),
+        ),
+      ),
+    ));
+    expect(tester.takeException(), isNull);
+    // BrandCopy.pick 默认日序种子——同一测试进程内取值确定
+    expect(find.text(BrandCopy.pick(BrandCopy.emptyRecordsPool)),
+        findsOneWidget);
+  });
+
+  testWidgets('EmptyState：messages 优先于 message（二者同传时渲染轮换项）',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: EmptyState(
+            emoji: '🐾',
+            title: '还没有记录',
+            message: '单文案占位',
+            messages: BrandCopy.emptyRecordsPool,
+          ),
+        ),
+      ),
+    ));
+    expect(find.text('单文案占位'), findsNothing);
+    expect(find.text(BrandCopy.pick(BrandCopy.emptyRecordsPool)),
+        findsOneWidget);
+  });
+
+  testWidgets('EmptyState：messages 为空数组回退 message——单文案默认行为完全不变',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: EmptyState(
+            emoji: '🐾',
+            title: '标题在',
+            message: '回退文案',
+            messages: [],
+          ),
+        ),
+      ),
+    ));
+    expect(find.text('回退文案'), findsOneWidget);
+    for (final line in BrandCopy.emptyRecordsPool) {
+      expect(find.text(line), findsNothing);
+    }
   });
 
   testWidgets('IconChip：尺寸与着色正确', (tester) async {

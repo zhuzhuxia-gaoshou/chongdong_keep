@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_dimens.dart';
 import '../theme/app_theme.dart';
+import '../utils/brand_copy.dart';
 
 /// 页面英雄头（2026-09-15 质感 v2）：品牌渐变 + 装饰圆 + 爪印水印 +
 /// 白字标题/副标题 + 头像/动作插槽。给主要页面统一的「开头仪式感」。
@@ -145,18 +146,32 @@ class EmptyState extends StatelessWidget {
     required this.emoji,
     required this.title,
     this.message,
+    this.messages,
     this.actionLabel,
     this.onAction,
   });
 
   final String emoji;
   final String title;
+
+  /// 单文案（既有参数，行为完全不变）
   final String? message;
+
+  /// 文案数组（D3-5 空态文案轮换，可选）：传入非空数组时按 BrandCopy
+  /// 确定性轮换取一条（默认日序种子——同一天稳定、隔天换新），数据源
+  /// 建议 D2-4 BrandCopy 各池。非空时优先生效；为 null/空数组时回退
+  /// [message]，二者皆空则不渲染文案行。
+  final List<String>? messages;
+
   final String? actionLabel;
   final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
+    final String? resolvedMessage =
+        (messages != null && messages!.isNotEmpty)
+            ? BrandCopy.pick(messages!)
+            : message;
     return Padding(
       padding: const EdgeInsets.symmetric(
           horizontal: AppDimens.sp32, vertical: AppDimens.sp40),
@@ -183,10 +198,10 @@ class EmptyState extends StatelessWidget {
               color: AppColors.text,
             ),
           ),
-          if (message != null && message!.isNotEmpty) ...[
+          if (resolvedMessage != null && resolvedMessage.isNotEmpty) ...[
             const SizedBox(height: AppDimens.sp8),
             Text(
-              message!,
+              resolvedMessage,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: AppDimens.fsBody,
