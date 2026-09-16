@@ -36,7 +36,7 @@
 | `amber` / `amberLight` | `0xFFFFB74D` / `0xFFFFF3E0` | 症状自查「建议观察」中间风险档（已收编，勿页面私造） |
 | `warning` / `warningText` | `0xFFFFF3CD` / `0xFF8A6D3B` | 开发标识（MOCK 角标）、预警文案底 |
 | `cream` / `sand` | `0xFFFBF9F5` / `0xFFF5F1EA` | 次级中性底：输入框填充 / 图标章与状态圆底（图片加载失败占位底亦走 sand，D2-1 收编冷灰 `0xFFEFEFEF`） |
-| `posterMagazine` / `posterData` / `posterNight` | `0xFF7E57C2` / `0xFF26C6DA` / `0xFF37474F` | 海报模板身份色（D2-1 从 share_card_page 收编）：仅导出海报的模板切换引用，属内容生成面的版式语言，**非 UI 语义色，板外禁用** |
+| `posterMagazine` / `posterData` / `posterNight` | `0xFF7E57C2` / `0xFF26C6DA` / `0xFF37474F` | 海报模板身份色（D2-1 从 share_card_page 收编）：仅导出海报的模板切换引用，属内容生成面的版式语言，**非 UI 语义色，板外禁用**；底上文字色按 §5.4「浅底深字、深底白字」（posterData 浅底深字 / posterMagazine·posterNight 深底白字） |
 | `canvas` | `0xFFF3EFE8` | 页面画布，比卡片深半档，白卡凭投影浮起 |
 | `card` | `0xFFFFFFFF` | 卡片白 |
 | `line` | `0xFFECEAE5` | 描边、分隔线 |
@@ -128,7 +128,7 @@
 
 ### 3.2 字重豁免清单（正式化，下轮审计以此为准，勿误报）
 以下展示位允许偏离常规字重阶梯（w500 正文 / w600 标题 / w700 区块与页头）：
-1. `share_card_page` —— 海报版式（文件头有声明）
+1. `share_card_page` —— 海报版式（文件头有声明）。**字重豁免 ≠ 可读性豁免**：五套版式文字色按 §5.4「浅底深字、深底白字」执行，浅底版式不得以本条豁免为由保留白字。
 2. `login_page` 品牌字标
 3. `pet_detail` / `profile` 宠物名昵称标题
 4. `walk_page` 头像首字
@@ -187,6 +187,27 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
 - `mall`：品牌化「即将上线」占位页，有意保留。
 - `route_favorites`：静态演示数据 itemCount 恒 4，无空分支；待真实数据接入时挂 EmptyState。
 - `pet_detail` 卡内「暂无记录」标签与行内提示、`weekly_report` 空行提示、`emergency_care` 联系人缺失提示：均为**卡内行内占位**，非整页空态，不在收编范围。
+
+### 5.4 分享卡海报版式：浅底深字、深底白字（R4 决-1 定稿，2026-09-16）
+`lib/pages/share/share_card_page.dart` 五套导出版式（可爱 / 杂志 / 数据 / 夜景 / 生日）的文字色统一规则：
+
+1. **规则**：**浅底深字、深底白字**。浅底版式主文字一律 `AppColors.text`，辅文只做一档派生 `AppColors.text.withValues(alpha: 0.72)`（字号不低于 `fsCaption` 11）；深底版式保持白字系（white / white70 / white60）。**配色 token 值不动**——可读性靠换文字色解决，不靠调底色。
+2. **判定方法**：以版式底色 token 为基准算白字对比度，**< 4.5:1（WCAG AA 正文）即视为浅底**，≥ 4.5:1 为深底。新增版式先算再定文字色，不凭观感。
+3. **白色的归属**：白色只留给非文字元素——品牌线 / 爪印字形 / 胶囊底 / 头像圆底 / 地图白壳与描线 / 轨迹起终点标记。浅底版式路径上不得出现白字文字。
+4. **机制**：共用块 `_badge / _mapFrame / _playBlock / _pill` 均带 `{bool dark = false}` 双态（cc75a1d `_badge` 先例），浅底版式调用一律传 `dark: true`，深底版式不传；含 `withValues` / 三元的 `TextStyle` 不得 `const`。App 侧模板选择器芯片按 `_templates` 的 `darkText` 标记同走本规则（芯片底即版式身份色，白字缺口相同）。
+5. **字重豁免 ≠ 可读性豁免**：§3.2 第 1 条对本页的豁免仅覆盖海报版式语言的重字重（w800 数字字形），**不豁免文字对比度**；文件头声明已同步此措辞，两处互引。
+
+五套版式一览（对比度为守门员 WCAG 手算近似值，基准 = 版式底色 token）：
+
+| 版式 | 底色 token | 主文字色 | 白字对比度 | 深字（text）对比度 | 结论 |
+|---|---|---|---|---|---|
+| 可爱风 | `mint` `0xFF4CAF82` | `AppColors.text`（宠名 fsHeadline 18 / 胶囊数字 17，层级拉开；辅文 72%） | ≈2.7:1 ✗ | ≈4.5:1 ✓ | 浅底深字 |
+| 杂志风 | `posterMagazine` `0xFF7E57C2` | 白（white / white70 / white60） | ≈5.2:1 ✓ | — | 深底白字 |
+| 数据风 | `posterData` `0xFF26C6DA` | `AppColors.text`（数据格/徽章/猫玩块底 text 6%） | ≈2.06:1 ✗ | ≈5.7:1 ✓ | 浅底深字 |
+| 夜景风 | `posterNight` `0xFF37474F` | 白（white / white70 / white60） | ≈9.6:1 ✓ | — | 深底白字 |
+| 生日风 | `coral` `0xFFFF8A65` | `AppColors.text`（辅文 72% 一档派生） | ≈2.31:1 ✗ | ≈5.3:1 ✓ | 浅底深字 |
+
+**审计命令**：`grep -n "Colors.white" lib/pages/share/share_card_page.dart`——命中应**只剩**三类：① 深底版式（杂志 / 夜景）的文字与装饰，含只被它们触达的 `dark = false` 分支（`_badge` / `_pill` / `_playBlock` / `_mapFrame` 浅色侧，以及杂志专用 `_statCol` / `_vLine`）；② 非文字元素（头像圆底 / 地图白边 / `_pill` 胶囊底 / `_mapFrame` 白 24% 底纹 / `_CardRoutePainter` 晕层与起终点标记）；③ 模板选择器的深底芯片（杂志 / 夜景）版式名。任何浅底版式（可爱 / 数据 / 生日）路径上的白字文字即违例。**基线**：R4 落地 commit（4be1d39）命中 33 处，全部落入 ①②③，逐行清单见该 commit body。
 
 ---
 
@@ -265,6 +286,7 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
   - 图标 family：见 §4.2 复查命令
   - 裸黑影：`grep -rn "Colors.black" lib/pages/`（应仅在豁免注释与登记豁免中出现）。登记豁免：`share_card_page` 夜景风地图角标 `Colors.black45`——海报内容遮罩而非投影（D4 登记）；同页卡壳影已由裸黑 15% 改走 `shadowFloat`。
   - 弹层品牌壳：`grep -rn "showModalBottomSheet" lib/ --include="*.dart" | grep -v app_bottom_sheet.dart`（应为空，D2-6 起生效）
+  - 海报可读性：`grep -n "Colors.white" lib/pages/share/share_card_page.dart`（命中应只剩深底版式与非文字元素，判定口径与 33 处基线见 §5.4；R4 起生效）
 
 ---
 
