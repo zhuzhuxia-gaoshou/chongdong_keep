@@ -12,6 +12,25 @@ import '../../widgets/celebration_scale.dart';
 import '../../widgets/pressable_scale.dart';
 import '../../widgets/ui_kit.dart';
 
+/// D3-4 补签成功轻提示：珊瑚票点图标 + 品牌文案（D2-4 文案库，按剩余卡数
+/// 取变体）。仍走 SnackBar 体系与全局 snackBarTheme（浮动/深底/rMd），
+/// 不造新组件；抽成顶层函数只为让测试能直接断言图标与文案。
+@visibleForTesting
+SnackBar makeUpSuccessSnackBar(int remaining) {
+  return SnackBar(
+    content: Row(
+      children: [
+        const Icon(Icons.confirmation_num_rounded,
+            size: AppDimens.iconSm, color: AppColors.coral),
+        const SizedBox(width: AppDimens.sp8),
+        Expanded(
+          child: Text(BrandCopy.makeupSuccess(remaining, seed: remaining)),
+        ),
+      ],
+    ),
+  );
+}
+
 /// 打卡日历（2026-09-15 质感 v2 重做）：
 /// PageHero 英雄头承载统计（连续/本月/补签卡），日期格改圆形状态语言——
 /// 薄荷实心=已打卡、薄荷描边=今天、珊瑚票点=可补签。
@@ -96,9 +115,9 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
       if (user != null) {
         await state.updateUser(user.copyWith(signCardCount: remaining));
       }
-      // 补签成功文案走品牌文案库（D2-4），按剩余卡数取变体
-      messenger.showSnackBar(SnackBar(
-          content: Text(BrandCopy.makeupSuccess(remaining, seed: remaining))));
+      // 补签成功文案走品牌文案库（D2-4），按剩余卡数取变体；
+      // D3-4 升级为带珊瑚票点图标的轻提示（仍是 SnackBar 体系）
+      messenger.showSnackBar(makeUpSuccessSnackBar(remaining));
       _load();
     } on ApiException {
       // 具体原因（卡不足/已打卡）由服务端给出，静默失败页面自动刷新
