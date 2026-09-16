@@ -97,7 +97,7 @@
 | `iconLg` | 24 | 大号功能图标（宫格/空态引导） |
 
 **豁免（非功能 Icon，不入三档）**：PageHero 爪印水印（emoji 字形 64）、EmptyState emoji（40）、BadgeCircle emoji（`size*0.5`）、ErrorRetry 状态图形（32，插画级）、LoadingView 进度圈（28，参数化）、IconChip 内部推导（`size*0.56`）、profile 头像编辑角标 `edit_rounded`（`sp20*0.55`≈11，20px 角标内推导，D2-3 从 ✏️ 收编）。
-功能 Icon 的 `size:` 字面量已全库清零（2026-09-15 复查 grep `size: 1[6-9]` / `size: 2[0-4]` = 0 处），新增图标必须走三档。
+功能 Icon 的 `size:` 字面量现状（守门员 D4 终审纠正为事实表述，2026-09-16 grep）：**16–24 区间已清零**（`size: 1[6-9]|2[0-4]` = 0 处）；**<16 的功能图标尚有 14 处待归档**（login 13 / home 14×2 / calendar 票点 10 / weekly_report 15×2 / pet_detail 13 / profile 14 / share_card 操作按钮 15×2 / walk 14×3 / tencent_map 14），**>24 的占位插画级另有 8 处待判定归档或豁免**（health_safety 30 / cat_play 26 / add_pet 30×2 / walk 地图占位 40 / local_image 28×2 / tencent_map 40）。新增图标必须走三档；待归档项只减不增。
 
 ### 2.5 投影刻度（影基色统一 text 色相 2E3A3B）
 | token | 结构 | 用途 |
@@ -260,10 +260,10 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
 - **新组件**：进 `ui_kit.dart`（或独立文件）+ 配测试用例 + 在 §5 选型指南登记 + 遵守三态组件「不含 Center」等约定。
 - **commit 格式**：`type(scope): 中文一句话`；每任务独立 commit，禁止混合。
 - **审计工具命令**（防回归）：
-  - 图标字面量：`grep -rn "size: 1[6-9]\|size: 2[0-4]" lib/`（应为空）
+  - 图标字面量：`grep -rn "size: [0-9]\+" lib/ --include="*.dart"`（全量口径，D4 起生效；16–24 区间应为 0，其余对照 §2.4 待归档基线只减不增）。豁免（非功能 Icon）：PageHero 水印 64 / EmptyState emoji 40 / BadgeCircle `size*0.5` / IconChip `size*0.56` 推导 / ErrorRetry 32 / LoadingView 28 参数化。
   - 色彩字面量：`grep -rn "Color(0x" lib/ --include="*.dart" | grep -v "lib/theme"`（应为空，D2-1 起生效；`Colors.white/grey` 等系统色豁免）
   - 图标 family：见 §4.2 复查命令
-  - 裸黑影：`grep -rn "Colors.black" lib/pages/`（应仅在豁免注释中出现）
+  - 裸黑影：`grep -rn "Colors.black" lib/pages/`（应仅在豁免注释与登记豁免中出现）。登记豁免：`share_card_page` 夜景风地图角标 `Colors.black45`——海报内容遮罩而非投影（D4 登记）；同页卡壳影已由裸黑 15% 改走 `shadowFloat`。
   - 弹层品牌壳：`grep -rn "showModalBottomSheet" lib/ --include="*.dart" | grep -v app_bottom_sheet.dart`（应为空，D2-6 起生效）
 
 ---

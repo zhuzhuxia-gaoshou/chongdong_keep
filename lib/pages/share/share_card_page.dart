@@ -1,6 +1,10 @@
 // 版式豁免声明（2026-09-15 质感守门员裁定）：本页是导出海报版式，
 // 数字重字重属海报版式语言，不入 App 屏幕数字展示体体系（app_theme:228 的
 // 「w800 退役」主张不约束本文件）。
+// 守门员 D4 返工补充：① 数据风（posterData 青底）白字对比度仅约 2:1，
+// 版式内主要文字改 AppColors.text 深字、数据格底改 text 6% 深色淡底
+// （posterData token 值不动）；② 夜景风地图角标 `Colors.black45` 是海报
+// 内容遮罩而非投影，属 §7「裸黑影」审计的登记豁免；卡壳投影走 shadowFloat。
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
@@ -222,10 +226,11 @@ class _ShareCardPageState extends State<ShareCardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // D4 返工：品牌线 9→fsCaption(11)、white60→white70（可读性）
             const Text('CHONGDONG KEEP · 宠动Keep',
                 style: TextStyle(
-                    fontSize: 9,
-                    color: Colors.white60,
+                    fontSize: AppDimens.fsCaption,
+                    color: Colors.white70,
                     letterSpacing: 3,
                     fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
@@ -270,6 +275,8 @@ class _ShareCardPageState extends State<ShareCardPage> {
   }
 
   // ---- 版式 3：数据风（地图条 + 2×2 数据格） ----
+  // D4 返工：posterData 青底上白字对比度约 2.06:1 不可读，本版式主要文字
+  // 改 AppColors.text 深字（方案 A），格底/徽章改 text 6% 深色淡底保持格感。
 
   Widget _layoutData(Map<String, dynamic> t) {
     final now = widget.record.startTime;
@@ -283,9 +290,9 @@ class _ShareCardPageState extends State<ShareCardPage> {
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: Colors.white)),
+                      color: AppColors.text)),
               const Spacer(),
-              _badge(t),
+              _badge(t, dark: true),
             ]),
             const SizedBox(height: 12),
             _mapFrame(height: 96, radius: BorderRadius.circular(10)),
@@ -311,7 +318,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
             const SizedBox(height: 12),
             const Center(
                 child: Text('宠动Keep · 和宝贝一起动起来',
-                    style: TextStyle(fontSize: 11, color: Colors.white70))),
+                    style: TextStyle(fontSize: 11, color: AppColors.text))),
           ],
         ));
   }
@@ -367,8 +374,9 @@ class _ShareCardPageState extends State<ShareCardPage> {
                 ]),
             if (_hasLocation) ...[
               const SizedBox(height: 8),
+              // D4 返工：位置行 white38 → white60（深底上可读性）
               Text('📍 ${widget.record.locationName}',
-                  style: const TextStyle(fontSize: 11, color: Colors.white38)),
+                  style: const TextStyle(fontSize: 11, color: Colors.white60)),
             ],
           ],
         ));
@@ -426,31 +434,29 @@ class _ShareCardPageState extends State<ShareCardPage> {
       decoration: BoxDecoration(
         color: t['color'] as Color,
         borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        // D4 返工：裸黑影 → 投影刻度 shadowFloat（10% text 色相，悬浮层档）
+        boxShadow: AppDimens.shadowFloat,
       ),
       child: child,
     );
   }
 
-  /// 类型徽章：动态取 typeDisplayName（修复此前写死"🐕 遛狗"）
-  Widget _badge(Map<String, dynamic> t) {
+  /// 类型徽章：动态取 typeDisplayName（修复此前写死"🐕 遛狗"）。
+  /// [dark] 供浅底版式（数据风）使用：深字 + text 6% 淡底。
+  Widget _badge(Map<String, dynamic> t, {bool dark = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.22),
+        color: dark
+            ? AppColors.text.withValues(alpha: 0.06)
+            : Colors.white.withValues(alpha: 0.22),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(_typeLabel,
-          style: const TextStyle(
+          style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: Colors.white)),
+              color: dark ? AppColors.text : Colors.white)),
     );
   }
 
@@ -484,8 +490,10 @@ class _ShareCardPageState extends State<ShareCardPage> {
                 fontWeight: FontWeight.w800,
                 color: Colors.white)),
         const SizedBox(height: 2),
+        // D4 返工：杂志风统计 label 9→fsCaption(11)、white60→white70
         Text(label,
-            style: const TextStyle(fontSize: 9, color: Colors.white60)),
+            style: const TextStyle(
+                fontSize: AppDimens.fsCaption, color: Colors.white70)),
       ]),
     );
   }
@@ -493,11 +501,12 @@ class _ShareCardPageState extends State<ShareCardPage> {
   Widget _vLine() => Container(
       width: 1, height: 26, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 10));
 
+  /// 数据风专用格（D4 返工：深字 + text 6% 淡底，posterData 浅青底上可读）
   Widget _dataCell(String value, String label) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
+        color: AppColors.text.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -505,10 +514,10 @@ class _ShareCardPageState extends State<ShareCardPage> {
             style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: Colors.white)),
+                color: AppColors.text)),
         const SizedBox(height: 2),
         Text(label,
-            style: const TextStyle(fontSize: 10, color: Colors.white70)),
+            style: const TextStyle(fontSize: 10, color: AppColors.text)),
       ]),
     );
   }
