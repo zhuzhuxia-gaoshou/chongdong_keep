@@ -266,7 +266,8 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          GestureDetector(
+          // D3-3 按压反馈：裸 GestureDetector → PressableScale（同款缩放物理）
+          PressableScale(
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('消息中心即将开放，敬请期待哦')),
             ),
