@@ -10,12 +10,14 @@ Widget localImageWidget(
   double? width,
   double? height,
   Widget Function(BuildContext, Object, StackTrace?)? errorBuilder,
+  String? semanticLabel,
 }) {
   return Image.file(
     File(path),
     fit: fit,
     width: width,
     height: height,
+    semanticLabel: semanticLabel,
     errorBuilder: errorBuilder ??
         (_, __, ___) => Container(
               width: width,

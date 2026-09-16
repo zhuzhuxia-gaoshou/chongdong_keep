@@ -13,11 +13,16 @@ class UserAvatar extends StatelessWidget {
     required this.url,
     required this.radius,
     this.fallbackEmoji = '👩',
+    this.semanticLabel,
   });
 
   final String? url;
   final double radius;
   final String fallbackEmoji;
+
+  /// 读屏标签（E5-1）：传入即以「图片」角色整体朗读，内部 emoji/图片
+  /// 子节点不再单独出声；不传则语义行为与既往完全一致。
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +50,7 @@ class UserAvatar extends StatelessWidget {
             );
     }
 
-    return Container(
+    final Widget avatar = Container(
       width: radius * 2,
       height: radius * 2,
       clipBehavior: Clip.antiAlias,
@@ -56,6 +61,13 @@ class UserAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: inner ??
           Text(fallbackEmoji, style: TextStyle(fontSize: radius * 1.05)),
+    );
+    if (semanticLabel == null) return avatar;
+    return Semantics(
+      image: true,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: avatar,
     );
   }
 }
