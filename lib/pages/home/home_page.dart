@@ -553,7 +553,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   if (state.pets.length > 1)
-                    GestureDetector(
+                    // D3-3 按压反馈：裸 GestureDetector → PressableScale
+                    PressableScale(
                       onTap: () => _showPetPicker(context, state),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
