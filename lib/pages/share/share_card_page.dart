@@ -295,7 +295,8 @@ class _ShareCardPageState extends State<ShareCardPage> {
               _badge(t, dark: true),
             ]),
             const SizedBox(height: 12),
-            _mapFrame(height: 96, radius: BorderRadius.circular(10)),
+            // R4 守门员 HOLD 返工：青底版式共用块整体走深字（含猫玩块/无轨迹占位）
+            _mapFrame(height: 96, radius: BorderRadius.circular(10), dark: true),
             const SizedBox(height: 12),
             Row(children: [
               Expanded(
@@ -522,14 +523,20 @@ class _ShareCardPageState extends State<ShareCardPage> {
     );
   }
 
-  /// 猫玩内容区：陪猫玩没有轨迹，用玩法主题替代地图（2026-09 用户指定）
+  /// 猫玩内容区：陪猫玩没有轨迹，用玩法主题替代地图（2026-09 用户指定）。
+  /// [dark] 供浅底版式（数据风等）使用：深字 + text 6% 淡底（R4 守门员 HOLD 返工）。
   Widget _playBlock(
-      {required double height, BorderRadius? radius, BoxBorder? border}) {
+      {required double height,
+      BorderRadius? radius,
+      BoxBorder? border,
+      bool dark = false}) {
     return Container(
       height: height,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
+        color: dark
+            ? AppColors.text.withValues(alpha: 0.06)
+            : Colors.white.withValues(alpha: 0.18),
         borderRadius: radius,
         border: border,
       ),
@@ -538,13 +545,15 @@ class _ShareCardPageState extends State<ShareCardPage> {
         Text(_playEmoji, style: const TextStyle(fontSize: 40)),
         const SizedBox(height: 6),
         Text(_playLabel,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
-                color: Colors.white)),
+                color: dark ? AppColors.text : Colors.white)),
         const SizedBox(height: 2),
         Text('一起玩了$_minutes分钟',
-            style: const TextStyle(fontSize: 10, color: Colors.white70)),
+            style: TextStyle(
+                fontSize: 10,
+                color: dark ? AppColors.text : Colors.white70)),
       ]),
     );
   }
@@ -552,18 +561,23 @@ class _ShareCardPageState extends State<ShareCardPage> {
   /// 地图/内容区统一入口：猫玩 → 玩法主题块；
   /// 遛狗 → 真机腾讯静态图（GCJ-02 描线），失败回退真实轨迹手绘；
   /// 遛狗但无轨迹 → 诚实占位（不画假曲线，2026-09 用户反馈"路线很假"）。
+  /// [dark] 供浅底版式（数据风等）使用：手绘回退描线/无轨迹占位走深字
+  /// （R4 守门员 HOLD 返工，静态图路径不涉及）。
   Widget _mapFrame(
       {required double height,
       BorderRadius? radius,
-      BoxBorder? border}) {
+      BoxBorder? border,
+      bool dark = false}) {
     if (_isCatPlay) {
-      return _playBlock(height: height, radius: radius, border: border);
+      return _playBlock(
+          height: height, radius: radius, border: border, dark: dark);
     }
     Widget content;
     if (_hasRoute) {
       final fallback = CustomPaint(
         size: Size(double.infinity, height),
-        painter: _CardRoutePainter(widget.record.route, Colors.white),
+        painter: _CardRoutePainter(
+            widget.record.route, dark ? AppColors.text : Colors.white),
       );
       content = (!AppPlatform.isWeb && _mapUrl.isNotEmpty)
           ? Image.network(_mapUrl,
@@ -581,7 +595,9 @@ class _ShareCardPageState extends State<ShareCardPage> {
           Text('本次未记录到轨迹路线',
               style: TextStyle(
                   fontSize: 11,
-                  color: Colors.white.withValues(alpha: 0.75))),
+                  color: dark
+                      ? AppColors.text
+                      : Colors.white.withValues(alpha: 0.75))),
         ],
       );
     }
