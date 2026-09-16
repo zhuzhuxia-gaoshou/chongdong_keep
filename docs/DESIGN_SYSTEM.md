@@ -15,7 +15,7 @@
 ### 0.2 四条红线（历史事故，任何 UI 改动前先自查）
 1. **滚动视图无界高度下 `CrossAxisAlignment.stretch`**（09-13 首页红屏根因）。
 2. **松高度约束下直接放 `Center`**（09-13 整页空白根因）。EmptyState / ErrorRetry / LoadingView 自身**不含 Center**，由调用方在有界 body 内包 `Center`。
-3. **透明度类入场动效**（FadeTransition / AnimatedOpacity）禁止——装饰层用**静态**低透明度图形（PageHero 装饰圆即此写法）。本阶段原则：不引入任何动画。
+3. **透明度类入场动效**（FadeTransition / AnimatedOpacity）禁止——装饰层用**静态**低透明度图形（PageHero 装饰圆即此写法）。动画纪律（2026-09-16 D3 夜修订）：scale 类微庆祝被授权引入，唯一出口 `CelebrationScale`（纯 scale、静止态恒 1.0 完整可见、仅 celebrate 上升沿触发一次，初始可见性绝不依赖动画推进）；透明度类动效仍然零容忍。
 4. **禁改**：包名 / keystore / Manifest 权限 / 幂等键 / 打卡口径；不动 `android/`、`pubspec.yaml`（零新依赖）、后端。
 
 ---
@@ -173,6 +173,7 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
 | 统计小卡 | `StatTile`（数值自动走 `numericStat`） | 手写 w800 数字 |
 | 菜单行前导 | `IconChip`（tonal 方块图标章） | emoji 前导、裸图标 |
 | 可按压反馈 | 外层叠 `PressableScale`（`lib/widgets/pressable_scale.dart`），波纹交给 InkWell/按钮 | 任何透明度/缩放入场动效 |
+| 成功时刻微庆祝（D3-1，如日历今日格点亮） | `CelebrationScale`（`lib/widgets/celebration_scale.dart`：celebrate 上升沿触发一次 1.0→1.15→1.0 纯 scale 弹跳，播完复位静态） | 透明度动效 / 常驻循环动画 / 首帧历史态重播 |
 | 底部弹层（选择器 / 确认 / 结果面板） | `AppBottomSheet.show(context, title:, isScrollControlled:, builder:)`（`lib/widgets/app_bottom_sheet.dart`：透明底 + 白面板 rXl + 抓手条 + 居中标题 + SafeArea + sp20 内边距 + 键盘避让） | 裸调 `showModalBottomSheet` 手写面板/抓手条（D2-6 已收编 home 宠物选择、walk 出发照片/运动结果/症状 4 处克隆，板外清零） |
 
 ### 5.2 页面三态约定

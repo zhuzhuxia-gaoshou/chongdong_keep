@@ -8,6 +8,7 @@ import '../../models/user.dart' show CheckInRecord;
 import '../../services/app_services.dart';
 import '../../services/app_state.dart';
 import '../../utils/brand_copy.dart';
+import '../../widgets/celebration_scale.dart';
 import '../../widgets/pressable_scale.dart';
 import '../../widgets/ui_kit.dart';
 
@@ -16,7 +17,8 @@ import '../../widgets/ui_kit.dart';
 /// 薄荷实心=已打卡、薄荷描边=今天、珊瑚票点=可补签。
 /// 数据链路不变：M3 起 Live 读服务端 ⑰，Mock/不可达回退本地算法；
 /// 补签（⑲）点击过去未打卡日期消耗补签卡。
-/// 红线自查：无 stretch / Center 均在有界格内 / 无透明度入场动效。
+/// 红线自查：无 stretch / Center 均在有界格内 / 无透明度入场动效
+/// （D3-1 微庆祝为纯 scale 动效，CelebrationScale 见组件文件头自查）。
 class CheckInCalendarPage extends StatefulWidget {
   const CheckInCalendarPage({super.key});
 
@@ -28,6 +30,14 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
   DateTime _currentMonth =
       DateTime(DateTime.now().year, DateTime.now().month, 1);
   Future<List<CheckInRecord>> _days = Future.value(const []);
+
+  // ---- D3-1 打卡成功微庆祝（克制的愉悦感）----
+  /// 上一次构建观测到的「今天是否已打卡」（null = 尚未观测）。
+  /// 微庆祝只由「未打卡 → 已打卡」的明确状态翻转驱动：
+  /// 首个观测帧只记录基线（进页时已打卡 = 历史态，绝不重播）；
+  /// true→false（数据刷新回退）静默复位，不产生任何视觉。
+  bool? _observedTodayChecked;
+  bool _celebrateToday = false;
 
   @override
   void initState() {
@@ -118,6 +128,17 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
               state.getMonthlyCheckIns(
                   _currentMonth.year, _currentMonth.month);
           final checkedCount = checkIns.where((c) => c.isChecked).length;
+          // D3-1：观测今日格打卡态。只有当前月视图里才有今天；
+          // 翻转判定见 _observedTodayChecked 注释（首帧只记基线）。
+          final isCurrentMonth = _currentMonth.year == today.year &&
+              _currentMonth.month == today.month;
+          final todayChecked = isCurrentMonth &&
+              today.day <= checkIns.length &&
+              checkIns[today.day - 1].isChecked;
+          if (_observedTodayChecked != todayChecked) {
+            _celebrateToday = _observedTodayChecked == false && todayChecked;
+            _observedTodayChecked = todayChecked;
+          }
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +235,7 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                                 final showTicket =
                                     isMakeupDay && signCards > 0;
 
-                                return PressableScale(
+                                final cell = PressableScale(
                                   onTap: isMakeupDay
                                       ? () => _makeUpFor(date, checkIns)
                                       : null,
@@ -227,6 +248,15 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
                                         !isToday,
                                   ),
                                 );
+                                // D3-1：仅今日格挂庆祝容器（celebrate 由
+                                // 「未打卡→已打卡」翻转置位）；历史格子
+                                // 不进任何动画组件，普通点亮零动效。
+                                return isToday
+                                    ? CelebrationScale(
+                                        celebrate: _celebrateToday,
+                                        child: cell,
+                                      )
+                                    : cell;
                               },
                             ),
                           ],
