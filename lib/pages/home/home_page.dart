@@ -288,43 +288,32 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// 多宠切换底部弹窗：选择首页展示的宠物
+  /// 多宠切换底部弹窗：选择首页展示的宠物（D2-6 收编 AppBottomSheet 品牌壳）
   void _showPetPicker(BuildContext context, AppState state) {
     final effectiveId =
         _selectedPetId ?? state.currentPet?.id;
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(14),
-              child: Text('选择要查看的宠物',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+    AppBottomSheet.show<void>(
+      context,
+      title: '选择要查看的宠物',
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final p in state.pets)
+            ListTile(
+              leading:
+                  Text(p.speciesEmoji, style: const TextStyle(fontSize: 22)),
+              title: Text(p.name,
+                  style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text(p.breed),
+              trailing: p.id == effectiveId
+                  ? const Icon(Icons.check_rounded, color: AppColors.mint)
+                  : null,
+              onTap: () {
+                setState(() => _selectedPetId = p.id);
+                Navigator.pop(ctx);
+              },
             ),
-            for (final p in state.pets)
-              ListTile(
-                leading:
-                    Text(p.speciesEmoji, style: const TextStyle(fontSize: 22)),
-                title: Text(p.name,
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
-                subtitle: Text(p.breed),
-                trailing: p.id == effectiveId
-                    ? const Icon(Icons.check_rounded, color: AppColors.mint)
-                    : null,
-                onTap: () {
-                  setState(() => _selectedPetId = p.id);
-                  Navigator.pop(ctx);
-                },
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
+        ],
       ),
     );
   }

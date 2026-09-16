@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_bottom_sheet.dart';
 import '../../widgets/pressable_scale.dart';
 import '../../widgets/ui_kit.dart';
 import '../../services/app_state.dart';
@@ -96,59 +97,36 @@ class _WalkPageState extends State<WalkPage> {
     _startWalk(startPhotoPath: photoPath);
   }
 
-  /// 弹窗询问是否拍出发照片，返回 true 表示用户选择拍照
+  /// 弹窗询问是否拍出发照片，返回 true 表示用户选择拍照（D2-6 收编品牌壳）
   Future<bool> _promptStartPhoto() async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                      color: AppColors.line,
-                      borderRadius: BorderRadius.circular(2)),
+    final result = await AppBottomSheet.show<bool>(
+      context,
+      title: '记录出发时刻？',
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('给这次运动拍一张出发照片吧～ 不想拍也可以直接开始',
+              style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+          const SizedBox(height: AppDimens.sp16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('跳过，直接开始'),
                 ),
-                const SizedBox(height: 18),
-                const Text('记录出发时刻？',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Text('给这次运动拍一张出发照片吧～ 不想拍也可以直接开始',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
-                const SizedBox(height: 22),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('跳过，直接开始'),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        icon: const Icon(Icons.photo_camera_rounded, size: AppDimens.iconSm),
-                        label: const Text('拍一张'),
-                      ),
-                    ),
-                  ],
+              ),
+              const SizedBox(width: AppDimens.sp12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  icon: const Icon(Icons.photo_camera_rounded, size: AppDimens.iconSm),
+                  label: const Text('拍一张'),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ),
+        ],
       ),
     );
     return result == true;
@@ -446,120 +424,102 @@ class _WalkPageState extends State<WalkPage> {
   }
 
   void _showWalkResult({ExerciseRecord? record}) {
-    showModalBottomSheet(
-      context: context,
+    // D2-6 收编 AppBottomSheet 品牌壳：抓手条/白面板/SafeArea/内边距由壳提供
+    AppBottomSheet.show<void>(
+      context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                    color: AppColors.line,
-                    borderRadius: BorderRadius.circular(2)),
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('遛狗完成！',
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.mint)),
+          if (_locationName.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(_locationName,
+                style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+          ],
+          // 出发照片回顾
+          if (_startPhotoPath != null) ...[
+            const SizedBox(height: 14),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: buildLocalImage(
+                _startPhotoPath!,
+                height: 140,
+                width: double.infinity,
               ),
-              const SizedBox(height: 20),
-              const Text('遛狗完成！',
-                  style: TextStyle(
-                      fontSize: 20,
+            ),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _resultItem(Icons.timer_rounded, MapService.formatDuration(_elapsed), '时长'),
+              _resultItem(Icons.route_rounded, MapService.formatDistance(_distance), '距离'),
+              _resultItem(Icons.directions_walk_rounded, '$_steps', '步数'),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_elapsed.inMinutes >= 5)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.mintLight,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              // 打卡成功横幅走品牌文案库（D2-4），按本次时长取变体
+              child: Text(BrandCopy.checkinSuccess(seed: _elapsed.inMinutes),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: AppColors.mint)),
-              if (_locationName.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(_locationName,
-                    style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
-              ],
-              // 出发照片回顾
-              if (_startPhotoPath != null) ...[
-                const SizedBox(height: 14),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: buildLocalImage(
-                    _startPhotoPath!,
-                    height: 140,
-                    width: double.infinity,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _resultItem(Icons.timer_rounded, MapService.formatDuration(_elapsed), '时长'),
-                  _resultItem(Icons.route_rounded, MapService.formatDistance(_distance), '距离'),
-                  _resultItem(Icons.directions_walk_rounded, '$_steps', '步数'),
-                ],
+            )
+          else
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.coralLight,
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(height: 16),
-              if (_elapsed.inMinutes >= 5)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.mintLight,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  // 打卡成功横幅走品牌文案库（D2-4），按本次时长取变体
-                  child: Text(BrandCopy.checkinSuccess(seed: _elapsed.inMinutes),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.mint)),
-                )
-              else
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.coralLight,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text('还需${5 - _elapsed.inMinutes}分钟才能打卡',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.coral)),
+              child: Text('还需${5 - _elapsed.inMinutes}分钟才能打卡',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.coral)),
+            ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    final nav = Navigator.of(ctx);
+                    nav.pop();
+                    if (record != null) {
+                      nav.push(MaterialPageRoute(
+                          builder: (_) => ShareCardPage(record: record)));
+                    }
+                  },
+                  child: const Text('生成卡片'),
                 ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        final nav = Navigator.of(ctx);
-                        nav.pop();
-                        if (record != null) {
-                          nav.push(MaterialPageRoute(
-                              builder: (_) => ShareCardPage(record: record)));
-                        }
-                      },
-                      child: const Text('生成卡片'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: const Text('完成'),
-                    ),
-                  ),
-                ],
+              ),
+              const SizedBox(width: AppDimens.sp8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('完成'),
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -579,49 +539,35 @@ class _WalkPageState extends State<WalkPage> {
   /// 非高风险建议暂停观察，可选结束保存当前运动。
   Future<void> _onDiscomfort() async {
     final state = context.read<AppState>();
-    final choice = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('宝贝怎么啦？',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 6),
-                Text('选一下症状，我来帮你判断要不要就医',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final s in const [
-                      ('😫', '累了'),
-                      ('🤮', '呕吐'),
-                      ('😷', '咳嗽'),
-                      ('🦴', '瘸了'),
-                      ('❓', '其他'),
-                    ])
-                      OutlinedButton(
-                        onPressed: () => Navigator.pop(ctx, s.$2),
-                        child: Text('${s.$1} ${s.$2}'),
-                      ),
-                  ],
+    // D2-6 收编 AppBottomSheet 品牌壳（标题由壳居中呈现，内容保持左对齐）
+    final choice = await AppBottomSheet.show<String>(
+      context,
+      title: '宝贝怎么啦？',
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('选一下症状，我来帮你判断要不要就医',
+              style: TextStyle(fontSize: 12, color: AppColors.textSoft)),
+          const SizedBox(height: AppDimens.sp16),
+          Wrap(
+            spacing: AppDimens.sp8,
+            runSpacing: AppDimens.sp8,
+            children: [
+              for (final s in const [
+                ('😫', '累了'),
+                ('🤮', '呕吐'),
+                ('😷', '咳嗽'),
+                ('🦴', '瘸了'),
+                ('❓', '其他'),
+              ])
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx, s.$2),
+                  child: Text('${s.$1} ${s.$2}'),
                 ),
-              ],
-            ),
+            ],
           ),
-        ),
+        ],
       ),
     );
     if (!mounted || choice == null) return;

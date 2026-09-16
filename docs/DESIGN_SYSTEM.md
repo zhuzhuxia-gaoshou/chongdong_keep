@@ -173,6 +173,7 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
 | 统计小卡 | `StatTile`（数值自动走 `numericStat`） | 手写 w800 数字 |
 | 菜单行前导 | `IconChip`（tonal 方块图标章） | emoji 前导、裸图标 |
 | 可按压反馈 | 外层叠 `PressableScale`（`lib/widgets/pressable_scale.dart`），波纹交给 InkWell/按钮 | 任何透明度/缩放入场动效 |
+| 底部弹层（选择器 / 确认 / 结果面板） | `AppBottomSheet.show(context, title:, isScrollControlled:, builder:)`（`lib/widgets/app_bottom_sheet.dart`：透明底 + 白面板 rXl + 抓手条 + 居中标题 + SafeArea + sp20 内边距 + 键盘避让） | 裸调 `showModalBottomSheet` 手写面板/抓手条（D2-6 已收编 home 宠物选择、walk 出发照片/运动结果/症状 4 处克隆，板外清零） |
 
 ### 5.2 页面三态约定
 - `EmptyState(emoji, title, message?, actionLabel?+onAction?)`：空态；CTA 可选。
@@ -261,6 +262,7 @@ Material textTheme 九槽全部映射 AppDimens 档位：headlineLarge=`fsDispla
   - 色彩字面量：`grep -rn "Color(0x" lib/ --include="*.dart" | grep -v "lib/theme"`（应为空，D2-1 起生效；`Colors.white/grey` 等系统色豁免）
   - 图标 family：见 §4.2 复查命令
   - 裸黑影：`grep -rn "Colors.black" lib/pages/`（应仅在豁免注释中出现）
+  - 弹层品牌壳：`grep -rn "showModalBottomSheet" lib/ --include="*.dart" | grep -v app_bottom_sheet.dart`（应为空，D2-6 起生效）
 
 ---
 
