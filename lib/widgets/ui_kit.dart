@@ -58,13 +58,16 @@ class PageHero extends StatelessWidget {
           Positioned(
             right: 18,
             bottom: 6,
-            child: Transform.rotate(
-              angle: -0.35,
-              child: Text(watermark,
-                  style: TextStyle(
-                    fontSize: 64,
-                    color: Colors.white.withValues(alpha: 0.14),
-                  )),
+            // 水印属静态装饰层，不进读屏（§6.2-5 待办项，E5-1 落地）
+            child: ExcludeSemantics(
+              child: Transform.rotate(
+                angle: -0.35,
+                child: Text(watermark,
+                    style: TextStyle(
+                      fontSize: 64,
+                      color: Colors.white.withValues(alpha: 0.14),
+                    )),
+              ),
             ),
           ),
           // 内容层
@@ -186,7 +189,10 @@ class EmptyState extends StatelessWidget {
               shape: BoxShape.circle,
               color: AppColors.mintLight,
             ),
-            child: Text(emoji, style: const TextStyle(fontSize: 40)),
+            // 主 emoji 属品牌字形，信息由下方 title 承载，不进读屏（E5-1）
+            child: ExcludeSemantics(
+              child: Text(emoji, style: const TextStyle(fontSize: 40)),
+            ),
           ),
           const SizedBox(height: AppDimens.sp16),
           Text(
@@ -646,8 +652,10 @@ class BadgeCircle extends StatelessWidget {
                   ]
                 : null,
           ),
-          child:
-              Text(emoji, style: TextStyle(fontSize: size * 0.5)),
+          // 徽章字形属身份装饰，信息由下方 label 承载，不进读屏（E5-1）
+          child: ExcludeSemantics(
+            child: Text(emoji, style: TextStyle(fontSize: size * 0.5)),
+          ),
         ),
         const SizedBox(height: AppDimens.sp4),
         Text(
