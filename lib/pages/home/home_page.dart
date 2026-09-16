@@ -233,6 +233,7 @@ class _HomePageState extends State<HomePage> {
                 url: state.user?.avatarUrl,
                 radius: AppDimens.sp20,
                 fallbackEmoji: '👩',
+                semanticLabel: '你的头像',
               ),
               const SizedBox(width: AppDimens.sp8),
               Column(
@@ -267,21 +268,26 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           // D3-3 按压反馈：裸 GestureDetector → PressableScale（同款缩放物理）
-          PressableScale(
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('消息中心即将开放，敬请期待哦')),
-            ),
-            child: Container(
-              width: AppDimens.sp40,
-              height: AppDimens.sp40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.card,
-                border: Border.all(color: AppColors.line),
+          // 纯图标可点面：补按钮角色与标签（E5-1）
+          Semantics(
+            button: true,
+            label: '消息中心',
+            child: PressableScale(
+              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('消息中心即将开放，敬请期待哦')),
               ),
-              child: const Center(
-                child: Icon(Icons.notifications_none_rounded,
-                    size: AppDimens.iconMd, color: AppColors.textSoft),
+              child: Container(
+                width: AppDimens.sp40,
+                height: AppDimens.sp40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.card,
+                  border: Border.all(color: AppColors.line),
+                ),
+                child: const Center(
+                  child: Icon(Icons.notifications_none_rounded,
+                      size: AppDimens.iconMd, color: AppColors.textSoft),
+                ),
               ),
             ),
           ),
@@ -398,9 +404,12 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   ),
-                  Text(
-                    weather?.conditionIcon ?? '🌤️',
-                    style: const TextStyle(fontSize: 28),
+                  // 天气字形属数据装饰（条件文字在上一行已承载），不进读屏（E5-1）
+                  ExcludeSemantics(
+                    child: Text(
+                      weather?.conditionIcon ?? '🌤️',
+                      style: const TextStyle(fontSize: 28),
+                    ),
                   ),
                 ],
               ),
@@ -507,14 +516,17 @@ class _HomePageState extends State<HomePage> {
       ),
       child: Stack(
         children: [
+          // 角落大字形属纯装饰水印，不进读屏（E5-1）
           Positioned(
             right: -8,
             bottom: -22,
-            child: Text(
-              pet.speciesEmoji,
-              style: TextStyle(
-                fontSize: 96,
-                color: Colors.white.withValues(alpha: 0.08),
+            child: ExcludeSemantics(
+              child: Text(
+                pet.speciesEmoji,
+                style: TextStyle(
+                  fontSize: 96,
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
               ),
             ),
           ),
@@ -554,27 +566,33 @@ class _HomePageState extends State<HomePage> {
                   ),
                   if (state.pets.length > 1)
                     // D3-3 按压反馈：裸 GestureDetector → PressableScale
+                    // 「切换」二字信息量不足，读屏改读完整标签（E5-1）
                     PressableScale(
                       onTap: () => _showPetPicker(context, state),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimens.sp8, vertical: AppDimens.sp4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          borderRadius:
-                              BorderRadius.circular(AppDimens.rFull),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.swap_horiz_rounded,
-                                size: 14, color: Colors.white),
-                            SizedBox(width: 2),
-                            Text('切换',
-                                style: TextStyle(
-                                    fontSize: AppDimens.fsMicro,
-                                    color: Colors.white)),
-                          ],
+                      child: Semantics(
+                        button: true,
+                        label: '切换宝贝',
+                        excludeSemantics: true,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: AppDimens.sp8, vertical: AppDimens.sp4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            borderRadius:
+                                BorderRadius.circular(AppDimens.rFull),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.swap_horiz_rounded,
+                                  size: 14, color: Colors.white),
+                              SizedBox(width: 2),
+                              Text('切换',
+                                  style: TextStyle(
+                                      fontSize: AppDimens.fsMicro,
+                                      color: Colors.white)),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -659,6 +677,7 @@ class _HomePageState extends State<HomePage> {
               width: 44,
               height: 44,
               fit: BoxFit.cover,
+              semanticLabel: '${pet.name}的头像',
               errorBuilder: (_, __, ___) => Center(
                 child: Text(pet.speciesEmoji,
                     style: const TextStyle(fontSize: AppDimens.sp24)),
