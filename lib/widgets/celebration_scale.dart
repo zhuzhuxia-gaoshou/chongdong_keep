@@ -9,7 +9,10 @@ import 'package:flutter/material.dart';
 /// - **初始可见性不依赖动画**：控制器静止时序列值恒为 1.0——组件一构建
 ///   就是完整可见的，动画只是锦上添花（09-13 教训）；
 /// - **只由明确状态翻转驱动**：首次挂载即 celebrate=true 属历史态，静默
-///   呈现绝不重播；恒 true 不重复触发。
+///   呈现绝不重播；恒 true 不重复触发；
+/// - **组件级棘轮（D4 返工）**：触发过一次即永久锁存——信号 true→false→true
+///   不重播（与父级「单向棘轮」语义互为兜底）。因此本组件生命周期内至多
+///   播放一次，适合「今日格点亮」这类一次性时刻，不适合循环庆祝场景。
 ///
 /// AnimationController 用法与 PressableScale 同款（单 tick / late final /
 /// dispose），不发明新写法。
@@ -35,6 +38,10 @@ class CelebrationScale extends StatefulWidget {
 
 class _CelebrationScaleState extends State<CelebrationScale>
     with SingleTickerProviderStateMixin {
+  /// 组件级棘轮锁存（D4 返工）：触发过一次弹跳后置 true，终身不再触发。
+  /// 即使父级信号被误置 false 再回 true（伪上升沿）也不重播。
+  bool _celebrated = false;
+
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 450),
@@ -67,8 +74,13 @@ class _CelebrationScaleState extends State<CelebrationScale>
   @override
   void didUpdateWidget(covariant CelebrationScale oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 只认 false→true 上升沿；播放中忽略重复请求（单飞）
-    if (!oldWidget.celebrate && widget.celebrate && !_controller.isAnimating) {
+    // 只认 false→true 上升沿；播放中忽略重复请求（单飞）；
+    // 棘轮锁存后终身只播一次（true→false→true 不重播，见文件头）。
+    if (!_celebrated &&
+        !oldWidget.celebrate &&
+        widget.celebrate &&
+        !_controller.isAnimating) {
+      _celebrated = true;
       _controller.forward();
     }
   }

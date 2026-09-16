@@ -71,6 +71,20 @@ void main() {
     expect(scaleValue(tester), 1.0, reason: '没有第二次弹跳');
   });
 
+  testWidgets('信号 true→false→true 不重播（组件级棘轮：触发过即锁存）',
+      (tester) async {
+    await tester.pumpWidget(host(celebrate: false));
+    await tester.pumpWidget(host(celebrate: true)); // 真实上升沿，弹跳一次
+    await tester.pump(const Duration(milliseconds: 460)); // 播完落回 1.0
+    expect(scaleValue(tester), 1.0);
+
+    // 伪上升沿场景（父级观测被回退再回升）：触发过一次即永久锁存
+    await tester.pumpWidget(host(celebrate: false));
+    await tester.pumpWidget(host(celebrate: true));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(scaleValue(tester), 1.0, reason: 'true→false→true 不重播');
+  });
+
   testWidgets('纯 scale 红线：组件子树内不出现任何透明度动画组件', (tester) async {
     await tester.pumpWidget(host(celebrate: false));
     await tester.pumpWidget(host(celebrate: true));

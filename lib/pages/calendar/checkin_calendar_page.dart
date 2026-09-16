@@ -53,8 +53,10 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
   // ---- D3-1 打卡成功微庆祝（克制的愉悦感）----
   /// 上一次构建观测到的「今天是否已打卡」（null = 尚未观测）。
   /// 微庆祝只由「未打卡 → 已打卡」的明确状态翻转驱动：
-  /// 首个观测帧只记录基线（进页时已打卡 = 历史态，绝不重播）；
-  /// true→false（数据刷新回退）静默复位，不产生任何视觉。
+  /// 首个观测帧只记录基线（进页时已打卡 = 历史态，绝不重播）。
+  /// D4 返工：本字段是单向棘轮——一旦观测到 true 不再回落（产品无
+  /// 「取消打卡」），且观测值只在「当前月 && 数据非空」时更新，切月
+  /// 往返 / 刷新瞬时回退都不会形成伪上升沿导致重播。
   bool? _observedTodayChecked;
   bool _celebrateToday = false;
 
@@ -147,16 +149,23 @@ class _CheckInCalendarPageState extends State<CheckInCalendarPage> {
               state.getMonthlyCheckIns(
                   _currentMonth.year, _currentMonth.month);
           final checkedCount = checkIns.where((c) => c.isChecked).length;
-          // D3-1：观测今日格打卡态。只有当前月视图里才有今天；
-          // 翻转判定见 _observedTodayChecked 注释（首帧只记基线）。
+          // D3-1：观测今日格打卡态。只有当前月视图里才有今天。
+          // D4 返工：观测门控 + 单向棘轮——
+          // ① 门控：仅「当前月 && 数据非空」时才更新观测值，切到上月
+          //    （todayChecked 静默变 false）或刷新瞬时空数据不再回退基线；
+          // ② 棘轮：_observedTodayChecked 一旦为 true 永久保持（产品无
+          //    「取消打卡」），切月往返只能是 true→true，杜绝伪上升沿。
           final isCurrentMonth = _currentMonth.year == today.year &&
               _currentMonth.month == today.month;
           final todayChecked = isCurrentMonth &&
               today.day <= checkIns.length &&
               checkIns[today.day - 1].isChecked;
-          if (_observedTodayChecked != todayChecked) {
+          if (isCurrentMonth &&
+              checkIns.isNotEmpty &&
+              _observedTodayChecked != todayChecked) {
             _celebrateToday = _observedTodayChecked == false && todayChecked;
-            _observedTodayChecked = todayChecked;
+            _observedTodayChecked =
+                (_observedTodayChecked ?? false) || todayChecked;
           }
           return SingleChildScrollView(
             child: Column(
