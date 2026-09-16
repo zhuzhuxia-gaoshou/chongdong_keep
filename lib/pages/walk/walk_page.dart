@@ -962,7 +962,8 @@ class _WalkPageState extends State<WalkPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              GestureDetector(
+              // D3-3 按压反馈：裸 GestureDetector → PressableScale（已导入）
+              PressableScale(
                 onTap: _onDiscomfort,
                 child: Container(
                   padding:
