@@ -46,7 +46,13 @@ void main() {
   testWidgets('false→true 翻转触发弹跳：动画存在（forward）且结束回到 1.0',
       (tester) async {
     await tester.pumpWidget(host(celebrate: false));
-    expect(find.byType(ScaleTransition), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(CelebrationScale),
+        matching: find.byType(ScaleTransition),
+      ),
+      findsOneWidget,
+    );
 
     await tester.pumpWidget(host(celebrate: true)); // 明确状态翻转
     final transition = tester.widget<ScaleTransition>(find.descendant(

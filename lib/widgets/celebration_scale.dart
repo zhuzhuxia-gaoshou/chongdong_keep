@@ -51,13 +51,15 @@ class _CelebrationScaleState extends State<CelebrationScale>
   /// 末段 easeOutBack 带轻微过冲，产生「弹一下再稳住」的 Spring 落定感。
   late final Animation<double> _scale = TweenSequence<double>([
     TweenSequenceItem(
-      tween: Tween(begin: 1.0, end: widget.peak),
+      tween: Tween(begin: 1.0, end: widget.peak)
+          .chain(CurveTween(curve: Curves.easeOut)),
       weight: 0.4,
-    ).chain(CurveTween(curve: Curves.easeOut)),
+    ),
     TweenSequenceItem(
-      tween: Tween(begin: widget.peak, end: 1.0),
+      tween: Tween(begin: widget.peak, end: 1.0)
+          .chain(CurveTween(curve: Curves.easeOutBack)),
       weight: 0.6,
-    ).chain(CurveTween(curve: Curves.easeOutBack)),
+    ),
   ]).animate(_controller);
 
   @override
