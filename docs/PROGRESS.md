@@ -8,7 +8,21 @@
 
 ## 📍 一、当前阶段（最重要的一行）
 
-**2026-09-15 通宵批次完成（夜间自主工作）：全 APP 界面质感 v2 改版（14 页深度美化，守门员放行）+ 后端安全加固批落地 + ⑦b 注销接口全链路上线（未部署）+ 运维脚本化。前端 20 commit（92 测试全绿），后端 8 commit（build/lint 过），等真机验收 + 部署。**
+**2026-09-16/17 设计夜批次完成（夜间自主工作）：设计系统契约 v3 落盘 + 品牌守护审计 + 微庆祝动效 + 分享卡海报五版式对比度全达标 + 后端测试基建（jest 83 例）+ 安全/数据库/发布资产三审计 + Android 签名接线。前端 34 commit（119 测试全绿），后端 17 commit（build/lint/jest 三绿），三个构建物就绪，等用户装机验收 + 四项用户资产到位后走发布清单。**
+
+关键进展（详见 PLAN-20260916-夜间.md 调度记录与晨报）：
+- ✅ **设计系统 v3（D1/D2）**：`docs/DESIGN_SYSTEM.md` 契约落盘（token 表/渐变白名单/字重豁免/emoji 政策/称谓表）；新组件 AppChip/ErrorRetry/LoadingView；30 条文案温柔化；BrandCopy 文案池
+- ✅ **克制的愉悦感（D3）**：CelebrationScale 纯 scale 打卡微庆祝（棘轮防重播）、连胜里程碑徽标、四处按压反馈；两份设计提案（暂停口径 B / 本地消息里程碑先行）已拍板进下一批次
+- ✅ **分享卡海报可读性（R4/R5）**：五版式「浅底深字、深底白字」落地，新墨色 token posterInk 实测对比度 5.45~7.89:1 全部 ≥4.5
+- ✅ **后端测试基建（E1）**：jest 单核跑通 8 套 83 例（服务单测 59 + 契约回归 24）；smoke.sh 扩容全链路
+- ✅ **后端三审计（E2/E3）**：索引提案 `(userId,startTime)` 迁移文件（未部署）；上传 magic number + 4MiB 硬顶；env 缺失启动即失败 + 优雅停机 + /ping 探活；限流面盘点提案
+- ✅ **发布资产（E4）**：Android 签名接线（key.properties 缺失回退 debug 并 WARN）；`docs/RELEASE_CHECKLIST.md`；双仓库 CHANGELOG；pm2/nginx 模板；法务页 HTML 模板（占位符）
+- ✅ **无障碍（E5 前半）**：登录/首页/共享组件读屏语义；**缺口如实记录**：其余页未巡检、协议全文入口未接（上架硬门槛）
+- ⏳ **未验证项**：正式签名路径（需用户 keystore）；海报渲染视觉验收（仅静态算术）；后端新行为本地实测（jest 为 mock 链路）；E6 独立复审中止（智能体服务故障，主控有界复核代替）
+
+### 上一批次快照（2026-09-15 通宵）
+
+**2026-09-15 通宵批次完成：全 APP 界面质感 v2 改版（14 页深度美化，守门员放行）+ 后端安全加固批落地 + ⑦b 注销接口全链路上线（未部署）+ 运维脚本化。前端 20 commit（92 测试全绿），后端 8 commit（build/lint 过），等真机验收 + 部署。**
 
 关键进展：
 - ✅ **界面质感 v2（用户授权大幅改版）**：新建共享组件 PageHero（渐变页头）/EmptyState（品牌空态）/IconChip（图标章）/numericStat（数字档）；登录/日历/设置/宠物档案/添加宠物/健康×2/猫玩/排行榜/遛狗/商城/消息/家庭组/路线收藏 14 处深度改造——30+ 功能 emoji 换 Material 图标、数据数字 w800/w900 全清零（迁展示体）、4 处板外私造色收回调色板（amber/coralGradient 收编 token）、15 处白卡浮起、家庭组渐变内容卡降级 tonal（唯一主角回归首页）。界面质感守门员逐 commit 审查：14/14 PASS 零红线
@@ -105,10 +119,10 @@
   - 周报等级字母 60px 细体、徽章进度头降白卡、记录行数字展示体、我的页菜单 tonal 分组配色、组间距 16→20
 - 配色全程保持用户认可的浅色清爽系；内容性 emoji（症状/宠物/徽章/文案语气符）保留
 
-### 质量现状
-- `dart analyze` 零问题；`flutter test` **92 用例全绿**（含冷启动红屏回归守卫 + 质感底座v2组件测试 + 注销链路用例）
-- `flutter build web` 通过；Live 模式 debug APK 已构建可装机：`build\app\outputs\flutter-apk\app-debug.apk`
-- 后端 `npm run build` + `npm run lint` 全过；后端测试纪律见 SPEC §5.4
+### 质量现状（2026-09-17 设计夜后）
+- `flutter analyze` 零问题；`flutter test` **119 用例全绿**（92 基线 + 设计夜新增 27：组件/品牌/庆祝/海报等）
+- `flutter build web` 通过；Live debug APK 已重建（含全部夜班改动，`--dart-define-from-file` 注入生产地址与密钥）；Mock release APK 24.6MB（debug 签名回退，体验用）
+- 后端 `npm run build` + `npm run lint` + `npx jest --runInBand`（8 套 **83 例**）三项全绿（c1920e3）
 
 ---
 
@@ -189,6 +203,9 @@ docker ps 2>/dev/null # 若用 docker 部署，能看到容器
 
 | 日期 | 决策 | 说明 |
 |---|---|---|
+| 2026-09-16 | 决-1 分享卡海报「浅底深字、深底白字」 | 可爱/生日等浅底版式白字对比度 2.06:1 不达标；拍板改深字（posterInk 墨色 token），不改既有调色板 token 值 |
+| 2026-09-16 | 决-2 暂停/继续=口径 B「暂停不计入时长」 | 每会话仍一条记录一个 clientRecordId；打卡判定/幂等键/运动量公式三禁改契约零改动；下一批次实现（提案 docs/proposal-pause-duration.md） |
+| 2026-09-16 | 决-3 消息 Tab=里程碑通知先行 | 统一 LocalMessage 模型；首页铃铛改跳消息 Tab（关掉壳功能）；提醒历史降级为后续 type（提案 docs/proposal-local-messages.md）；下一批次先做 |
 | 2026-09-15 | 界面质感 v2 大改版 | 用户明确对现有界面不满意、授权大幅改动；四原则升级为"页头英雄化+组件表达力+空态品牌化+字重交响"；共享组件 PageHero/EmptyState/IconChip/numericStat 入 ui_kit |
 | 2026-09-15 | 数字字重纪律收口 | 数据数字 w800/w900 全库退役（App 屏幕走 AppText 展示体；分享卡海报版式豁免并在文件头声明）；中风险色 amber、急救渐变 coralGradient 正式收编 AppColors |
 | 2026-09-15 | 榜单反作弊落地 | 排行榜构建剔除单次>6h 或速度>60km/h 记录（PRD §2.5 底线此前仅定义未实现） |
