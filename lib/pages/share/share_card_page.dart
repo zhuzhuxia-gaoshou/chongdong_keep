@@ -2,16 +2,21 @@
 // 数字重字重属海报版式语言，不入 App 屏幕数字展示体体系（app_theme:228 的
 // 「w800 退役」主张不约束本文件）。字重豁免 ≠ 可读性豁免（R4 决-1）：
 // 五套版式统一「浅底深字、深底白字」——mint 可爱 / posterData 数据 / coral
-// 生日为浅底，主文字 AppColors.text（辅文 72% 一档派生，token 值不动）；
-// posterMagazine 杂志 / posterNight 夜景为深底，保持白字。白色只留给
-// 非文字元素（品牌线/爪印字形/胶囊底/头像圆底/地图白壳与描线）。
+// 生日为浅底，主文字与辅文一律全色 AppColors.posterInk（R5 守门员 HOLD
+// 返工：text 压 mint 实算 4.35:1 低于 4.5 红线、72% 派生辅文 2.80~3.50:1
+// 更不达标——改用同色相加深的 posterInk 全色直用，层级靠字号/字重，token
+// 值不动）；posterMagazine 杂志 / posterNight 夜景为深底，保持白字。白色
+// 只留给非文字元素（品牌线/爪印字形/胶囊底/头像圆底/地图白壳与描线）。
 // 守门员 D4 返工补充：① 数据风（posterData 青底）白字对比度仅约 2:1，
-// 版式内主要文字改 AppColors.text 深字、数据格底改 text 6% 深色淡底
-// （posterData token 值不动）；② 夜景风地图角标 `Colors.black45` 是海报
-// 内容遮罩而非投影，属 §7「裸黑影」审计的登记豁免；卡壳投影走 shadowFloat。
+// 版式内主要文字改深字、数据格底改深色 6% 淡底（posterData token 值不动）；
+// ② 夜景风地图角标 `Colors.black45` 是海报内容遮罩而非投影，属 §7「裸黑影」
+// 审计的登记豁免；卡壳投影走 shadowFloat。
 // R4 守门员 HOLD 返工：共用块 _badge/_mapFrame/_playBlock/_pill 全部带
 // {bool dark = false} 双态，浅底版式传 dark: true——数据风猫玩块/无轨迹
 // 占位/手绘回退描线不再白字；契约见 docs/DESIGN_SYSTEM.md §5.4。
+// R5 守门员 HOLD 返工（2026-09-17）：浅底版式文字 AppColors.text →
+// AppColors.posterInk（辅文取消 72% alpha 派生）；「一起玩了N分钟」与
+// _dataCell label 10 → fsCaption(11)；淡底基色 text → posterInk。
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
@@ -189,15 +194,16 @@ class _ShareCardPageState extends State<ShareCardPage> {
                     children: [
                       // R4 决-1：宠名 fsHeadline(18) 与胶囊数字 17 拉开层级
                       //（16/17 同级且数字反超主名，层次倒挂——守门员指出）
+                      // R5：主文字 posterInk 全色（text 压 mint 4.35:1 不达标）
                       Text(_petName,
                           style: const TextStyle(
                               fontSize: AppDimens.fsHeadline,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.text)),
+                              color: AppColors.posterInk)),
                       Text(_dateLabel,
-                          style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.text.withValues(alpha: 0.72))),
+                          style: const TextStyle(
+                              fontSize: AppDimens.fsCaption,
+                              color: AppColors.posterInk)),
                     ]),
               ),
               _badge(t, dark: true),
@@ -224,14 +230,14 @@ class _ShareCardPageState extends State<ShareCardPage> {
                   child: Text('📍 ${widget.record.locationName}',
                       style: const TextStyle(
                           fontSize: AppDimens.fsCaption,
-                          color: AppColors.text))),
+                          color: AppColors.posterInk))),
             ],
             const SizedBox(height: 10),
             Center(
                 child: Text('坚持运动，和宝贝一起健康成长',
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.text.withValues(alpha: 0.72)))),
+                    style: const TextStyle(
+                        fontSize: AppDimens.fsCaption,
+                        color: AppColors.posterInk))),
           ],
         ));
   }
@@ -294,7 +300,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
 
   // ---- 版式 3：数据风（地图条 + 2×2 数据格） ----
   // D4 返工：posterData 青底上白字对比度约 2.06:1 不可读，本版式主要文字
-  // 改 AppColors.text 深字（方案 A），格底/徽章改 text 6% 深色淡底保持格感。
+  // 改深字（方案 A），格底/徽章改深色 6% 淡底保持格感（R5 墨色统一 posterInk）。
 
   Widget _layoutData(Map<String, dynamic> t) {
     final now = widget.record.startTime;
@@ -308,7 +314,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.text)),
+                      color: AppColors.posterInk)),
               const Spacer(),
               _badge(t, dark: true),
             ]),
@@ -337,7 +343,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
             const SizedBox(height: 12),
             const Center(
                 child: Text('宠动Keep · 和宝贝一起动起来',
-                    style: TextStyle(fontSize: 11, color: AppColors.text))),
+                    style: TextStyle(fontSize: 11, color: AppColors.posterInk))),
           ],
         ));
   }
@@ -402,7 +408,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
   }
 
   // ---- 版式 5：生日风（庆祝 + 圆形地图） ----
-  // R4 决-1 落地：coral 浅底 → 主文字深字，white70 辅文一档派生 72%。
+  // R4 决-1 落地：coral 浅底 → 主文字深字（R5 起主/辅文统一 posterInk 全色）。
 
   Widget _layoutParty(Map<String, dynamic> t) {
     return _cardShell(t,
@@ -415,12 +421,12 @@ class _ShareCardPageState extends State<ShareCardPage> {
                 style: const TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.text)),
+                    color: AppColors.posterInk)),
             const SizedBox(height: 2),
             Text('$_dateLabel · $_typeLabel',
-                style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.text.withValues(alpha: 0.72))),
+                style: const TextStyle(
+                    fontSize: AppDimens.fsCaption,
+                    color: AppColors.posterInk)),
             const SizedBox(height: 12),
             Center(
               child: SizedBox(
@@ -442,9 +448,9 @@ class _ShareCardPageState extends State<ShareCardPage> {
             const SizedBox(height: 10),
             Center(
                 child: Text('坚持就是胜利，今天也超棒！',
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.text.withValues(alpha: 0.72)))),
+                    style: const TextStyle(
+                        fontSize: AppDimens.fsCaption,
+                        color: AppColors.posterInk))),
           ],
         ));
   }
@@ -466,13 +472,14 @@ class _ShareCardPageState extends State<ShareCardPage> {
   }
 
   /// 类型徽章：动态取 typeDisplayName（修复此前写死"🐕 遛狗"）。
-  /// [dark] 供浅底版式（可爱/数据/生日）使用：深字 + text 6% 淡底。
+  /// [dark] 供浅底版式（可爱/数据/生日）使用：posterInk 深字 + 同色 6% 淡底
+  /// （R5：墨色 text → posterInk）。
   Widget _badge(Map<String, dynamic> t, {bool dark = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: dark
-            ? AppColors.text.withValues(alpha: 0.06)
+            ? AppColors.posterInk.withValues(alpha: 0.06)
             : Colors.white.withValues(alpha: 0.22),
         borderRadius: BorderRadius.circular(999),
       ),
@@ -480,12 +487,12 @@ class _ShareCardPageState extends State<ShareCardPage> {
           style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: dark ? AppColors.text : Colors.white)),
+              color: dark ? AppColors.posterInk : Colors.white)),
     );
   }
 
-  /// 数据胶囊（可爱/生日风共用）：[dark] 供浅底版式使用——深字 + 白胶囊底
-  /// 提浓到 35% 承深字（R4 决-1；辅文同步 fsCaption 最低可读档）。
+  /// 数据胶囊（可爱/生日风共用）：[dark] 供浅底版式使用——posterInk 深字 +
+  /// 白胶囊底提浓到 35% 承深字（R4 决-1；R5 辅文取消 72% 派生改全色墨）。
   Widget _pill(String value, String label, {bool dark = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
@@ -498,12 +505,12 @@ class _ShareCardPageState extends State<ShareCardPage> {
             style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w800,
-                color: dark ? AppColors.text : Colors.white)),
+                color: dark ? AppColors.posterInk : Colors.white)),
         Text(label,
             style: TextStyle(
                 fontSize: AppDimens.fsCaption,
                 color: dark
-                    ? AppColors.text.withValues(alpha: 0.72)
+                    ? AppColors.posterInk
                     : Colors.white70)),
       ]),
     );
@@ -531,12 +538,13 @@ class _ShareCardPageState extends State<ShareCardPage> {
   Widget _vLine() => Container(
       width: 1, height: 26, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 10));
 
-  /// 数据风专用格（D4 返工：深字 + text 6% 淡底，posterData 浅青底上可读）
+  /// 数据风专用格（D4 返工：深字 + 深色 6% 淡底，posterData 浅青底上可读；
+  /// R5：墨色统一 posterInk，label 10 → fsCaption(11)）
   Widget _dataCell(String value, String label) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.text.withValues(alpha: 0.06),
+        color: AppColors.posterInk.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -544,16 +552,18 @@ class _ShareCardPageState extends State<ShareCardPage> {
             style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: AppColors.text)),
+                color: AppColors.posterInk)),
         const SizedBox(height: 2),
         Text(label,
-            style: const TextStyle(fontSize: 10, color: AppColors.text)),
+            style: const TextStyle(
+                fontSize: AppDimens.fsCaption, color: AppColors.posterInk)),
       ]),
     );
   }
 
   /// 猫玩内容区：陪猫玩没有轨迹，用玩法主题替代地图（2026-09 用户指定）。
-  /// [dark] 供浅底版式（数据风等）使用：深字 + text 6% 淡底（R4 守门员 HOLD 返工）。
+  /// [dark] 供浅底版式（数据风等）使用：posterInk 深字 + 同色 6% 淡底
+  /// （R4 守门员 HOLD 返工；R5 墨色统一 posterInk）。
   Widget _playBlock(
       {required double height,
       BorderRadius? radius,
@@ -564,7 +574,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: dark
-            ? AppColors.text.withValues(alpha: 0.06)
+            ? AppColors.posterInk.withValues(alpha: 0.06)
             : Colors.white.withValues(alpha: 0.18),
         borderRadius: radius,
         border: border,
@@ -577,12 +587,12 @@ class _ShareCardPageState extends State<ShareCardPage> {
             style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
-                color: dark ? AppColors.text : Colors.white)),
+                color: dark ? AppColors.posterInk : Colors.white)),
         const SizedBox(height: 2),
         Text('一起玩了$_minutes分钟',
             style: TextStyle(
-                fontSize: 10,
-                color: dark ? AppColors.text : Colors.white70)),
+                fontSize: AppDimens.fsCaption,
+                color: dark ? AppColors.posterInk : Colors.white70)),
       ]),
     );
   }
@@ -606,7 +616,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
       final fallback = CustomPaint(
         size: Size(double.infinity, height),
         painter: _CardRoutePainter(
-            widget.record.route, dark ? AppColors.text : Colors.white),
+            widget.record.route, dark ? AppColors.posterInk : Colors.white),
       );
       content = (!AppPlatform.isWeb && _mapUrl.isNotEmpty)
           ? Image.network(_mapUrl,
@@ -625,7 +635,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
               style: TextStyle(
                   fontSize: 11,
                   color: dark
-                      ? AppColors.text
+                      ? AppColors.posterInk
                       : Colors.white.withValues(alpha: 0.75))),
         ],
       );
@@ -677,7 +687,7 @@ class _ShareCardPageState extends State<ShareCardPage> {
                       style: TextStyle(
                           fontSize: 10,
                           color: (template['darkText'] as bool?) == true
-                              ? AppColors.text
+                              ? AppColors.posterInk
                               : Colors.white,
                           fontWeight: FontWeight.w700)),
                 ],

@@ -51,6 +51,17 @@ class AppColors {
   static const Color posterData = Color(0xFF26C6DA);
   static const Color posterNight = Color(0xFF37474F);
 
+  /// 海报浅底墨色（2026-09-17 R5 守门员 HOLD 返工收编）：海报三套浅底版式
+  /// （mint 可爱 / posterData 数据 / coral 生日）主文字与辅文专用，[text]
+  /// 同青灰色相（186°）加深——text(#2E3A3B) 压 mint WCAG 实算仅 4.35:1，
+  /// 低于 AA 正文 4.5 红线；其 72% alpha 派生辅文 2.80~3.50:1 更不达标。
+  /// posterInk 全色直用、辅文不再 alpha 派生（层级靠字号/字重）。
+  /// WCAG 相对亮度实算（mint L=0.3381 / coral L=0.4038 / posterData
+  /// L=0.4586 / posterInk L=0.0212）：posterInk 压 mint ≈5.45:1、
+  /// 压 coral ≈6.37:1、压 posterData ≈7.14:1，均 ≥4.5:1；压胶囊底
+  /// （35% 白罩 mint，L=0.5122）≈7.89:1。App 界面（板外）禁用。
+  static const Color posterInk = Color(0xFF1F2A2B);
+
   // 中性色
   static const Color cream = Color(0xFFFBF9F5);
   static const Color sand = Color(0xFFF5F1EA);
